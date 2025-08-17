@@ -4,6 +4,7 @@ import InfoModal from './InfoModal';
 import UserProfile from './UserProfile';
 import Analytics from './Analytics';
 import BackupRestoreModal from './BackupRestoreModal';
+import { getCurrentPrayerTimes } from '../utils/prayerTimes';
 
 const Modal = ({ type, data, onClose, onSave, onLogout, L, loading = false }) => {
   // State declarations at the top level to avoid conditional calls
@@ -68,13 +69,27 @@ const Modal = ({ type, data, onClose, onSave, onLogout, L, loading = false }) =>
   // Initialize/editable timetable values when this modal is opened
   useEffect(() => {
     if (type === 'timetable') {
-      setTimes({
-        Fajr: data?.times?.Fajr || '05:15',
-        Dhuhr: data?.times?.Dhuhr || '14:15',
-        Asr: data?.times?.Asr || '17:30',
-        Maghrib: data?.times?.Maghrib || '19:10',
-        Isha: data?.times?.Isha || '20:45'
-      });
+      try {
+        // Get accurate prayer times including Maghrib
+        const accurateTimes = getCurrentPrayerTimes();
+        
+        setTimes({
+          Fajr: data?.times?.Fajr || accurateTimes.Fajr,
+          Dhuhr: data?.times?.Dhuhr || accurateTimes.Dhuhr,
+          Asr: data?.times?.Asr || accurateTimes.Asr,
+          Maghrib: accurateTimes.Maghrib, // Always use accurate Maghrib time
+          Isha: data?.times?.Isha || accurateTimes.Isha
+        });
+      } catch (error) {
+        console.warn('Failed to get accurate prayer times, using fallback:', error);
+        setTimes({
+          Fajr: data?.times?.Fajr || '05:15',
+          Dhuhr: data?.times?.Dhuhr || '14:15',
+          Asr: data?.times?.Asr || '17:30',
+          Maghrib: data?.times?.Maghrib || '19:10',
+          Isha: data?.times?.Isha || '20:45'
+        });
+      }
     }
   }, [type, data]);
 
@@ -356,15 +371,32 @@ const Modal = ({ type, data, onClose, onSave, onLogout, L, loading = false }) =>
     const handleResetClick = () => {
       const ok = window.confirm('Reset prayer times? This will revert Fajr, Dhuhr, Asr and Isha to their original values. Maghrib remains Auto from sunset.');
       if (!ok) return;
-      const fallback = {
-        Fajr: '05:15',
-        Dhuhr: '14:15',
-        Asr: '17:30',
-        Maghrib: times.Maghrib,
-        Isha: '20:45'
-      };
-      const base = (data && data.times) ? data.times : fallback; // original values or sensible defaults
-      setTimes(base);
+      
+      try {
+        // Get accurate prayer times including Maghrib
+        const accurateTimes = getCurrentPrayerTimes();
+        
+        const fallback = {
+          Fajr: '05:15',
+          Dhuhr: '14:15',
+          Asr: '17:30',
+          Maghrib: accurateTimes.Maghrib, // Use accurate Maghrib time
+          Isha: '20:45'
+        };
+        const base = (data && data.times) ? { ...data.times, Maghrib: accurateTimes.Maghrib } : fallback;
+        setTimes(base);
+      } catch (error) {
+        console.warn('Failed to get accurate prayer times for reset, using fallback:', error);
+        const fallback = {
+          Fajr: '05:15',
+          Dhuhr: '14:15',
+          Asr: '17:30',
+          Maghrib: times.Maghrib,
+          Isha: '20:45'
+        };
+        const base = (data && data.times) ? data.times : fallback;
+        setTimes(base);
+      }
     };
 
     return (

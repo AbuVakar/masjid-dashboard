@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "adhan": "^4.4.3",
     "dompurify": "^3.2.6",
     "dotenv": "^17.2.1",
     "jspdf": "^3.0.1",

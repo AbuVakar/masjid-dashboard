@@ -1,47 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { FaClock, FaPray } from 'react-icons/fa';
-
-// Function to calculate sunset time for given coordinates
-const calculateSunset = (date, lat, lng) => {
-  // Convert coordinates to decimal degrees
-  const latitude = 28 + 58/60 + 24/3600; // 28°58'24"N
-  const longitude = 77 + 41/60 + 22/3600; // 77°41'22"E
-  
-  // Get day of year
-  const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-  
-  // Simplified sunset calculation for Delhi area (28.9733°N, 77.6894°E)
-  // This is based on approximate sunset times for this latitude
-  // Sunset times vary from ~17:30 in winter to ~19:30 in summer
-  
-  // Base sunset time (around 18:30)
-  let baseHour = 18;
-  let baseMinute = 30;
-  
-  // Adjust for seasonal variation
-  // Day 172 is around June 21 (summer solstice) - latest sunset
-  // Day 355 is around December 21 (winter solstice) - earliest sunset
-  const daysFromSolstice = Math.abs(dayOfYear - 172);
-  const seasonalAdjustment = Math.cos((daysFromSolstice / 365) * 2 * Math.PI) * 60; // ±60 minutes
-  
-  // Calculate final time
-  let totalMinutes = (baseHour * 60 + baseMinute) + seasonalAdjustment;
-  
-  // Convert back to hours and minutes
-  let finalHour = Math.floor(totalMinutes / 60);
-  let finalMinute = Math.floor(totalMinutes % 60);
-  
-  // Ensure valid time
-  if (finalHour >= 24) {
-    finalHour = finalHour % 24;
-  }
-  
-  if (finalHour < 0) {
-    finalHour = 24 + finalHour;
-  }
-  
-  return `${finalHour.toString().padStart(2, '0')}:${finalMinute.toString().padStart(2, '0')}`;
-};
+import { getCurrentPrayerTimes } from '../utils/prayerTimes';
 
 const Clock = ({ time, nextPrayer, prayerTimes: propPrayerTimes }) => {
   // Memoize default prayer times to prevent recreation on each render
@@ -61,14 +20,20 @@ const Clock = ({ time, nextPrayer, prayerTimes: propPrayerTimes }) => {
   const pad = useCallback((n) => n < 10 ? `0${n}` : `${n}`, []);
   
   // Calculate current prayer times including dynamic Maghrib
-  const getCurrentPrayerTimes = useCallback(() => {
-    const now = new Date();
-    const sunsetTime = calculateSunset(now, 28.9733, 77.6894); // Your coordinates
-    
-    return {
-      ...(propPrayerTimes || defaultPrayerTimes),
-      Maghrib: sunsetTime
-    };
+  const getCurrentPrayerTimesWithFallback = useCallback(() => {
+    try {
+      const accuratePrayerTimes = getCurrentPrayerTimes();
+      
+      return {
+        ...(propPrayerTimes || defaultPrayerTimes),
+        ...accuratePrayerTimes // This will override with accurate times including Maghrib
+      };
+    } catch (error) {
+      console.warn('Failed to calculate accurate prayer times, using fallback:', error);
+      return {
+        ...(propPrayerTimes || defaultPrayerTimes)
+      };
+    }
   }, [propPrayerTimes, defaultPrayerTimes]);
 
   // Memoize the update function with all its dependencies
@@ -80,7 +45,7 @@ const Clock = ({ time, nextPrayer, prayerTimes: propPrayerTimes }) => {
     setDayName(daysFull[now.getDay()]);
     
     // Get current prayer times with dynamic Maghrib
-    const effectivePrayerTimes = getCurrentPrayerTimes();
+    const effectivePrayerTimes = getCurrentPrayerTimesWithFallback();
     setCurrentPrayerTimes(effectivePrayerTimes);
     
     // Next prayer calculation (sort by time for robustness)
@@ -118,7 +83,7 @@ const Clock = ({ time, nextPrayer, prayerTimes: propPrayerTimes }) => {
         }`.trim()
       );
     }
-  }, [getCurrentPrayerTimes, pad]);
+  }, [getCurrentPrayerTimesWithFallback, pad]);
 
   // Set up the interval for the clock
   useEffect(() => {
