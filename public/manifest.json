@@ -1,25 +1,80 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Masjid",
+  "name": "Silsila-ul-Ahwaal",
+  "description": "Complete management system for Masjid activities, member records, and Tableeg efforts with offline support",
   "icons": [
     {
       "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
+      "sizes": "16x16 32x32 48x48 64x64",
       "type": "image/x-icon"
     },
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait-primary",
+  "theme_color": "#0f5132",
+  "background_color": "#ffffff",
+  "lang": "en",
+  "categories": ["productivity", "utilities", "religious"],
+  "screenshots": [
+    {
+      "src": "logo192.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add House",
+      "short_name": "Add House",
+      "description": "Add a new house to the database",
+      "url": "/?action=add-house",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "View Members",
+      "short_name": "Members",
+      "description": "View all members",
+      "url": "/?action=view-members",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Prayer Times",
+      "short_name": "Prayer",
+      "description": "Check prayer times",
+      "url": "/?action=prayer-times",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
 }

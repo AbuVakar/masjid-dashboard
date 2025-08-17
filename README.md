@@ -1,70 +1,218 @@
-# Getting Started with Create React App
+# 🕌 Silsila-ul-Ahwaal - Masjid Dashboard
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A comprehensive Progressive Web App (PWA) for community management and masjid administration.
 
-## Available Scripts
+## 🌟 Features
 
-In the project directory, you can run:
+### 🔐 Authentication System
+- **Multi-role Access**: Admin, User, and Guest modes
+- **JWT Authentication**: Secure token-based authentication
+- **Guest Mode**: Temporary access without registration
+- **Session Persistence**: Automatic login state management
 
-### `npm start`
+### 📊 Community Management
+- **House Management**: Add, edit, and organize community houses
+- **Member Profiles**: Detailed member information and tracking
+- **Advanced Filtering**: Search by house number, street, occupation, education
+- **Data Export**: Excel and PDF export capabilities
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 🕌 Masjid Features
+- **Prayer Times**: Customizable prayer time management
+- **Notifications**: Browser notifications for prayer times
+- **Resources**: Islamic resources and community information
+- **Analytics**: Community statistics and insights
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 🚀 PWA Capabilities
+- **Offline Support**: Works without internet connection
+- **Mobile Optimized**: Responsive design for all devices
+- **Installable**: Can be installed as a mobile app
+- **Service Worker**: Background sync and caching
 
-### `npm test`
+## 🛠️ Tech Stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Frontend
+- **React.js**: Modern UI framework
+- **Custom Hooks**: Reusable state management
+- **PWA**: Progressive Web App features
+- **Service Worker**: Offline capabilities
 
-### `npm run build`
+### Backend
+- **Node.js**: Server runtime
+- **Express.js**: Web framework
+- **MongoDB**: NoSQL database
+- **Mongoose**: ODM for MongoDB
+- **JWT**: Authentication tokens
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Development
+- **ESLint**: Code quality
+- **Error Handling**: Comprehensive error management
+- **Logging**: Winston-based logging system
+- **Testing**: Jest test framework
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🚀 Quick Start
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Prerequisites
+- Node.js (v14 or higher)
+- MongoDB (local or cloud)
+- Git
 
-### `npm run eject`
+### Installation
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd masjid-dashboard
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+2. **Install dependencies**
+   ```bash
+   npm install
+   cd server && npm install
+   cd ..
+   ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+3. **Environment Setup**
+   ```bash
+   # Create environment file
+   cp server/config.env.example server/config.env
+   
+   # Edit config.env with your settings
+   MONGODB_URI=mongodb://localhost:27017/masjid-dashboard
+   JWT_SECRET=your-secret-key
+   PORT=5000
+   ```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+4. **Database Setup**
+   ```bash
+   cd server
+   node seedAdmin.js
+   cd ..
+   ```
 
-## Learn More
+5. **Start Development Servers**
+   ```bash
+   # Terminal 1: Start backend
+   cd server && npm start
+   
+   # Terminal 2: Start frontend
+   npm start
+   ```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+6. **Access the Application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:5000
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 🔐 Default Credentials
 
-### Code Splitting
+### Admin Access
+- **Username**: `admin`
+- **Password**: `admin123`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Guest Mode
+- Click "Continue as Guest" for temporary access
 
-### Analyzing the Bundle Size
+## 📱 PWA Installation
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+1. Open the app in Chrome/Edge
+2. Click the install icon in the address bar
+3. Or use "Add to Home Screen" from browser menu
 
-### Making a Progressive Web App
+## 🗂️ Project Structure
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```
+masjid-dashboard/
+├── public/                 # Static files
+│   ├── sw.js              # Service Worker
+│   └── manifest.json      # PWA manifest
+├── src/                   # Frontend source
+│   ├── components/        # React components
+│   ├── hooks/            # Custom hooks
+│   ├── services/         # API services
+│   └── utils/            # Utilities
+├── server/               # Backend source
+│   ├── models/           # MongoDB models
+│   ├── routes/           # API routes
+│   ├── middleware/       # Express middleware
+│   └── utils/            # Server utilities
+└── tests/                # Test files
+```
 
-### Advanced Configuration
+## 🔧 Configuration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Environment Variables
 
-### Deployment
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/masjid-dashboard` |
+| `JWT_SECRET` | JWT signing secret | Required |
+| `PORT` | Server port | `5000` |
+| `NODE_ENV` | Environment mode | `development` |
+| `CORS_ORIGIN` | CORS allowed origin | `http://localhost:3000` |
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### PWA Configuration
 
-### `npm run build` fails to minify
+Edit `public/manifest.json` for app metadata:
+```json
+{
+  "name": "Silsila-ul-Ahwaal",
+  "short_name": "Masjid Dashboard",
+  "description": "Community Management System",
+  "theme_color": "#1e293b",
+  "background_color": "#ffffff"
+}
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 🧪 Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run backend tests
+cd server && npm test
+
+# Run frontend tests
+npm test -- --watchAll=false
+```
+
+## 📦 Deployment
+
+### Frontend (Netlify/Vercel)
+```bash
+npm run build
+# Deploy build/ folder
+```
+
+### Backend (Heroku/Railway)
+```bash
+cd server
+# Deploy server/ folder
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions:
+- Create an issue in the repository
+- Contact the development team
+
+## 🙏 Acknowledgments
+
+- Community members for feedback
+- Open source contributors
+- Islamic community organizations
+
+---
+
+**Built with ❤️ for the Muslim Community**

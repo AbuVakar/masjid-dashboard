@@ -2,16 +2,72 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
-import reportWebVitals from './reportWebVitals';
+import ErrorBoundary from './components/ErrorBoundary';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+  <>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+    <ToastContainer position="top-right" autoClose={2500} hideProgressBar={false} newestOnTop closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="colored" />
+  </>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+// Global last-resort handlers
+window.addEventListener('unhandledrejection', (event) => {
+  // Suppress browser extension errors
+  if (event.reason && typeof event.reason === 'string' && 
+      (event.reason.includes('content-script') || event.reason.includes('getThumbnail'))) {
+    return;
+  }
+  
+  // eslint-disable-next-line no-console
+  console.error('Unhandled promise rejection:', event.reason);
+  toast.error('An unexpected error occurred. Please try again.');
+});
+
+window.addEventListener('error', (event) => {
+  // Suppress browser extension errors
+  if (event.error && typeof event.error === 'string' && 
+      (event.error.includes('content-script') || event.error.includes('getThumbnail'))) {
+    return;
+  }
+  
+  // eslint-disable-next-line no-console
+  console.error('Unhandled error:', event.error || event.message);
+  // Avoid double-toasting Errors already caught by ErrorBoundary
+});
+
+// Register service worker only in production to avoid dev caching issues
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    if (process.env.NODE_ENV === 'production') {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then((registration) => {
+          if (registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                }
+              });
+            }
+          });
+        })
+        .catch(() => {});
+    } else {
+      // In development, ensure any existing SW is removed to prevent stale caches
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((r) => r.unregister());
+      }).catch(() => {});
+    }
+  });
+}
