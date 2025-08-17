@@ -257,6 +257,57 @@ class ApiService {
       return { success: false };
     }
   }
+
+  // Prayer times API methods
+  async getPrayerTimes(date = new Date()) {
+    try {
+      // Coordinates for your location (28°58'24"N 77°41'22"E)
+      const latitude = 28.9733;
+      const longitude = 77.6894;
+      const timestamp = Math.floor(date.getTime() / 1000);
+      
+      const response = await fetch(
+        `https://api.aladhan.com/v1/timings/${timestamp}?latitude=${latitude}&longitude=${longitude}&method=2`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          timeout: 10000
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.code === 200 && data.data && data.data.timings) {
+        return {
+          success: true,
+          data: {
+            Fajr: data.data.timings.Fajr,
+            Dhuhr: data.data.timings.Dhuhr,
+            Asr: data.data.timings.Asr,
+            Maghrib: data.data.timings.Maghrib, // This will be the actual sunset time
+            Isha: data.data.timings.Isha,
+            Sunrise: data.data.timings.Sunrise,
+            Sunset: data.data.timings.Sunset
+          }
+        };
+      } else {
+        throw new Error('Invalid response from prayer times API');
+      }
+    } catch (error) {
+      console.error('Failed to fetch prayer times:', error);
+      return {
+        success: false,
+        error: error.message,
+        data: null
+      };
+    }
+  }
 }
 
 // Create singleton instance

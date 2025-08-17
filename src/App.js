@@ -23,6 +23,7 @@ import { useFilters } from './hooks/useFilters';
 import { useUser } from './hooks/useUser';
 import { useNotifications } from './hooks/useNotifications';
 import { useResources } from './hooks/useResources';
+import usePrayerTimes from './hooks/usePrayerTimes';
 
 // Utilities
 import { 
@@ -46,14 +47,6 @@ function App() {
   const [operationLoading, setOperationLoading] = useState(false);
   const [currentView, setCurrentView] = useState('main'); // 'main', 'resources'
   const [expandedHouse, setExpandedHouse] = useState(null);
-  const [prayerTimes, setPrayerTimes] = useState({
-    Fajr: '05:00',
-    Dhuhr: '12:30',
-    Asr: '15:45',
-    Maghrib: '18:15',
-    Isha: '19:30'
-  });
-
   // Custom hooks
   const { 
     houses, 
@@ -68,6 +61,11 @@ function App() {
     importData,
     refreshData
   } = useMongoDB();
+
+  const {
+    prayerTimes,
+    updatePrayerTimes
+  } = usePrayerTimes();
 
   const { 
     filters, 
@@ -120,7 +118,7 @@ function App() {
       toast.error('Failed to load demo data. Please try again.');
       throw error;
     }
-  }, [refreshData, notify]);
+  }, [refreshData, notify, updatePrayerTimes]);
 
   // Enhanced error handling for data operations
   const handleSave = useCallback(async (data, type) => {
@@ -134,9 +132,7 @@ function App() {
         } else if (type === 'timetable') {
           // Handle timetable save - update prayer times in the app state
           if (data && data.times) {
-            setPrayerTimes(data.times);
-            // Save to localStorage for persistence
-            localStorage.setItem('prayerTimes', JSON.stringify(data.times));
+            updatePrayerTimes(data.times);
           }
         } else if (type === 'info') {
           // Handle info modal saves (aumoor, running, etc.)
@@ -512,18 +508,7 @@ function App() {
     }
   }, [error]);
 
-  // Load prayer times from localStorage on app start
-  useEffect(() => {
-    try {
-      const savedPrayerTimes = localStorage.getItem('prayerTimes');
-      if (savedPrayerTimes) {
-        const parsed = JSON.parse(savedPrayerTimes);
-        setPrayerTimes(parsed);
-      }
-    } catch (error) {
-      console.error('Failed to load prayer times from localStorage:', error);
-    }
-  }, []);
+
 
   // Performance monitoring for component mount
   useEffect(() => {
