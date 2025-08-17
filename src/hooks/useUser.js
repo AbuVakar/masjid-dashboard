@@ -110,6 +110,8 @@ export const useUser = () => {
       
       const token = sessionStorage.getItem('authToken');
       if (token) {
+        // Ensure apiService has the token so that authenticated requests include Authorization header
+        apiService.setToken(token);
         try {
           const response = await apiService.getProfile();
           if (response.success) {
