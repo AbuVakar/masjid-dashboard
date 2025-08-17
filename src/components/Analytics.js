@@ -174,6 +174,12 @@ const Analytics = ({ houses, members, isAdmin }) => {
     }
   };
 
+  // Helper to compute percentage width safely
+  const getPercentage = (count, max) => {
+    if (!max || max <= 0) return '0%';
+    return `${(count / max) * 100}%`;
+  };
+
   if (!isAdmin) {
     return (
       <div className="analytics-container">
@@ -269,7 +275,7 @@ const Analytics = ({ houses, members, isAdmin }) => {
                   <div 
                     className="bar-fill" 
                     style={{ 
-                      width: `${(count / Math.max(...Object.values(analytics.dawatStats))) * 100}%` 
+                      width: getPercentage(count, Math.max(0, ...Object.values(analytics.dawatStats))) 
                     }}
                   />
                 </div>
@@ -290,7 +296,7 @@ const Analytics = ({ houses, members, isAdmin }) => {
                   <div 
                     className="bar-fill age" 
                     style={{ 
-                      width: `${(count / Math.max(...Object.values(analytics.ageDistribution))) * 100}%` 
+                      width: getPercentage(count, Math.max(0, ...Object.values(analytics.ageDistribution))) 
                     }}
                   />
                 </div>
@@ -339,7 +345,7 @@ const Analytics = ({ houses, members, isAdmin }) => {
                   <div 
                     className="bar-fill street" 
                     style={{ 
-                      width: `${(count / Math.max(...Object.values(analytics.streetDistribution))) * 100}%` 
+                      width: getPercentage(count, Math.max(0, ...Object.values(analytics.streetDistribution))) 
                     }}
                   />
                 </div>
@@ -360,7 +366,7 @@ const Analytics = ({ houses, members, isAdmin }) => {
                   <div 
                     className="bar-fill family" 
                     style={{ 
-                      width: `${(count / Math.max(...Object.values(analytics.familySizeStats))) * 100}%` 
+                      width: getPercentage(count, Math.max(0, ...Object.values(analytics.familySizeStats))) 
                     }}
                   />
                 </div>
@@ -381,7 +387,7 @@ const Analytics = ({ houses, members, isAdmin }) => {
                   <div 
                     className="bar-fill occupation" 
                     style={{ 
-                      width: `${(count / Math.max(...Object.values(analytics.occupationStats))) * 100}%` 
+                      width: getPercentage(count, Math.max(0, ...Object.values(analytics.occupationStats))) 
                     }}
                   />
                 </div>
