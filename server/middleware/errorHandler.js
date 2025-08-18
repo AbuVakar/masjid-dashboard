@@ -46,8 +46,10 @@ const errorHandlers = {
   },
   JsonWebTokenError: () => new AppError('Invalid token', 401, 'INVALID_TOKEN'),
   TokenExpiredError: () => new AppError('Token expired', 401, 'TOKEN_EXPIRED'),
-  MongoNetworkError: () => new AppError('Database connection failed', 503, 'DATABASE_ERROR'),
-  MongoServerSelectionError: () => new AppError('Database connection failed', 503, 'DATABASE_ERROR'),
+  MongoNetworkError: () =>
+    new AppError('Database connection failed', 503, 'DATABASE_ERROR'),
+  MongoServerSelectionError: () =>
+    new AppError('Database connection failed', 503, 'DATABASE_ERROR'),
   ECONNABORTED: () => new AppError('Request timeout', 408, 'REQUEST_TIMEOUT'),
   ETIMEDOUT: () => new AppError('Request timeout', 408, 'REQUEST_TIMEOUT'),
   11000: (err) => {
@@ -120,7 +122,11 @@ const errorHandler = (err, req, res, next) => {
  * @param {import('express').NextFunction} next - The Express next middleware function.
  */
 const notFoundHandler = (req, res, next) => {
-  const error = new AppError(`Route not found: ${req.originalUrl}`, 404, 'ROUTE_NOT_FOUND');
+  const error = new AppError(
+    `Route not found: ${req.originalUrl}`,
+    404,
+    'ROUTE_NOT_FOUND',
+  );
   next(error);
 };
 

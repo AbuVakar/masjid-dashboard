@@ -67,7 +67,8 @@ export const getDashboardCards = (stats, onNavigate) => [
         textColor: 'text-yellow-600',
         bgColor: 'bg-gradient-to-br from-yellow-50 to-orange-50',
         description: 'Short-term jamaat participants',
-        action: () => onNavigate('members', { filter: 'jamaat', value: '3 Days' }),
+        action: () =>
+          onNavigate('members', { filter: 'jamaat', value: '3 Days' }),
       },
       {
         title: '10 Days Jamaat',
@@ -77,7 +78,8 @@ export const getDashboardCards = (stats, onNavigate) => [
         textColor: 'text-orange-600',
         bgColor: 'bg-gradient-to-br from-orange-50 to-red-50',
         description: 'Medium-term jamaat participants',
-        action: () => onNavigate('members', { filter: 'jamaat', value: '10 Days' }),
+        action: () =>
+          onNavigate('members', { filter: 'jamaat', value: '10 Days' }),
       },
     ],
   },

@@ -11,9 +11,7 @@ const QuickActions = ({ onNavigate }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-gray-900">
-          Quick Actions
-        </h3>
+        <h3 className="text-xl font-semibold text-gray-900">Quick Actions</h3>
         <div className="flex items-center space-x-2">
           <button className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
             <FaSync size={16} className="text-gray-600" />

@@ -11,7 +11,11 @@ const { AppError } = require('./errorHandler');
 const checkResourceExists = (model, resourceName) => async (req, res, next) => {
   const resource = await model.findById(req.params.id);
   if (!resource) {
-    throw new AppError(`${resourceName} not found`, 404, `${resourceName.toUpperCase()}_NOT_FOUND`);
+    throw new AppError(
+      `${resourceName} not found`,
+      404,
+      `${resourceName.toUpperCase()}_NOT_FOUND`,
+    );
   }
   req.resource = resource;
   next();

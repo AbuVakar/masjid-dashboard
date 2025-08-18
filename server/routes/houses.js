@@ -58,7 +58,11 @@ const checkDuplicateHouseNumber = async (number, excludeId = null) => {
   }
   const existingHouse = await House.findOne(query);
   if (existingHouse) {
-    throw new AppError('House number already exists', 409, 'DUPLICATE_HOUSE_NUMBER');
+    throw new AppError(
+      'House number already exists',
+      409,
+      'DUPLICATE_HOUSE_NUMBER',
+    );
   }
 };
 

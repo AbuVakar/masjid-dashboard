@@ -15,9 +15,7 @@ const DashboardCard = ({ card, onNavigate }) => {
       onClick={() => card.action && card.action()}
     >
       <div className="flex items-start justify-between mb-4">
-        <div
-          className={`p-3 rounded-lg ${card.color} text-white shadow-lg`}
-        >
+        <div className={`p-3 rounded-lg ${card.color} text-white shadow-lg`}>
           <card.icon size={20} />
         </div>
         {card.action && (

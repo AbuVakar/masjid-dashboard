@@ -32,22 +32,25 @@ A comprehensive Progressive Web App (PWA) for community management and masjid ad
 ### Installation
 
 1.  **Clone the repository:**
+
     ```bash
     git clone <your-repo-url>
     cd silsila-ul-ahwaal
     ```
 
 2.  **Install dependencies for both frontend and backend:**
+
     ```bash
     npm install
     cd server && npm install && cd ..
     ```
 
 3.  **Set up environment variables:**
-    -   Copy `server/config.env.example` to `server/config.env`.
-    -   Fill in the required variables, such as `MONGODB_URI` and `JWT_SECRET`.
+    - Copy `server/config.env.example` to `server/config.env`.
+    - Fill in the required variables, such as `MONGODB_URI` and `JWT_SECRET`.
 
 4.  **Set up the admin user:**
+
     ```bash
     npm run setup-admin
     ```
@@ -62,39 +65,43 @@ A comprehensive Progressive Web App (PWA) for community management and masjid ad
 
 This project has a comprehensive test suite.
 
--   **Run all tests (frontend and backend):**
-    ```bash
-    npm test
-    ```
+- **Run all tests (frontend and backend):**
 
--   **Run only frontend tests:**
-    ```bash
-    npm run test:frontend
-    ```
+  ```bash
+  npm test
+  ```
 
--   **Run only backend tests:**
-    ```bash
-    npm run test:backend
-    ```
+- **Run only frontend tests:**
 
--   **Get test coverage:**
-    ```bash
-    npm run test:coverage
-    ```
+  ```bash
+  npm run test:frontend
+  ```
+
+- **Run only backend tests:**
+
+  ```bash
+  npm run test:backend
+  ```
+
+- **Get test coverage:**
+  ```bash
+  npm run test:coverage
+  ```
 
 ## 💅 Code Quality
 
 This project uses ESLint and Prettier to maintain code quality and consistency.
 
--   **Check for linting errors:**
-    ```bash
-    npm run lint
-    ```
+- **Check for linting errors:**
 
--   **Automatically format all code:**
-    ```bash
-    npm run format
-    ```
+  ```bash
+  npm run lint
+  ```
+
+- **Automatically format all code:**
+  ```bash
+  npm run format
+  ```
 
 ## 🗂️ Project Structure
 
