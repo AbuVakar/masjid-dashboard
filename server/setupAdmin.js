@@ -9,7 +9,10 @@ require('dotenv').config({ path: path.join(__dirname, 'config.env') });
 // Ensure MONGODB_URI is set
 if (!process.env.MONGODB_URI) {
   console.error('❌ MONGODB_URI environment variable is not set');
-  console.log('📁 Looking for config.env in:', path.join(__dirname, 'config.env'));
+  console.log(
+    '📁 Looking for config.env in:',
+    path.join(__dirname, 'config.env'),
+  );
   process.exit(1);
 }
 
@@ -25,12 +28,14 @@ const setupAdmin = async (customPassword = null) => {
       console.log('Username: admin');
       console.log('Role:', existingAdmin.role);
       console.log('Email: admin@masjid.com');
-      console.log('To change password, delete the admin user first and run this script again.');
+      console.log(
+        'To change password, delete the admin user first and run this script again.',
+      );
       return;
     }
 
     console.log('🔐 Creating admin user...');
-    
+
     // Use custom password or generate secure password
     const adminPassword = customPassword || generateSecurePassword();
     const saltRounds = 12;
@@ -49,8 +54,8 @@ const setupAdmin = async (customPassword = null) => {
         quietHours: { start: '22:00', end: '06:00' },
         theme: 'light',
         language: 'en',
-        prayerTiming: { before: 15, after: 5 }
-      }
+        prayerTiming: { before: 15, after: 5 },
+      },
     });
 
     await adminUser.save();
@@ -60,7 +65,7 @@ const setupAdmin = async (customPassword = null) => {
     console.log('Role: admin');
     console.log('Email: admin@masjid.com');
     console.log('⚠️  IMPORTANT: Save this password securely!');
-    
+
     process.exit(0);
   } catch (error) {
     console.error('❌ Error creating admin user:', error);
@@ -70,7 +75,8 @@ const setupAdmin = async (customPassword = null) => {
 
 // Generate secure password
 const generateSecurePassword = () => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
   let password = '';
   for (let i = 0; i < 12; i++) {
     password += chars.charAt(Math.floor(Math.random() * chars.length));

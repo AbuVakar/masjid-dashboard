@@ -21,7 +21,9 @@ class ApiService {
 
   async refreshCSRFToken() {
     try {
-      const response = await fetch(`${this.baseURL.replace('/api', '')}/api/csrf-token`);
+      const response = await fetch(
+        `${this.baseURL.replace('/api', '')}/api/csrf-token`,
+      );
       const data = await response.json();
       if (data.success) {
         this.csrfToken = data.data.token;
@@ -71,24 +73,29 @@ class ApiService {
         // Add timeout to fetch
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
-        
+
         const response = await fetch(url, {
           ...config,
-          signal: controller.signal
+          signal: controller.signal,
         });
-        
+
         clearTimeout(timeoutId);
 
         // Handle offline/network errors
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          
+
           // Check for offline error from service worker
           if (errorData.error?.code === 'OFFLINE_ERROR') {
-            throw new Error('You are currently offline. Please check your connection.');
+            throw new Error(
+              'You are currently offline. Please check your connection.',
+            );
           }
-          
-          throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+
+          throw new Error(
+            errorData.error?.message ||
+              `HTTP error! status: ${response.status}`,
+          );
         }
 
         const data = await response.json();
@@ -98,15 +105,20 @@ class ApiService {
         if (error.name === 'AbortError') {
           throw new Error('Request timeout. Please try again.');
         }
-        
+
         if (attempt === maxRetries) {
           console.error('API request failed after all retries:', error);
           throw error;
         }
-        
+
         // Wait before retrying
-        await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
-        console.warn(`API request failed, retrying (${attempt}/${maxRetries}):`, error.message);
+        await new Promise((resolve) =>
+          setTimeout(resolve, retryDelay * attempt),
+        );
+        console.warn(
+          `API request failed, retrying (${attempt}/${maxRetries}):`,
+          error.message,
+        );
       }
     }
   }
@@ -123,7 +135,7 @@ class ApiService {
     if (this.csrfToken) {
       requestData._csrf = this.csrfToken;
     }
-    
+
     return this.request(endpoint, {
       method: 'POST',
       body: JSON.stringify(requestData),
@@ -137,7 +149,7 @@ class ApiService {
     if (this.csrfToken) {
       requestData._csrf = this.csrfToken;
     }
-    
+
     return this.request(endpoint, {
       method: 'PUT',
       body: JSON.stringify(requestData),
@@ -148,8 +160,10 @@ class ApiService {
   async delete(endpoint) {
     // Add CSRF token to query parameters for DELETE requests
     const separator = endpoint.includes('?') ? '&' : '?';
-    const csrfEndpoint = this.csrfToken ? `${endpoint}${separator}_csrf=${this.csrfToken}` : endpoint;
-    
+    const csrfEndpoint = this.csrfToken
+      ? `${endpoint}${separator}_csrf=${this.csrfToken}`
+      : endpoint;
+
     return this.request(csrfEndpoint, { method: 'DELETE' });
   }
 
@@ -241,7 +255,9 @@ class ApiService {
   // Health check
   async healthCheck() {
     try {
-      const response = await fetch(`${this.baseURL.replace('/api', '')}/health`);
+      const response = await fetch(
+        `${this.baseURL.replace('/api', '')}/health`,
+      );
       return response.json();
     } catch (error) {
       throw new Error('Server is not responding');

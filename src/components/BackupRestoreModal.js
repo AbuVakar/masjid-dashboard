@@ -1,7 +1,19 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
-import { FaDownload, FaUpload, FaInfoCircle, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
-import { exportData, importData, createBackup, validateBackup, mergeBackupData } from '../utils/backupRestore';
+import {
+  FaDownload,
+  FaUpload,
+  FaInfoCircle,
+  FaCheckCircle,
+  FaExclamationTriangle,
+} from 'react-icons/fa';
+import {
+  exportData,
+  importData,
+  createBackup,
+  validateBackup,
+  mergeBackupData,
+} from '../utils/backupRestore';
 
 const BackupRestoreModal = ({ currentData, onBackup, onRestore, onClose }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -40,25 +52,30 @@ const BackupRestoreModal = ({ currentData, onBackup, onRestore, onClose }) => {
     try {
       setIsProcessing(true);
       const importedData = await importData(selectedFile);
-      
+
       if (!validateBackup(importedData)) {
         toast.error('Invalid backup file format');
         return;
       }
 
       // Confirm restore action
-      const confirmMessage = restoreMode === 'overwrite' 
-        ? 'This will completely replace all current data. Are you sure?'
-        : 'This will merge the backup data with current data. Continue?';
-      
+      const confirmMessage =
+        restoreMode === 'overwrite'
+          ? 'This will completely replace all current data. Are you sure?'
+          : 'This will merge the backup data with current data. Continue?';
+
       const confirmed = window.confirm(confirmMessage);
       if (!confirmed) {
         return;
       }
 
       // Perform restore
-      const mergedData = mergeBackupData(currentData, importedData, restoreMode === 'overwrite');
-      
+      const mergedData = mergeBackupData(
+        currentData,
+        importedData,
+        restoreMode === 'overwrite',
+      );
+
       if (onRestore) {
         await onRestore(mergedData);
       }
@@ -80,7 +97,7 @@ const BackupRestoreModal = ({ currentData, onBackup, onRestore, onClose }) => {
       houses: currentData.houses?.length || 0,
       members: currentData.members?.length || 0,
       lastModified: new Date().toLocaleString(),
-      size: JSON.stringify(currentData).length
+      size: JSON.stringify(currentData).length,
     };
   };
 
@@ -107,13 +124,15 @@ const BackupRestoreModal = ({ currentData, onBackup, onRestore, onClose }) => {
               </div>
               <div className="info-item">
                 <span className="info-label">Size:</span>
-                <span className="info-value">{(backupInfo.size / 1024).toFixed(1)} KB</span>
+                <span className="info-value">
+                  {(backupInfo.size / 1024).toFixed(1)} KB
+                </span>
               </div>
             </div>
           )}
         </div>
-        <button 
-          className="btn-export" 
+        <button
+          className="btn-export"
           onClick={handleExport}
           disabled={isProcessing || !backupInfo}
         >
@@ -171,8 +190,8 @@ const BackupRestoreModal = ({ currentData, onBackup, onRestore, onClose }) => {
           </div>
         </div>
 
-        <button 
-          className="btn-import" 
+        <button
+          className="btn-import"
           onClick={handleImport}
           disabled={isProcessing || !selectedFile}
         >
@@ -185,7 +204,9 @@ const BackupRestoreModal = ({ currentData, onBackup, onRestore, onClose }) => {
         <ul>
           <li>Create regular backups to protect your data</li>
           <li>Use "Merge" mode to add new data without losing existing data</li>
-          <li>Use "Overwrite" mode only when you want to completely replace data</li>
+          <li>
+            Use "Overwrite" mode only when you want to completely replace data
+          </li>
           <li>Backup files are saved in JSON format for compatibility</li>
         </ul>
       </div>

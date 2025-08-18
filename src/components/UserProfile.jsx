@@ -9,20 +9,20 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
         jamaat: true,
         info: true,
         clearAll: false,
-        admin: false
+        admin: false,
       },
       prayerTiming: {
         Fajr: 5,
         Dhuhr: 5,
         Asr: 5,
         Maghrib: 5,
-        Isha: 5
+        Isha: 5,
       },
       quietHours: {
         enabled: false,
         start: '22:00',
-        end: '06:00'
-      }
+        end: '06:00',
+      },
     };
 
     // Merge with user preferences if they exist
@@ -32,16 +32,16 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
         ...user.preferences,
         notifications: {
           ...defaultPrefs.notifications,
-          ...user.preferences.notifications
+          ...user.preferences.notifications,
         },
         prayerTiming: {
           ...defaultPrefs.prayerTiming,
-          ...user.preferences.prayerTiming
+          ...user.preferences.prayerTiming,
         },
         quietHours: {
           ...defaultPrefs.quietHours,
-          ...user.preferences.quietHours
-        }
+          ...user.preferences.quietHours,
+        },
       };
     }
 
@@ -49,12 +49,12 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
   });
 
   const handlePreferenceChange = (category, key, value) => {
-    setPreferences(prev => ({
+    setPreferences((prev) => ({
       ...prev,
       [category]: {
         ...prev[category],
-        [key]: value
-      }
+        [key]: value,
+      },
     }));
   };
 
@@ -80,7 +80,7 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
   // Debug user object
   console.log('UserProfile - User object:', user);
 
-    return (
+  return (
     <div className="user-profile-form">
       {/* User Info Card */}
       <div className="user-info-card">
@@ -91,22 +91,25 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
         </div>
         <div className="user-details">
           <h3 className="user-name">{user.name || user.username || 'User'}</h3>
-          <p className="user-mobile">{user.mobile || user.phone || user.email || 'No contact info'}</p>
+          <p className="user-mobile">
+            {user.mobile || user.phone || user.email || 'No contact info'}
+          </p>
           <span className={`role-badge ${user.role || 'user'}`}>
-            {user.role === 'admin' ? '👑 Admin' : user.role === 'guest' ? '👤 Guest' : '👤 User'}
+            {user.role === 'admin'
+              ? '👑 Admin'
+              : user.role === 'guest'
+                ? '👤 Guest'
+                : '👤 User'}
           </span>
         </div>
         <div className="user-actions">
-          <button 
+          <button
             className={`action-btn ${isEditing ? 'cancel-btn' : 'edit-btn'}`}
             onClick={() => setIsEditing(!isEditing)}
           >
             {isEditing ? '❌ Cancel' : '✏️ Edit Preferences'}
           </button>
-          <button 
-            className="logout-btn"
-            onClick={onLogout}
-          >
+          <button className="logout-btn" onClick={onLogout}>
             🚪 Logout
           </button>
         </div>
@@ -116,43 +119,67 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
         <div className="preferences-form">
           <div className="form-section">
             <h4 className="section-title">📢 Notification Preferences</h4>
-            
+
             <div className="checkbox-group">
               <label className="checkbox-item">
                 <input
                   type="checkbox"
                   checked={preferences.notifications?.prayer || false}
-                  onChange={(e) => handlePreferenceChange('notifications', 'prayer', e.target.checked)}
+                  onChange={(e) =>
+                    handlePreferenceChange(
+                      'notifications',
+                      'prayer',
+                      e.target.checked,
+                    )
+                  }
                 />
                 <span className="checkmark"></span>
                 <span className="label-text">🕌 Prayer Time Notifications</span>
               </label>
-              
+
               <label className="checkbox-item">
                 <input
                   type="checkbox"
                   checked={preferences.notifications?.jamaat || false}
-                  onChange={(e) => handlePreferenceChange('notifications', 'jamaat', e.target.checked)}
+                  onChange={(e) =>
+                    handlePreferenceChange(
+                      'notifications',
+                      'jamaat',
+                      e.target.checked,
+                    )
+                  }
                 />
                 <span className="checkmark"></span>
                 <span className="label-text">👥 Jamaat Updates</span>
               </label>
-              
+
               <label className="checkbox-item">
                 <input
                   type="checkbox"
                   checked={preferences.notifications?.info || false}
-                  onChange={(e) => handlePreferenceChange('notifications', 'info', e.target.checked)}
+                  onChange={(e) =>
+                    handlePreferenceChange(
+                      'notifications',
+                      'info',
+                      e.target.checked,
+                    )
+                  }
                 />
                 <span className="checkmark"></span>
                 <span className="label-text">📋 Information Updates</span>
               </label>
-              
+
               <label className="checkbox-item">
                 <input
                   type="checkbox"
                   checked={preferences.notifications?.clearAll || false}
-                  onChange={(e) => handlePreferenceChange('notifications', 'clearAll', e.target.checked)}
+                  onChange={(e) =>
+                    handlePreferenceChange(
+                      'notifications',
+                      'clearAll',
+                      e.target.checked,
+                    )
+                  }
                 />
                 <span className="checkmark"></span>
                 <span className="label-text">🗑️ Data Clear Notifications</span>
@@ -172,7 +199,13 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
                         min="1"
                         max="60"
                         value={preferences.prayerTiming?.Fajr || 5}
-                        onChange={(e) => handlePreferenceChange('prayerTiming', 'Fajr', parseInt(e.target.value) || 5)}
+                        onChange={(e) =>
+                          handlePreferenceChange(
+                            'prayerTiming',
+                            'Fajr',
+                            parseInt(e.target.value) || 5,
+                          )
+                        }
                         className="timing-input"
                       />
                       <span className="timing-unit">min</span>
@@ -186,7 +219,13 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
                         min="1"
                         max="60"
                         value={preferences.prayerTiming?.Dhuhr || 5}
-                        onChange={(e) => handlePreferenceChange('prayerTiming', 'Dhuhr', parseInt(e.target.value) || 5)}
+                        onChange={(e) =>
+                          handlePreferenceChange(
+                            'prayerTiming',
+                            'Dhuhr',
+                            parseInt(e.target.value) || 5,
+                          )
+                        }
                         className="timing-input"
                       />
                       <span className="timing-unit">min</span>
@@ -200,7 +239,13 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
                         min="1"
                         max="60"
                         value={preferences.prayerTiming?.Asr || 5}
-                        onChange={(e) => handlePreferenceChange('prayerTiming', 'Asr', parseInt(e.target.value) || 5)}
+                        onChange={(e) =>
+                          handlePreferenceChange(
+                            'prayerTiming',
+                            'Asr',
+                            parseInt(e.target.value) || 5,
+                          )
+                        }
                         className="timing-input"
                       />
                       <span className="timing-unit">min</span>
@@ -214,7 +259,13 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
                         min="1"
                         max="60"
                         value={preferences.prayerTiming?.Maghrib || 5}
-                        onChange={(e) => handlePreferenceChange('prayerTiming', 'Maghrib', parseInt(e.target.value) || 5)}
+                        onChange={(e) =>
+                          handlePreferenceChange(
+                            'prayerTiming',
+                            'Maghrib',
+                            parseInt(e.target.value) || 5,
+                          )
+                        }
                         className="timing-input"
                       />
                       <span className="timing-unit">min</span>
@@ -228,7 +279,13 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
                         min="1"
                         max="60"
                         value={preferences.prayerTiming?.Isha || 5}
-                        onChange={(e) => handlePreferenceChange('prayerTiming', 'Isha', parseInt(e.target.value) || 5)}
+                        onChange={(e) =>
+                          handlePreferenceChange(
+                            'prayerTiming',
+                            'Isha',
+                            parseInt(e.target.value) || 5,
+                          )
+                        }
                         className="timing-input"
                       />
                       <span className="timing-unit">min</span>
@@ -244,12 +301,18 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
                 <input
                   type="checkbox"
                   checked={preferences.quietHours?.enabled || false}
-                  onChange={(e) => handlePreferenceChange('quietHours', 'enabled', e.target.checked)}
+                  onChange={(e) =>
+                    handlePreferenceChange(
+                      'quietHours',
+                      'enabled',
+                      e.target.checked,
+                    )
+                  }
                 />
                 <span className="checkmark"></span>
                 <span className="label-text">Enable Quiet Hours</span>
               </label>
-              
+
               {preferences.quietHours?.enabled && (
                 <div className="quiet-time-inputs">
                   <div className="time-input-group">
@@ -257,7 +320,13 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
                     <input
                       type="time"
                       value={preferences.quietHours?.start || '22:00'}
-                      onChange={(e) => handlePreferenceChange('quietHours', 'start', e.target.value)}
+                      onChange={(e) =>
+                        handlePreferenceChange(
+                          'quietHours',
+                          'start',
+                          e.target.value,
+                        )
+                      }
                       className="time-input"
                     />
                   </div>
@@ -266,7 +335,13 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
                     <input
                       type="time"
                       value={preferences.quietHours?.end || '06:00'}
-                      onChange={(e) => handlePreferenceChange('quietHours', 'end', e.target.value)}
+                      onChange={(e) =>
+                        handlePreferenceChange(
+                          'quietHours',
+                          'end',
+                          e.target.value,
+                        )
+                      }
                       className="time-input"
                     />
                   </div>
@@ -287,49 +362,65 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
       ) : (
         <div className="preferences-summary">
           <h4 className="summary-title">📊 Current Preferences</h4>
-          
+
           <div className="summary-grid">
             <div className="summary-card">
               <div className="summary-icon">🕌</div>
               <div className="summary-content">
                 <h5>Prayer Notifications</h5>
-                <span className={`status ${preferences.notifications?.prayer ? 'enabled' : 'disabled'}`}>
-                  {preferences.notifications?.prayer ? '✅ Enabled' : '❌ Disabled'}
+                <span
+                  className={`status ${preferences.notifications?.prayer ? 'enabled' : 'disabled'}`}
+                >
+                  {preferences.notifications?.prayer
+                    ? '✅ Enabled'
+                    : '❌ Disabled'}
                 </span>
               </div>
             </div>
-            
+
             <div className="summary-card">
               <div className="summary-icon">👥</div>
               <div className="summary-content">
                 <h5>Jamaat Updates</h5>
-                <span className={`status ${preferences.notifications?.jamaat ? 'enabled' : 'disabled'}`}>
-                  {preferences.notifications?.jamaat ? '✅ Enabled' : '❌ Disabled'}
+                <span
+                  className={`status ${preferences.notifications?.jamaat ? 'enabled' : 'disabled'}`}
+                >
+                  {preferences.notifications?.jamaat
+                    ? '✅ Enabled'
+                    : '❌ Disabled'}
                 </span>
               </div>
             </div>
-            
+
             <div className="summary-card">
               <div className="summary-icon">📋</div>
               <div className="summary-content">
                 <h5>Info Updates</h5>
-                <span className={`status ${preferences.notifications?.info ? 'enabled' : 'disabled'}`}>
-                  {preferences.notifications?.info ? '✅ Enabled' : '❌ Disabled'}
+                <span
+                  className={`status ${preferences.notifications?.info ? 'enabled' : 'disabled'}`}
+                >
+                  {preferences.notifications?.info
+                    ? '✅ Enabled'
+                    : '❌ Disabled'}
                 </span>
               </div>
             </div>
-            
+
             <div className="summary-card">
               <div className="summary-icon">🔇</div>
               <div className="summary-content">
                 <h5>Quiet Hours</h5>
-                <span className={`status ${preferences.quietHours?.enabled ? 'enabled' : 'disabled'}`}>
-                  {preferences.quietHours?.enabled ? '✅ Enabled' : '❌ Disabled'}
+                <span
+                  className={`status ${preferences.quietHours?.enabled ? 'enabled' : 'disabled'}`}
+                >
+                  {preferences.quietHours?.enabled
+                    ? '✅ Enabled'
+                    : '❌ Disabled'}
                 </span>
               </div>
             </div>
           </div>
-          
+
           {preferences.notifications?.prayer && (
             <div className="timing-summary">
               <h5 className="timing-summary-title">⏰ Prayer Timing</h5>
@@ -337,37 +428,49 @@ const UserProfile = ({ user, onUpdatePreferences, onLogout }) => {
                 <div className="timing-chip">
                   <span className="timing-icon">🌅</span>
                   <span className="timing-name">Fajr</span>
-                  <span className="timing-value">{preferences.prayerTiming?.Fajr || 5}min</span>
+                  <span className="timing-value">
+                    {preferences.prayerTiming?.Fajr || 5}min
+                  </span>
                 </div>
                 <div className="timing-chip">
                   <span className="timing-icon">☀️</span>
                   <span className="timing-name">Dhuhr</span>
-                  <span className="timing-value">{preferences.prayerTiming?.Dhuhr || 5}min</span>
+                  <span className="timing-value">
+                    {preferences.prayerTiming?.Dhuhr || 5}min
+                  </span>
                 </div>
                 <div className="timing-chip">
                   <span className="timing-icon">🌤️</span>
                   <span className="timing-name">Asr</span>
-                  <span className="timing-value">{preferences.prayerTiming?.Asr || 5}min</span>
+                  <span className="timing-value">
+                    {preferences.prayerTiming?.Asr || 5}min
+                  </span>
                 </div>
                 <div className="timing-chip">
                   <span className="timing-icon">🌆</span>
                   <span className="timing-name">Maghrib</span>
-                  <span className="timing-value">{preferences.prayerTiming?.Maghrib || 5}min</span>
+                  <span className="timing-value">
+                    {preferences.prayerTiming?.Maghrib || 5}min
+                  </span>
                 </div>
                 <div className="timing-chip">
                   <span className="timing-icon">🌙</span>
                   <span className="timing-name">Isha</span>
-                  <span className="timing-value">{preferences.prayerTiming?.Isha || 5}min</span>
+                  <span className="timing-value">
+                    {preferences.prayerTiming?.Isha || 5}min
+                  </span>
                 </div>
               </div>
             </div>
           )}
-          
+
           {preferences.quietHours?.enabled && (
             <div className="quiet-summary">
               <h5 className="quiet-summary-title">🔇 Quiet Hours</h5>
               <div className="quiet-time-display">
-                <span className="quiet-time">{preferences.quietHours.start}</span>
+                <span className="quiet-time">
+                  {preferences.quietHours.start}
+                </span>
                 <span className="quiet-separator">to</span>
                 <span className="quiet-time">{preferences.quietHours.end}</span>
               </div>

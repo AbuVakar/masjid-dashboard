@@ -23,6 +23,6 @@ export const useActivity = () => {
   return {
     trackActivity,
     getUserActivity,
-    getSystemAnalytics
+    getSystemAnalytics,
   };
 };

@@ -11,23 +11,23 @@ const SANITIZATION_OPTIONS = {
   TEXT: {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
-    KEEP_CONTENT: true
+    KEEP_CONTENT: true,
   },
-  
+
   // For rich text content (notes, descriptions)
   RICH_TEXT: {
     ALLOWED_TAGS: ['b', 'i', 'u', 'em', 'strong', 'p', 'br', 'ul', 'ol', 'li'],
     ALLOWED_ATTR: ['class'],
-    KEEP_CONTENT: true
+    KEEP_CONTENT: true,
   },
-  
+
   // For URLs
   URL: {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
     ALLOW_DATA_ATTR: false,
-    KEEP_CONTENT: true
-  }
+    KEEP_CONTENT: true,
+  },
 };
 
 /**
@@ -41,11 +41,12 @@ export const sanitizeInput = (input, type = 'text') => {
     return '';
   }
 
-  const options = SANITIZATION_OPTIONS[type.toUpperCase()] || SANITIZATION_OPTIONS.TEXT;
-  
+  const options =
+    SANITIZATION_OPTIONS[type.toUpperCase()] || SANITIZATION_OPTIONS.TEXT;
+
   // Use DOMPurify for XSS prevention
   const sanitized = DOMPurify.sanitize(input, options);
-  
+
   // Additional custom sanitization
   return sanitized
     .trim()
@@ -65,16 +66,16 @@ export const sanitizeObject = (obj, fieldTypes = {}) => {
   }
 
   const sanitized = {};
-  
+
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === 'string') {
       const sanitizationType = fieldTypes[key] || 'text';
       sanitized[key] = sanitizeInput(value, sanitizationType);
     } else if (Array.isArray(value)) {
-      sanitized[key] = value.map(item => 
-        typeof item === 'string' 
+      sanitized[key] = value.map((item) =>
+        typeof item === 'string'
           ? sanitizeInput(item, fieldTypes[key] || 'text')
-          : sanitizeObject(item, fieldTypes)
+          : sanitizeObject(item, fieldTypes),
       );
     } else if (typeof value === 'object' && value !== null) {
       sanitized[key] = sanitizeObject(value, fieldTypes);
@@ -82,7 +83,7 @@ export const sanitizeObject = (obj, fieldTypes = {}) => {
       sanitized[key] = value;
     }
   }
-  
+
   return sanitized;
 };
 
@@ -99,7 +100,7 @@ export const sanitizeHouseData = (houseData) => {
     'members.name': 'text',
     'members.fatherName': 'text',
     'members.occupation': 'text',
-    'members.mobile': 'text'
+    'members.mobile': 'text',
   };
 
   return sanitizeObject(houseData, fieldTypes);
@@ -115,7 +116,7 @@ export const sanitizeUserData = (userData) => {
     username: 'text',
     name: 'text',
     email: 'text',
-    mobile: 'text'
+    mobile: 'text',
   };
 
   return sanitizeObject(userData, fieldTypes);
@@ -133,7 +134,7 @@ export const sanitizeEmail = (email) => {
 
   const sanitized = sanitizeInput(email.toLowerCase().trim(), 'text');
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
+
   return emailRegex.test(sanitized) ? sanitized : null;
 };
 
@@ -149,12 +150,12 @@ export const sanitizeMobile = (mobile) => {
 
   // Remove all non-digit characters
   const digitsOnly = mobile.replace(/\D/g, '');
-  
+
   // Check if it's a valid mobile number (10-15 digits)
   if (digitsOnly.length >= 10 && digitsOnly.length <= 15) {
     return digitsOnly;
   }
-  
+
   return null;
 };
 
@@ -169,7 +170,7 @@ export const sanitizeUrl = (url) => {
   }
 
   const sanitized = sanitizeInput(url.trim(), 'url');
-  
+
   try {
     // Validate URL format
     new URL(sanitized);
@@ -186,7 +187,7 @@ const sanitizationUtils = {
   sanitizeUserData,
   sanitizeEmail,
   sanitizeMobile,
-  sanitizeUrl
+  sanitizeUrl,
 };
 
 export default sanitizationUtils;

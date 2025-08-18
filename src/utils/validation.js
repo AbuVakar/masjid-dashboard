@@ -11,37 +11,41 @@ export const VALIDATION_RULES = {
     MIN_LENGTH: 3,
     MAX_LENGTH: 50,
     PATTERN: /^[a-zA-Z0-9_]+$/,
-    MESSAGE: 'Username must be 3-50 characters, letters, numbers, and underscores only'
+    MESSAGE:
+      'Username must be 3-50 characters, letters, numbers, and underscores only',
   },
   PASSWORD: {
     MIN_LENGTH: 8,
     MAX_LENGTH: 128,
-    PATTERN: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[a-zA-Z\d@$!%*?&]{8,}$/,
-    MESSAGE: 'Password must be at least 8 characters with uppercase, lowercase, number, and special character'
+    PATTERN:
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[a-zA-Z\d@$!%*?&]{8,}$/,
+    MESSAGE:
+      'Password must be at least 8 characters with uppercase, lowercase, number, and special character',
   },
   MOBILE: {
     PATTERN: /^[6-9]\d{9}$/,
-    MESSAGE: 'Mobile number must be 10 digits starting with 6-9'
+    MESSAGE: 'Mobile number must be 10 digits starting with 6-9',
   },
   EMAIL: {
     PATTERN: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-    MESSAGE: 'Please enter a valid email address'
+    MESSAGE: 'Please enter a valid email address',
   },
   AGE: {
     MIN: 0,
     MAX: 120,
-    MESSAGE: 'Age must be between 0 and 120'
+    MESSAGE: 'Age must be between 0 and 120',
   },
   HOUSE_NUMBER: {
     PATTERN: /^[A-Za-z0-9/-]+$/,
-    MESSAGE: 'House number can contain letters, numbers, /, and - only'
+    MESSAGE: 'House number can contain letters, numbers, /, and - only',
   },
   STREET_NAME: {
     MIN_LENGTH: 2,
     MAX_LENGTH: 100,
     PATTERN: /^[A-Za-z0-9\s-.]+$/,
-    MESSAGE: 'Street name can contain letters, numbers, spaces, dots, and hyphens only'
-  }
+    MESSAGE:
+      'Street name can contain letters, numbers, spaces, dots, and hyphens only',
+  },
 };
 
 /**
@@ -51,7 +55,7 @@ export const VALIDATION_RULES = {
  */
 export const sanitizeString = (input) => {
   if (typeof input !== 'string') return '';
-  
+
   return input
     .trim()
     .replace(/[<>]/g, '') // Remove potential HTML tags
@@ -68,13 +72,17 @@ export const sanitizeString = (input) => {
 export const validateUsername = (username) => {
   const sanitized = sanitizeString(username);
   const errors = [];
-  
+
   if (!sanitized) {
     errors.push('Username is required');
   } else if (sanitized.length < VALIDATION_RULES.USERNAME.MIN_LENGTH) {
-    errors.push(`Username must be at least ${VALIDATION_RULES.USERNAME.MIN_LENGTH} characters`);
+    errors.push(
+      `Username must be at least ${VALIDATION_RULES.USERNAME.MIN_LENGTH} characters`,
+    );
   } else if (sanitized.length > VALIDATION_RULES.USERNAME.MAX_LENGTH) {
-    errors.push(`Username must be less than ${VALIDATION_RULES.USERNAME.MAX_LENGTH} characters`);
+    errors.push(
+      `Username must be less than ${VALIDATION_RULES.USERNAME.MAX_LENGTH} characters`,
+    );
   } else if (!VALIDATION_RULES.USERNAME.PATTERN.test(sanitized)) {
     errors.push(VALIDATION_RULES.USERNAME.MESSAGE);
   }
@@ -82,7 +90,7 @@ export const validateUsername = (username) => {
   return {
     isValid: errors.length === 0,
     errors,
-    sanitized: errors.length === 0 ? sanitized : null
+    sanitized: errors.length === 0 ? sanitized : null,
   };
 };
 
@@ -97,16 +105,20 @@ export const validatePassword = (password) => {
   if (!password) {
     errors.push('Password is required');
   } else if (password.length < VALIDATION_RULES.PASSWORD.MIN_LENGTH) {
-    errors.push(`Password must be at least ${VALIDATION_RULES.PASSWORD.MIN_LENGTH} characters`);
+    errors.push(
+      `Password must be at least ${VALIDATION_RULES.PASSWORD.MIN_LENGTH} characters`,
+    );
   } else if (password.length > VALIDATION_RULES.PASSWORD.MAX_LENGTH) {
-    errors.push(`Password must be less than ${VALIDATION_RULES.PASSWORD.MAX_LENGTH} characters`);
+    errors.push(
+      `Password must be less than ${VALIDATION_RULES.PASSWORD.MAX_LENGTH} characters`,
+    );
   } else if (!VALIDATION_RULES.PASSWORD.PATTERN.test(password)) {
     errors.push(VALIDATION_RULES.PASSWORD.MESSAGE);
   }
-  
+
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 };
 
@@ -118,7 +130,7 @@ export const validatePassword = (password) => {
 export const validateMobile = (mobile) => {
   const sanitized = sanitizeString(mobile);
   const errors = [];
-  
+
   if (!sanitized) {
     errors.push('Mobile number is required');
   } else if (!VALIDATION_RULES.MOBILE.PATTERN.test(sanitized)) {
@@ -128,7 +140,7 @@ export const validateMobile = (mobile) => {
   return {
     isValid: errors.length === 0,
     errors,
-    sanitized: errors.length === 0 ? sanitized : null
+    sanitized: errors.length === 0 ? sanitized : null,
   };
 };
 
@@ -150,7 +162,7 @@ export const validateEmail = (email) => {
   return {
     isValid: errors.length === 0,
     errors,
-    sanitized: errors.length === 0 ? sanitized : null
+    sanitized: errors.length === 0 ? sanitized : null,
   };
 };
 
@@ -164,15 +176,18 @@ export const validateAge = (age) => {
   const numAge = parseInt(age);
 
   if (isNaN(numAge)) {
-      errors.push('Age must be a valid number');
-  } else if (numAge < VALIDATION_RULES.AGE.MIN || numAge > VALIDATION_RULES.AGE.MAX) {
+    errors.push('Age must be a valid number');
+  } else if (
+    numAge < VALIDATION_RULES.AGE.MIN ||
+    numAge > VALIDATION_RULES.AGE.MAX
+  ) {
     errors.push(VALIDATION_RULES.AGE.MESSAGE);
   }
 
   return {
     isValid: errors.length === 0,
     errors,
-    value: errors.length === 0 ? numAge : null
+    value: errors.length === 0 ? numAge : null,
   };
 };
 
@@ -218,18 +233,20 @@ export const validateHouse = (house) => {
     house.members.forEach((member, index) => {
       const memberValidation = validateMember(member);
       if (!memberValidation.isValid) {
-        memberErrors.push(`Member ${index + 1}: ${memberValidation.errors.join(', ')}`);
+        memberErrors.push(
+          `Member ${index + 1}: ${memberValidation.errors.join(', ')}`,
+        );
       }
     });
     if (memberErrors.length > 0) {
       errors.push(...memberErrors);
     }
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors,
-    sanitized: errors.length === 0 ? { ...house, ...sanitized } : null
+    sanitized: errors.length === 0 ? { ...house, ...sanitized } : null,
   };
 };
 
@@ -289,11 +306,11 @@ export const validateMember = (member) => {
       sanitized.email = emailValidation.sanitized;
     }
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors,
-    sanitized: errors.length === 0 ? { ...member, ...sanitized } : null
+    sanitized: errors.length === 0 ? { ...member, ...sanitized } : null,
   };
 };
 
@@ -305,13 +322,17 @@ export const validateMember = (member) => {
 export const validateStreetName = (street) => {
   const sanitized = sanitizeString(street);
   const errors = [];
-  
+
   if (!sanitized) {
     errors.push('Street name is required');
   } else if (sanitized.length < VALIDATION_RULES.STREET_NAME.MIN_LENGTH) {
-    errors.push(`Street name must be at least ${VALIDATION_RULES.STREET_NAME.MIN_LENGTH} characters`);
+    errors.push(
+      `Street name must be at least ${VALIDATION_RULES.STREET_NAME.MIN_LENGTH} characters`,
+    );
   } else if (sanitized.length > VALIDATION_RULES.STREET_NAME.MAX_LENGTH) {
-    errors.push(`Street name must be less than ${VALIDATION_RULES.STREET_NAME.MAX_LENGTH} characters`);
+    errors.push(
+      `Street name must be less than ${VALIDATION_RULES.STREET_NAME.MAX_LENGTH} characters`,
+    );
   } else if (!VALIDATION_RULES.STREET_NAME.PATTERN.test(sanitized)) {
     errors.push(VALIDATION_RULES.STREET_NAME.MESSAGE);
   }
@@ -319,7 +340,7 @@ export const validateStreetName = (street) => {
   return {
     isValid: errors.length === 0,
     errors,
-    sanitized: errors.length === 0 ? sanitized : null
+    sanitized: errors.length === 0 ? sanitized : null,
   };
 };
 
@@ -341,7 +362,7 @@ export const validateHouseNumber = (houseNumber) => {
   return {
     isValid: errors.length === 0,
     errors,
-    sanitized: errors.length === 0 ? sanitized : null
+    sanitized: errors.length === 0 ? sanitized : null,
   };
 };
 
@@ -369,11 +390,11 @@ export const validateLoginCredentials = (credentials) => {
   }
 
   sanitized.password = credentials.password;
-  
+
   return {
     isValid: errors.length === 0,
     errors,
-    sanitized: errors.length === 0 ? sanitized : null
+    sanitized: errors.length === 0 ? sanitized : null,
   };
 };
 
@@ -424,11 +445,11 @@ export const validateRegistrationData = (userData) => {
       sanitized.email = emailValidation.sanitized;
     }
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors,
-    sanitized: errors.length === 0 ? { ...userData, ...sanitized } : null
+    sanitized: errors.length === 0 ? { ...userData, ...sanitized } : null,
   };
 };
 
@@ -438,7 +459,7 @@ export const validateRegistrationData = (userData) => {
  */
 export const displayValidationErrors = (errors) => {
   if (Array.isArray(errors) && errors.length > 0) {
-    errors.forEach(error => toast.error(error));
+    errors.forEach((error) => toast.error(error));
   }
 };
 
@@ -446,7 +467,8 @@ export const displayValidationErrors = (errors) => {
  * Rate limiting for authentication attempts
  */
 class RateLimiter {
-  constructor(maxAttempts = 5, windowMs = 15 * 60 * 1000) { // 5 attempts per 15 minutes
+  constructor(maxAttempts = 5, windowMs = 15 * 60 * 1000) {
+    // 5 attempts per 15 minutes
     this.maxAttempts = maxAttempts;
     this.windowMs = windowMs;
     this.attempts = new Map();
@@ -455,18 +477,20 @@ class RateLimiter {
   isAllowed(identifier) {
     const now = Date.now();
     const userAttempts = this.attempts.get(identifier) || [];
-    
+
     // Remove old attempts outside the window
-    const validAttempts = userAttempts.filter(timestamp => now - timestamp < this.windowMs);
-    
+    const validAttempts = userAttempts.filter(
+      (timestamp) => now - timestamp < this.windowMs,
+    );
+
     if (validAttempts.length >= this.maxAttempts) {
       return false;
     }
-    
+
     // Add current attempt
     validAttempts.push(now);
     this.attempts.set(identifier, validAttempts);
-    
+
     return true;
   }
 

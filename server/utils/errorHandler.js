@@ -10,8 +10,8 @@ const sendError = (res, status, message, details = null) => {
       message,
       details,
       timestamp: new Date().toISOString(),
-      status
-    }
+      status,
+    },
   };
 
   // Add stack trace in development
@@ -28,7 +28,7 @@ const sendSuccess = (res, data, message = 'Success') => {
     success: true,
     message,
     data,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 };
 
@@ -60,13 +60,20 @@ const errorResponses = {
 
   serverError: (res, error = null) => {
     console.error('Server Error:', error);
-    sendError(res, 500, 'Internal server error', error ? { message: error.message } : null);
+    sendError(
+      res,
+      500,
+      'Internal server error',
+      error ? { message: error.message } : null,
+    );
   },
 
   databaseError: (res, error) => {
     console.error('Database Error:', error);
-    sendError(res, 500, 'Database operation failed', { message: error.message });
-  }
+    sendError(res, 500, 'Database operation failed', {
+      message: error.message,
+    });
+  },
 };
 
 // Async error wrapper
@@ -79,13 +86,13 @@ const asyncHandler = (fn) => {
 // Validation error handler
 const handleValidationError = (error) => {
   const errors = {};
-  
+
   if (error.name === 'ValidationError') {
-    Object.keys(error.errors).forEach(key => {
+    Object.keys(error.errors).forEach((key) => {
       errors[key] = error.errors[key].message;
     });
   }
-  
+
   return errors;
 };
 
@@ -95,7 +102,7 @@ const handleMongoError = (error) => {
     const field = Object.keys(error.keyPattern)[0];
     return `Duplicate ${field} value`;
   }
-  
+
   return error.message;
 };
 
@@ -105,5 +112,5 @@ module.exports = {
   errorResponses,
   asyncHandler,
   handleValidationError,
-  handleMongoError
+  handleMongoError,
 };

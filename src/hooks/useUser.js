@@ -16,11 +16,11 @@ export const useUser = () => {
         }
       }
     }
-    
+
     // Check for JWT token
     const token = sessionStorage.getItem('authToken');
     if (!token) return null;
-    
+
     try {
       const decoded = JSON.parse(atob(token.split('.')[1]));
       return decoded.exp * 1000 > Date.now() ? decoded.user : null;
@@ -29,7 +29,7 @@ export const useUser = () => {
       return null;
     }
   });
-  
+
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     // Check for guest mode first
     const isGuestMode = sessionStorage.getItem('isGuestMode');
@@ -44,11 +44,11 @@ export const useUser = () => {
         }
       }
     }
-    
+
     // Check for JWT token
     const token = sessionStorage.getItem('authToken');
     if (!token) return false;
-    
+
     try {
       const decoded = JSON.parse(atob(token.split('.')[1]));
       return decoded.exp * 1000 > Date.now();
@@ -64,25 +64,27 @@ export const useUser = () => {
       if (guestUser) {
         try {
           const user = JSON.parse(guestUser);
-          return user.preferences || {
-            notifications: true,
-            quietHours: { start: '22:00', end: '06:00' },
-            theme: 'light',
-            language: 'en',
-            prayerTiming: { before: 15, after: 5 }
-          };
+          return (
+            user.preferences || {
+              notifications: true,
+              quietHours: { start: '22:00', end: '06:00' },
+              theme: 'light',
+              language: 'en',
+              prayerTiming: { before: 15, after: 5 },
+            }
+          );
         } catch (error) {
           console.error('Guest user preferences parse error:', error);
         }
       }
     }
-    
+
     return {
       notifications: true,
       quietHours: { start: '22:00', end: '06:00' },
       theme: 'light',
       language: 'en',
-      prayerTiming: { before: 15, after: 5 }
+      prayerTiming: { before: 15, after: 5 },
     };
   });
 
@@ -98,7 +100,7 @@ export const useUser = () => {
       quietHours: { start: '22:00', end: '06:00' },
       theme: 'light',
       language: 'en',
-      prayerTiming: { before: 15, after: 5 }
+      prayerTiming: { before: 15, after: 5 },
     });
   }, []);
 
@@ -107,7 +109,7 @@ export const useUser = () => {
     const initializeApp = async () => {
       // Initialize CSRF token
       await apiService.refreshCSRFToken();
-      
+
       const token = sessionStorage.getItem('authToken');
       if (token) {
         try {
@@ -149,7 +151,7 @@ export const useUser = () => {
   const register = useCallback(async (userData) => {
     try {
       const response = await apiService.register(userData);
-      
+
       if (response.success) {
         const user = response.data.user;
         setCurrentUser(user);
@@ -167,19 +169,21 @@ export const useUser = () => {
 
   const login = useCallback(async (credentials) => {
     try {
-      console.log('🔐 Login attempt with credentials:', { username: credentials.username });
-      
+      console.log('🔐 Login attempt with credentials:', {
+        username: credentials.username,
+      });
+
       // Real backend login
       const response = await apiService.login(credentials);
       console.log('🔐 Login response:', response);
-      
+
       if (response.success) {
         const user = response.data.user;
         const token = response.data.token;
-        
+
         // Store token in session storage
         sessionStorage.setItem('authToken', token);
-        
+
         setCurrentUser(user);
         setIsAuthenticated(true);
         console.log('✅ Login successful for user:', user.username);
@@ -196,11 +200,13 @@ export const useUser = () => {
 
   const updatePreferences = useCallback(async (updatedPrefs) => {
     try {
-      const response = await apiService.updateProfile({ preferences: updatedPrefs });
-      
+      const response = await apiService.updateProfile({
+        preferences: updatedPrefs,
+      });
+
       if (response.success) {
         setUserPreferences(updatedPrefs);
-        setCurrentUser(prev => ({ ...prev, preferences: updatedPrefs }));
+        setCurrentUser((prev) => ({ ...prev, preferences: updatedPrefs }));
         return true;
       } else {
         console.error('Preferences update failed:', response);
@@ -223,16 +229,16 @@ export const useUser = () => {
         quietHours: { start: '22:00', end: '06:00' },
         theme: 'light',
         language: 'en',
-        prayerTiming: { before: 15, after: 5 }
+        prayerTiming: { before: 15, after: 5 },
       },
       loginTime: new Date().toISOString(),
-      isGuest: true
+      isGuest: true,
     };
-    
+
     // Save guest user to sessionStorage for persistence
     sessionStorage.setItem('guestUser', JSON.stringify(guestUser));
     sessionStorage.setItem('isGuestMode', 'true');
-    
+
     setCurrentUser(guestUser);
     setIsAuthenticated(true);
     setUserPreferences(guestUser.preferences);
@@ -254,6 +260,6 @@ export const useUser = () => {
     login,
     logout,
     updatePreferences,
-    enableGuestMode
+    enableGuestMode,
   };
 };

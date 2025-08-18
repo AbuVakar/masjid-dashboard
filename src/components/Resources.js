@@ -1,10 +1,22 @@
 import React, { useState, useCallback } from 'react';
 import { toast } from 'react-toastify';
-import { FaPlus, FaUpload, FaImages, FaTimes, FaChartBar, FaDownload, FaFileExport } from 'react-icons/fa';
+import {
+  FaPlus,
+  FaUpload,
+  FaImages,
+  FaTimes,
+  FaChartBar,
+  FaDownload,
+  FaFileExport,
+} from 'react-icons/fa';
 import { useResources } from '../hooks/useResources';
 import ResourcesUpload from './ResourcesUpload';
 import ResourcesGallery from './ResourcesGallery';
-import { logError, measurePerformance, ERROR_SEVERITY } from '../utils/errorHandler';
+import {
+  logError,
+  measurePerformance,
+  ERROR_SEVERITY,
+} from '../utils/errorHandler';
 
 const Resources = ({ isAdmin = false }) => {
   const {
@@ -15,7 +27,7 @@ const Resources = ({ isAdmin = false }) => {
     deleteResource,
     incrementDownloadCount,
     getStats,
-    exportResources
+    exportResources,
   } = useResources();
 
   const [showUploadForm, setShowUploadForm] = useState(false);
@@ -23,31 +35,43 @@ const Resources = ({ isAdmin = false }) => {
   const [activeTab, setActiveTab] = useState('gallery'); // 'gallery' or 'stats'
 
   // Handle resource save (create or update)
-  const handleSaveResource = useCallback(async (resourceData) => {
-    try {
-      await measurePerformance('Save Resource', async () => {
-        await saveResource(resourceData);
-      });
-    } catch (error) {
-      logError(error, 'Resources:handleSaveResource', ERROR_SEVERITY.MEDIUM);
-      toast.error('Failed to save resource');
-    }
-  }, [saveResource]);
+  const handleSaveResource = useCallback(
+    async (resourceData) => {
+      try {
+        await measurePerformance('Save Resource', async () => {
+          await saveResource(resourceData);
+        });
+      } catch (error) {
+        logError(error, 'Resources:handleSaveResource', ERROR_SEVERITY.MEDIUM);
+        toast.error('Failed to save resource');
+      }
+    },
+    [saveResource],
+  );
 
   // Handle resource delete
-  const handleDeleteResource = useCallback(async (resourceId) => {
-    try {
-      const confirmed = window.confirm('Are you sure you want to delete this resource? This action cannot be undone.');
-      if (!confirmed) return;
+  const handleDeleteResource = useCallback(
+    async (resourceId) => {
+      try {
+        const confirmed = window.confirm(
+          'Are you sure you want to delete this resource? This action cannot be undone.',
+        );
+        if (!confirmed) return;
 
-      await measurePerformance('Delete Resource', async () => {
-        await deleteResource(resourceId);
-      });
-    } catch (error) {
-      logError(error, 'Resources:handleDeleteResource', ERROR_SEVERITY.MEDIUM);
-      toast.error('Failed to delete resource');
-    }
-  }, [deleteResource]);
+        await measurePerformance('Delete Resource', async () => {
+          await deleteResource(resourceId);
+        });
+      } catch (error) {
+        logError(
+          error,
+          'Resources:handleDeleteResource',
+          ERROR_SEVERITY.MEDIUM,
+        );
+        toast.error('Failed to delete resource');
+      }
+    },
+    [deleteResource],
+  );
 
   // Handle resource edit
   const handleEditResource = useCallback((resource) => {
@@ -56,16 +80,19 @@ const Resources = ({ isAdmin = false }) => {
   }, []);
 
   // Handle resource download
-  const handleDownloadResource = useCallback(async (resourceId) => {
-    try {
-      await measurePerformance('Download Resource', async () => {
-        await incrementDownloadCount(resourceId);
-      });
-    } catch (error) {
-      logError(error, 'Resources:handleDownloadResource', ERROR_SEVERITY.LOW);
-      // Don't show error toast for download count increment failure
-    }
-  }, [incrementDownloadCount]);
+  const handleDownloadResource = useCallback(
+    async (resourceId) => {
+      try {
+        await measurePerformance('Download Resource', async () => {
+          await incrementDownloadCount(resourceId);
+        });
+      } catch (error) {
+        logError(error, 'Resources:handleDownloadResource', ERROR_SEVERITY.LOW);
+        // Don't show error toast for download count increment failure
+      }
+    },
+    [incrementDownloadCount],
+  );
 
   // Handle export resources
   const handleExportResources = useCallback(async () => {
@@ -94,7 +121,9 @@ const Resources = ({ isAdmin = false }) => {
         <div className="text-red-500 mb-4">
           <FaTimes size={48} className="mx-auto" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Resources</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          Error Loading Resources
+        </h3>
         <p className="text-gray-600">{error}</p>
       </div>
     );
@@ -111,7 +140,7 @@ const Resources = ({ isAdmin = false }) => {
               Manage and share learning resources with the community
             </p>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             {isAdmin && (
               <button
@@ -122,7 +151,7 @@ const Resources = ({ isAdmin = false }) => {
                 <span>Add Resource</span>
               </button>
             )}
-            
+
             <button
               onClick={handleExportResources}
               className="flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
@@ -140,37 +169,45 @@ const Resources = ({ isAdmin = false }) => {
               <FaImages className="text-blue-500 mr-3" size={20} />
               <div>
                 <p className="text-sm text-blue-600">Total Resources</p>
-                <p className="text-2xl font-bold text-blue-900">{stats.totalResources}</p>
+                <p className="text-2xl font-bold text-blue-900">
+                  {stats.totalResources}
+                </p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-green-50 p-4 rounded-lg">
             <div className="flex items-center">
               <FaDownload className="text-green-500 mr-3" size={20} />
               <div>
                 <p className="text-sm text-green-600">Total Downloads</p>
-                <p className="text-2xl font-bold text-green-900">{stats.totalDownloads}</p>
+                <p className="text-2xl font-bold text-green-900">
+                  {stats.totalDownloads}
+                </p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-purple-50 p-4 rounded-lg">
             <div className="flex items-center">
               <FaChartBar className="text-purple-500 mr-3" size={20} />
               <div>
                 <p className="text-sm text-purple-600">Avg Downloads</p>
-                <p className="text-2xl font-bold text-purple-900">{stats.averageDownloads}</p>
+                <p className="text-2xl font-bold text-purple-900">
+                  {stats.averageDownloads}
+                </p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-orange-50 p-4 rounded-lg">
             <div className="flex items-center">
               <FaUpload className="text-orange-500 mr-3" size={20} />
               <div>
                 <p className="text-sm text-orange-600">Categories</p>
-                <p className="text-2xl font-bold text-orange-900">{Object.keys(stats.categories).length}</p>
+                <p className="text-2xl font-bold text-orange-900">
+                  {Object.keys(stats.categories).length}
+                </p>
               </div>
             </div>
           </div>
@@ -194,7 +231,7 @@ const Resources = ({ isAdmin = false }) => {
                 <span>Gallery</span>
               </div>
             </button>
-            
+
             <button
               onClick={() => setActiveTab('stats')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
@@ -250,7 +287,9 @@ const ResourcesStats = ({ stats }) => {
     <div className="space-y-6">
       {/* Category Distribution */}
       <div className="bg-gray-50 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Resources by Category</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Resources by Category
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Object.entries(stats.categories).map(([category, count]) => (
             <div key={category} className="bg-white p-4 rounded-lg shadow-sm">
@@ -264,8 +303,8 @@ const ResourcesStats = ({ stats }) => {
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                    style={{ 
-                      width: `${stats.totalResources > 0 ? (count / stats.totalResources) * 100 : 0}%` 
+                    style={{
+                      width: `${stats.totalResources > 0 ? (count / stats.totalResources) * 100 : 0}%`,
                     }}
                   />
                 </div>
@@ -277,7 +316,9 @@ const ResourcesStats = ({ stats }) => {
 
       {/* File Type Distribution */}
       <div className="bg-gray-50 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Resources by Type</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Resources by Type
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(stats.fileTypes).map(([type, count]) => (
             <div key={type} className="bg-white p-4 rounded-lg shadow-sm">
@@ -285,14 +326,16 @@ const ResourcesStats = ({ stats }) => {
                 <span className="text-sm font-medium text-gray-700 capitalize">
                   {type}
                 </span>
-                <span className="text-lg font-bold text-green-600">{count}</span>
+                <span className="text-lg font-bold text-green-600">
+                  {count}
+                </span>
               </div>
               <div className="mt-2">
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                    style={{ 
-                      width: `${stats.totalResources > 0 ? (count / stats.totalResources) * 100 : 0}%` 
+                    style={{
+                      width: `${stats.totalResources > 0 ? (count / stats.totalResources) * 100 : 0}%`,
                     }}
                   />
                 </div>
@@ -304,19 +347,27 @@ const ResourcesStats = ({ stats }) => {
 
       {/* Download Statistics */}
       <div className="bg-gray-50 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Download Statistics</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Download Statistics
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white p-4 rounded-lg shadow-sm text-center">
             <p className="text-sm text-gray-600">Total Downloads</p>
-            <p className="text-3xl font-bold text-blue-600">{stats.totalDownloads}</p>
+            <p className="text-3xl font-bold text-blue-600">
+              {stats.totalDownloads}
+            </p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm text-center">
             <p className="text-sm text-gray-600">Average Downloads</p>
-            <p className="text-3xl font-bold text-green-600">{stats.averageDownloads}</p>
+            <p className="text-3xl font-bold text-green-600">
+              {stats.averageDownloads}
+            </p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm text-center">
             <p className="text-sm text-gray-600">Total Resources</p>
-            <p className="text-3xl font-bold text-purple-600">{stats.totalResources}</p>
+            <p className="text-3xl font-bold text-purple-600">
+              {stats.totalResources}
+            </p>
           </div>
         </div>
       </div>

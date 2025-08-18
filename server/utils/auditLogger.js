@@ -4,83 +4,86 @@ const { enhancedLogger } = require('./logger');
 /**
  * Audit Log Schema
  */
-const auditLogSchema = new mongoose.Schema({
-  timestamp: {
-    type: Date,
-    default: Date.now,
-    required: true
+const auditLogSchema = new mongoose.Schema(
+  {
+    timestamp: {
+      type: Date,
+      default: Date.now,
+      required: true,
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false, // Allow anonymous actions
+    },
+    username: {
+      type: String,
+      required: false,
+    },
+    action: {
+      type: String,
+      required: true,
+      enum: [
+        'LOGIN',
+        'LOGOUT',
+        'REGISTER',
+        'PASSWORD_CHANGE',
+        'PROFILE_UPDATE',
+        'HOUSE_CREATE',
+        'HOUSE_UPDATE',
+        'HOUSE_DELETE',
+        'MEMBER_ADD',
+        'MEMBER_UPDATE',
+        'MEMBER_DELETE',
+        'RESOURCE_UPLOAD',
+        'RESOURCE_DELETE',
+        'DATA_EXPORT',
+        'DATA_IMPORT',
+        'ADMIN_ACTION',
+        'SECURITY_VIOLATION',
+        'SYSTEM_ERROR',
+      ],
+    },
+    resource: {
+      type: String,
+      required: true,
+      enum: ['USER', 'HOUSE', 'MEMBER', 'RESOURCE', 'SYSTEM', 'AUTH'],
+    },
+    resourceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: false,
+    },
+    details: {
+      type: mongoose.Schema.Types.Mixed,
+      required: false,
+    },
+    ipAddress: {
+      type: String,
+      required: true,
+    },
+    userAgent: {
+      type: String,
+      required: true,
+    },
+    success: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    errorMessage: {
+      type: String,
+      required: false,
+    },
+    severity: {
+      type: String,
+      enum: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'],
+      default: 'LOW',
+    },
   },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: false // Allow anonymous actions
+  {
+    timestamps: true,
   },
-  username: {
-    type: String,
-    required: false
-  },
-  action: {
-    type: String,
-    required: true,
-    enum: [
-      'LOGIN',
-      'LOGOUT',
-      'REGISTER',
-      'PASSWORD_CHANGE',
-      'PROFILE_UPDATE',
-      'HOUSE_CREATE',
-      'HOUSE_UPDATE',
-      'HOUSE_DELETE',
-      'MEMBER_ADD',
-      'MEMBER_UPDATE',
-      'MEMBER_DELETE',
-      'RESOURCE_UPLOAD',
-      'RESOURCE_DELETE',
-      'DATA_EXPORT',
-      'DATA_IMPORT',
-      'ADMIN_ACTION',
-      'SECURITY_VIOLATION',
-      'SYSTEM_ERROR'
-    ]
-  },
-  resource: {
-    type: String,
-    required: true,
-    enum: ['USER', 'HOUSE', 'MEMBER', 'RESOURCE', 'SYSTEM', 'AUTH']
-  },
-  resourceId: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: false
-  },
-  details: {
-    type: mongoose.Schema.Types.Mixed,
-    required: false
-  },
-  ipAddress: {
-    type: String,
-    required: true
-  },
-  userAgent: {
-    type: String,
-    required: true
-  },
-  success: {
-    type: Boolean,
-    required: true,
-    default: true
-  },
-  errorMessage: {
-    type: String,
-    required: false
-  },
-  severity: {
-    type: String,
-    enum: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'],
-    default: 'LOW'
-  }
-}, {
-  timestamps: true
-});
+);
 
 // Index for better query performance
 auditLogSchema.index({ timestamp: -1 });
@@ -112,7 +115,7 @@ class AuditLogger {
         userAgent,
         success = true,
         errorMessage,
-        severity = 'LOW'
+        severity = 'LOW',
       } = options;
 
       const auditEntry = new AuditLog({
@@ -126,7 +129,7 @@ class AuditLogger {
         userAgent,
         success,
         errorMessage,
-        severity
+        severity,
       });
 
       await auditEntry.save();
@@ -143,7 +146,10 @@ class AuditLogger {
 
       return auditEntry;
     } catch (error) {
-      enhancedLogger.error('Audit logging failed', { error: error.message, options });
+      enhancedLogger.error('Audit logging failed', {
+        error: error.message,
+        options,
+      });
       // Don't throw error to prevent breaking the main application flow
     }
   }
@@ -151,7 +157,15 @@ class AuditLogger {
   /**
    * Log authentication events
    */
-  static async logAuthEvent(userId, username, action, ipAddress, userAgent, success = true, errorMessage = null) {
+  static async logAuthEvent(
+    userId,
+    username,
+    action,
+    ipAddress,
+    userAgent,
+    success = true,
+    errorMessage = null,
+  ) {
     return this.log({
       userId,
       username,
@@ -161,14 +175,24 @@ class AuditLogger {
       userAgent,
       success,
       errorMessage,
-      severity: success ? 'LOW' : 'HIGH'
+      severity: success ? 'LOW' : 'HIGH',
     });
   }
 
   /**
    * Log house operations
    */
-  static async logHouseEvent(userId, username, action, houseId, details, ipAddress, userAgent, success = true, errorMessage = null) {
+  static async logHouseEvent(
+    userId,
+    username,
+    action,
+    houseId,
+    details,
+    ipAddress,
+    userAgent,
+    success = true,
+    errorMessage = null,
+  ) {
     return this.log({
       userId,
       username,
@@ -180,14 +204,25 @@ class AuditLogger {
       userAgent,
       success,
       errorMessage,
-      severity: action.includes('DELETE') ? 'HIGH' : 'MEDIUM'
+      severity: action.includes('DELETE') ? 'HIGH' : 'MEDIUM',
     });
   }
 
   /**
    * Log member operations
    */
-  static async logMemberEvent(userId, username, action, memberId, houseId, details, ipAddress, userAgent, success = true, errorMessage = null) {
+  static async logMemberEvent(
+    userId,
+    username,
+    action,
+    memberId,
+    houseId,
+    details,
+    ipAddress,
+    userAgent,
+    success = true,
+    errorMessage = null,
+  ) {
     return this.log({
       userId,
       username,
@@ -199,14 +234,21 @@ class AuditLogger {
       userAgent,
       success,
       errorMessage,
-      severity: action.includes('DELETE') ? 'HIGH' : 'MEDIUM'
+      severity: action.includes('DELETE') ? 'HIGH' : 'MEDIUM',
     });
   }
 
   /**
    * Log security violations
    */
-  static async logSecurityViolation(username, action, details, ipAddress, userAgent, errorMessage) {
+  static async logSecurityViolation(
+    username,
+    action,
+    details,
+    ipAddress,
+    userAgent,
+    errorMessage,
+  ) {
     return this.log({
       username,
       action: 'SECURITY_VIOLATION',
@@ -216,7 +258,7 @@ class AuditLogger {
       userAgent,
       success: false,
       errorMessage,
-      severity: 'CRITICAL'
+      severity: 'CRITICAL',
     });
   }
 
@@ -232,7 +274,8 @@ class AuditLogger {
       if (filters.resource) query.resource = filters.resource;
       if (filters.severity) query.severity = filters.severity;
       if (filters.success !== undefined) query.success = filters.success;
-      if (filters.startDate) query.timestamp = { $gte: new Date(filters.startDate) };
+      if (filters.startDate)
+        query.timestamp = { $gte: new Date(filters.startDate) };
       if (filters.endDate) {
         if (query.timestamp) {
           query.timestamp.$lte = new Date(filters.endDate);
@@ -242,7 +285,7 @@ class AuditLogger {
       }
 
       const skip = (page - 1) * limit;
-      
+
       const [logs, total] = await Promise.all([
         AuditLog.find(query)
           .sort({ timestamp: -1 })
@@ -250,17 +293,20 @@ class AuditLogger {
           .limit(limit)
           .populate('userId', 'username name email')
           .lean(),
-        AuditLog.countDocuments(query)
+        AuditLog.countDocuments(query),
       ]);
 
       return {
         logs,
         total,
         page,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limit),
       };
     } catch (error) {
-      enhancedLogger.error('Failed to get audit logs', { error: error.message, filters });
+      enhancedLogger.error('Failed to get audit logs', {
+        error: error.message,
+        filters,
+      });
       throw error;
     }
   }
@@ -274,13 +320,15 @@ class AuditLogger {
       cutoffDate.setDate(cutoffDate.getDate() - 90);
 
       const result = await AuditLog.deleteMany({
-        timestamp: { $lt: cutoffDate }
+        timestamp: { $lt: cutoffDate },
       });
 
       enhancedLogger.info(`Cleaned up ${result.deletedCount} old audit logs`);
       return result.deletedCount;
     } catch (error) {
-      enhancedLogger.error('Failed to cleanup old audit logs', { error: error.message });
+      enhancedLogger.error('Failed to cleanup old audit logs', {
+        error: error.message,
+      });
       throw error;
     }
   }
@@ -288,5 +336,5 @@ class AuditLogger {
 
 module.exports = {
   AuditLog,
-  AuditLogger
+  AuditLogger,
 };
