@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { toast } from 'react-toastify';
+import { useNotify } from '../context/NotificationContext';
 import {
   FaPlus,
   FaUpload,
@@ -33,6 +33,7 @@ const Resources = ({ isAdmin = false }) => {
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [editingResource, setEditingResource] = useState(null);
   const [activeTab, setActiveTab] = useState('gallery'); // 'gallery' or 'stats'
+  const { notify } = useNotify();
 
   // Handle resource save (create or update)
   const handleSaveResource = useCallback(
@@ -43,10 +44,10 @@ const Resources = ({ isAdmin = false }) => {
         });
       } catch (error) {
         logError(error, 'Resources:handleSaveResource', ERROR_SEVERITY.MEDIUM);
-        toast.error('Failed to save resource');
+        notify('Failed to save resource', { type: 'error' });
       }
     },
-    [saveResource],
+    [saveResource, notify],
   );
 
   // Handle resource delete
@@ -67,10 +68,10 @@ const Resources = ({ isAdmin = false }) => {
           'Resources:handleDeleteResource',
           ERROR_SEVERITY.MEDIUM,
         );
-        toast.error('Failed to delete resource');
+        notify('Failed to delete resource', { type: 'error' });
       }
     },
-    [deleteResource],
+    [deleteResource, notify],
   );
 
   // Handle resource edit
@@ -102,9 +103,9 @@ const Resources = ({ isAdmin = false }) => {
       });
     } catch (error) {
       logError(error, 'Resources:handleExportResources', ERROR_SEVERITY.MEDIUM);
-      toast.error('Failed to export resources');
+      notify('Failed to export resources', { type: 'error' });
     }
-  }, [exportResources]);
+  }, [exportResources, notify]);
 
   // Close upload form
   const handleCloseUploadForm = useCallback(() => {

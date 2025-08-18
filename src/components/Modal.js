@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import { useNotify } from '../context/NotificationContext';
 import InfoModal from './InfoModal';
 import UserProfile from './UserProfile';
 import Analytics from './Analytics';
@@ -14,6 +14,7 @@ const Modal = ({
   L,
   loading = false,
 }) => {
+  const { notify } = useNotify();
   // State declarations at the top level to avoid conditional calls
   const [formData, setFormData] = useState({});
   // Notify prefs state must not be conditional
@@ -143,24 +144,24 @@ const Modal = ({
     if (type === 'member') {
       // Basic validation
       if (!payload.name || payload.name.trim().length === 0) {
-        toast.error('Member name is required');
+        notify('Member name is required', { type: 'error' });
         return;
       }
       const ageNum = Number(payload.age);
       if (Number.isNaN(ageNum) || ageNum < 0 || ageNum > 120) {
-        toast.error('Please enter a valid age (0-120)');
+        notify('Please enter a valid age (0-120)', { type: 'error' });
         return;
       }
       if (!payload.gender) {
-        toast.error('Please select gender');
+        notify('Please select gender', { type: 'error' });
         return;
       }
       if (!payload.role) {
-        toast.error('Please select role');
+        notify('Please select role', { type: 'error' });
         return;
       }
       if (payload.mobile && !/^\+?\d{7,15}$/.test(String(payload.mobile))) {
-        toast.error('Please enter a valid mobile number');
+        notify('Please enter a valid mobile number', { type: 'error' });
         return;
       }
       payload.mode = data?.mode;
@@ -168,11 +169,11 @@ const Modal = ({
       if (data?.mode === 'edit') payload.id = data?.member?.id;
     } else if (type === 'house') {
       if (!payload.number && payload.number !== 0) {
-        toast.error('House number is required');
+        notify('House number is required', { type: 'error' });
         return;
       }
       if (!payload.street || payload.street.trim().length === 0) {
-        toast.error('Street is required');
+        notify('Street is required', { type: 'error' });
         return;
       }
       payload.mode = data?.mode;
@@ -713,18 +714,18 @@ const Modal = ({
       setContactForm((f) => ({ ...f, [e.target.name]: e.target.value }));
     const handleSend = () => {
       if (!contactForm.name.trim()) {
-        toast.error('Please enter your name');
+        notify('Please enter your name', { type: 'error' });
         return;
       }
       if (
         contactForm.mobile &&
         !/^\+?\d{7,15}$/.test(String(contactForm.mobile))
       ) {
-        toast.error('Enter a valid mobile');
+        notify('Enter a valid mobile', { type: 'error' });
         return;
       }
       if (!contactForm.message.trim()) {
-        toast.error('Please enter your message');
+        notify('Please enter your message', { type: 'error' });
         return;
       }
       onSave({ type: 'contact_admin', payload: contactForm });

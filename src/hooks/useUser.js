@@ -107,8 +107,16 @@ export const useUser = () => {
   // Verify token on mount and set up auto-logout
   useEffect(() => {
     const initializeApp = async () => {
-      // Initialize CSRF token
-      await apiService.refreshCSRFToken();
+      try {
+        // Initialize CSRF token
+        await apiService.refreshCSRFToken();
+      } catch (error) {
+        console.error('Failed to refresh CSRF token:', error);
+        // If CSRF token fails, we can't make any other API calls.
+        // We can either logout the user or show a connection error message.
+        // For now, we will just log the error and let the user try to log in again.
+        return;
+      }
 
       const token = sessionStorage.getItem('authToken');
       if (token) {

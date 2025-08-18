@@ -57,8 +57,9 @@ router.post(
     await user.save();
 
     // Generate JWT
+    const userForToken = user.toJSON();
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+      { user: userForToken },
       process.env.JWT_SECRET,
       { expiresIn: '24h' },
     );
@@ -130,8 +131,9 @@ router.post(
     }
 
     // Generate JWT
+    const userForToken = user.toJSON();
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+      { user: userForToken },
       process.env.JWT_SECRET,
       { expiresIn: '24h' },
     );

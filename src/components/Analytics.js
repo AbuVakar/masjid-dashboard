@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { toast } from 'react-toastify';
+import { useNotify } from '../context/NotificationContext';
 import { FaDownload } from 'react-icons/fa';
 
 const Analytics = ({ houses, members, isAdmin }) => {
+  const { notify } = useNotify();
   const [analytics, setAnalytics] = useState({
     totalHouses: 0,
     totalMembers: 0,
@@ -154,9 +155,9 @@ const Analytics = ({ houses, members, isAdmin }) => {
       a.click();
       URL.revokeObjectURL(url);
 
-      toast.success('Analytics exported successfully!');
+      notify('Analytics exported successfully!', { type: 'success' });
     } catch (error) {
-      toast.error('Failed to export analytics');
+      notify('Failed to export analytics', { type: 'error' });
       console.error('Export error:', error);
     }
   };
@@ -194,9 +195,9 @@ const Analytics = ({ houses, members, isAdmin }) => {
       a.click();
       URL.revokeObjectURL(url);
 
-      toast.success('CSV exported successfully!');
+      notify('CSV exported successfully!', { type: 'success' });
     } catch (error) {
-      toast.error('Failed to export CSV');
+      notify('Failed to export CSV', { type: 'error' });
       console.error('CSV export error:', error);
     }
   };

@@ -3,7 +3,7 @@
  * Provides bulk operations for houses and members
  */
 
-import { toast } from 'react-toastify';
+import { notify } from './notification';
 
 /**
  * Bulk delete houses
@@ -14,7 +14,7 @@ import { toast } from 'react-toastify';
 export const bulkDeleteHouses = async (houses, onDelete) => {
   try {
     if (!houses || houses.length === 0) {
-      toast.warn('No houses selected for deletion');
+      notify('No houses selected for deletion', { type: 'warning' });
       return false;
     }
 
@@ -27,8 +27,9 @@ export const bulkDeleteHouses = async (houses, onDelete) => {
     });
 
     if (validationErrors.length > 0) {
-      toast.error(
+      notify(
         'Validation errors: ' + validationErrors.slice(0, 3).join(', '),
+        { type: 'error' }
       );
       return false;
     }
@@ -56,16 +57,16 @@ export const bulkDeleteHouses = async (houses, onDelete) => {
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully deleted ${successCount} house(s)`);
+      notify(`Successfully deleted ${successCount} house(s)`, { type: 'success' });
     }
     if (errorCount > 0) {
-      toast.error(`Failed to delete ${errorCount} house(s)`);
+      notify(`Failed to delete ${errorCount} house(s)`, { type: 'error' });
     }
 
     return successCount > 0;
   } catch (error) {
     console.error('Bulk delete failed:', error);
-    toast.error('Bulk delete operation failed');
+    notify('Bulk delete operation failed', { type: 'error' });
     return false;
   }
 };
@@ -79,7 +80,7 @@ export const bulkDeleteHouses = async (houses, onDelete) => {
 export const bulkDeleteMembers = async (members, onDeleteMember) => {
   try {
     if (!members || members.length === 0) {
-      toast.warn('No members selected for deletion');
+      notify('No members selected for deletion', { type: 'warning' });
       return false;
     }
 
@@ -96,11 +97,11 @@ export const bulkDeleteMembers = async (members, onDeleteMember) => {
       await onDeleteMember(member.houseId, member.id);
     }
 
-    toast.success(`Successfully deleted ${members.length} member(s)`);
+    notify(`Successfully deleted ${members.length} member(s)`, { type: 'success' });
     return true;
   } catch (error) {
     console.error('Bulk delete members failed:', error);
-    toast.error('Failed to delete some members');
+    notify('Failed to delete some members', { type: 'error' });
     return false;
   }
 };
@@ -115,12 +116,12 @@ export const bulkDeleteMembers = async (members, onDeleteMember) => {
 export const bulkEditHouses = async (houses, updates, onUpdate) => {
   try {
     if (!houses || houses.length === 0) {
-      toast.warn('No houses selected for editing');
+      notify('No houses selected for editing', { type: 'warning' });
       return false;
     }
 
     if (!updates || Object.keys(updates).length === 0) {
-      toast.warn('No updates specified');
+      notify('No updates specified', { type: 'warning' });
       return false;
     }
 
@@ -138,11 +139,11 @@ export const bulkEditHouses = async (houses, updates, onUpdate) => {
       await onUpdate(updatedHouse);
     }
 
-    toast.success(`Successfully updated ${houses.length} house(s)`);
+    notify(`Successfully updated ${houses.length} house(s)`, { type: 'success' });
     return true;
   } catch (error) {
     console.error('Bulk edit failed:', error);
-    toast.error('Failed to update some houses');
+    notify('Failed to update some houses', { type: 'error' });
     return false;
   }
 };
@@ -157,12 +158,12 @@ export const bulkEditHouses = async (houses, updates, onUpdate) => {
 export const bulkEditMembers = async (members, updates, onUpdateMember) => {
   try {
     if (!members || members.length === 0) {
-      toast.warn('No members selected for editing');
+      notify('No members selected for editing', { type: 'warning' });
       return false;
     }
 
     if (!updates || Object.keys(updates).length === 0) {
-      toast.warn('No updates specified');
+      notify('No updates specified', { type: 'warning' });
       return false;
     }
 
@@ -180,11 +181,11 @@ export const bulkEditMembers = async (members, updates, onUpdateMember) => {
       await onUpdateMember(member.houseId, updatedMember);
     }
 
-    toast.success(`Successfully updated ${members.length} member(s)`);
+    notify(`Successfully updated ${members.length} member(s)`, { type: 'success' });
     return true;
   } catch (error) {
     console.error('Bulk edit members failed:', error);
-    toast.error('Failed to update some members');
+    notify('Failed to update some members', { type: 'error' });
     return false;
   }
 };
@@ -199,7 +200,7 @@ export const bulkEditMembers = async (members, updates, onUpdateMember) => {
 export const bulkExport = async (items, type, exportFunction) => {
   try {
     if (!items || items.length === 0) {
-      toast.warn(`No ${type} selected for export`);
+      notify(`No ${type} selected for export`, { type: 'warning' });
       return false;
     }
 
@@ -207,7 +208,7 @@ export const bulkExport = async (items, type, exportFunction) => {
     return true;
   } catch (error) {
     console.error('Bulk export failed:', error);
-    toast.error(`Failed to export ${type}`);
+    notify(`Failed to export ${type}`, { type: 'error' });
     return false;
   }
 };

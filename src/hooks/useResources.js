@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { toast } from 'react-toastify';
+import { useNotify } from '../context/NotificationContext';
 import {
   safeLocalStorageGet,
   safeLocalStorageSet,
@@ -15,6 +15,7 @@ export const useResources = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastOperation, setLastOperation] = useState(null);
+  const { notify } = useNotify();
 
   // Load resources from localStorage on mount
   useEffect(() => {
@@ -91,10 +92,11 @@ export const useResources = () => {
           timestamp: Date.now(),
         });
 
-        toast.success(
+        notify(
           isUpdate
             ? 'Resource updated successfully!'
             : 'Resource added successfully!',
+          { type: 'success' }
         );
         return newResource;
       },
@@ -102,12 +104,12 @@ export const useResources = () => {
         context: 'useResources:saveResource',
         severity: ERROR_SEVERITY.MEDIUM,
         fallback: () => {
-          toast.error('Failed to save resource');
+          notify('Failed to save resource', { type: 'error' });
           return null;
         },
       },
     );
-  }, []);
+  }, [notify]);
 
   // Delete a resource
   const deleteResource = useCallback(async (resourceId) => {
@@ -123,19 +125,19 @@ export const useResources = () => {
           timestamp: Date.now(),
         });
 
-        toast.success('Resource deleted successfully!');
+        notify('Resource deleted successfully!', { type: 'success' });
         return true;
       },
       {
         context: 'useResources:deleteResource',
         severity: ERROR_SEVERITY.MEDIUM,
         fallback: () => {
-          toast.error('Failed to delete resource');
+          notify('Failed to delete resource', { type: 'error' });
           return false;
         },
       },
     );
-  }, []);
+  }, [notify]);
 
   // Increment download count
   const incrementDownloadCount = useCallback(async (resourceId) => {
@@ -247,19 +249,19 @@ export const useResources = () => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        toast.success('Resources exported successfully!');
+        notify('Resources exported successfully!', { type: 'success' });
         return data;
       },
       {
         context: 'useResources:exportResources',
         severity: ERROR_SEVERITY.MEDIUM,
         fallback: () => {
-          toast.error('Failed to export resources');
+          notify('Failed to export resources', { type: 'error' });
           return null;
         },
       },
     );
-  }, [resources, getStats]);
+  }, [resources, getStats, notify]);
 
   // Import resources data
   const importResources = useCallback(async (data) => {
@@ -286,8 +288,9 @@ export const useResources = () => {
           timestamp: Date.now(),
         });
 
-        toast.success(
+        notify(
           `Successfully imported ${validatedResources.length} resources!`,
+          { type: 'success' }
         );
         return validatedResources;
       },
@@ -295,12 +298,12 @@ export const useResources = () => {
         context: 'useResources:importResources',
         severity: ERROR_SEVERITY.MEDIUM,
         fallback: () => {
-          toast.error('Failed to import resources');
+          notify('Failed to import resources', { type: 'error' });
           return null;
         },
       },
     );
-  }, []);
+  }, [notify]);
 
   // Clear all resources
   const clearAllResources = useCallback(async () => {
@@ -318,19 +321,19 @@ export const useResources = () => {
           timestamp: Date.now(),
         });
 
-        toast.success('All resources cleared successfully!');
+        notify('All resources cleared successfully!', { type: 'success' });
         return true;
       },
       {
         context: 'useResources:clearAllResources',
         severity: ERROR_SEVERITY.HIGH,
         fallback: () => {
-          toast.error('Failed to clear resources');
+          notify('Failed to clear resources', { type: 'error' });
           return false;
         },
       },
     );
-  }, []);
+  }, [notify]);
 
   return {
     resources,

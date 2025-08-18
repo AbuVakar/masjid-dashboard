@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { toast } from 'react-toastify';
+import { useNotify } from '../context/NotificationContext';
 
 const NotificationGuide = ({ onClose, onEnableNotifications }) => {
+  const { notify } = useNotify();
   const [currentStep, setCurrentStep] = useState(0);
 
   const steps = [
@@ -32,7 +33,7 @@ const NotificationGuide = ({ onClose, onEnableNotifications }) => {
     try {
       const result = await onEnableNotifications();
       if (result) {
-        toast.success('Notifications enabled successfully!');
+        notify('Notifications enabled successfully!', { type: 'success' });
         onClose();
       } else {
         setCurrentStep(1); // Move to mobile guide
