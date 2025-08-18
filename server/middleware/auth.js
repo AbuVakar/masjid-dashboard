@@ -18,7 +18,7 @@ const authenticateToken = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.userId);
+    const user = await User.findById(decoded.user.id);
 
     if (!user) {
       throw new AppError('User not found', 401, 'USER_NOT_FOUND');
@@ -77,7 +77,7 @@ const optionalAuth = async (req, res, next) => {
 
     if (token) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await User.findById(decoded.userId);
+      const user = await User.findById(decoded.user.id);
       if (user) {
         req.user = user;
       }

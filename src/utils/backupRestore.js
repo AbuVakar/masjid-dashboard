@@ -3,7 +3,7 @@
  * Provides comprehensive data export/import functionality
  */
 
-import { toast } from 'react-toastify';
+import { notify } from './notification';
 
 /**
  * Export data to JSON file
@@ -32,10 +32,10 @@ export const exportData = (data, filename = 'masjid-backup') => {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    toast.success('Data exported successfully!');
+    notify('Data exported successfully!', { type: 'success' });
   } catch (error) {
     console.error('Export failed:', error);
-    toast.error('Failed to export data');
+    notify('Failed to export data', { type: 'error' });
   }
 };
 
@@ -59,20 +59,20 @@ export const importData = async (file) => {
 
         // Version compatibility check
         if (content.version !== '1.0') {
-          toast.warn('Backup version may not be compatible');
+          notify('Backup version may not be compatible', { type: 'warning' });
         }
 
-        toast.success('Data imported successfully!');
+        notify('Data imported successfully!', { type: 'success' });
         resolve(content.data);
       } catch (error) {
         console.error('Import failed:', error);
-        toast.error('Failed to import data. Invalid file format.');
+        notify('Failed to import data. Invalid file format.', { type: 'error' });
         reject(error);
       }
     };
 
     reader.onerror = () => {
-      toast.error('Failed to read file');
+      notify('Failed to read file', { type: 'error' });
       reject(new Error('File read error'));
     };
 

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { toast } from 'react-toastify';
+import { useNotify } from '../context/NotificationContext';
 import {
   FaSearch,
   FaDownload,
@@ -40,6 +40,7 @@ const ResourcesGallery = ({
   const [sortOrder, setSortOrder] = useState('desc');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [selectedTags, setSelectedTags] = useState([]);
+  const { notify } = useNotify();
 
   // File type configurations
   const fileTypes = {
@@ -181,8 +182,9 @@ const ResourcesGallery = ({
             await onDownload(resource.id);
           }
 
-          toast.success(
+          notify(
             `Successfully ${resource.type === 'link' ? 'opened' : 'downloaded'} ${resource.title}`,
+            { type: 'success' }
           );
         });
       } catch (error) {
@@ -191,10 +193,10 @@ const ResourcesGallery = ({
           'ResourcesGallery:handleDownload',
           ERROR_SEVERITY.MEDIUM,
         );
-        toast.error('Failed to download resource');
+        notify('Failed to download resource', { type: 'error' });
       }
     },
-    [onDownload],
+    [onDownload, notify],
   );
 
   // Format file size

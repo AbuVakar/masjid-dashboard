@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { toast } from 'react-toastify';
+import { useNotify } from '../context/NotificationContext';
 import {
   FaEye,
   FaEyeSlash,
@@ -36,6 +36,7 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { notify } = useNotify();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -141,9 +142,7 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
       // Rate limiting check
       const userIdentifier = formData.username || 'anonymous';
       if (!authRateLimiter.isAllowed(userIdentifier)) {
-        toast.error(
-          'Too many attempts. Please wait 15 minutes before trying again.',
-        );
+        notify('Too many attempts. Please wait 15 minutes before trying again.', { type: 'error' });
         return;
       }
 
@@ -179,13 +178,13 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
         );
       } catch (error) {
         logError(error, 'Authentication', ERROR_SEVERITY.HIGH);
-        toast.error('Authentication failed. Please try again.');
+        notify('Authentication failed. Please try again.', { type: 'error' });
       } finally {
         setIsSubmitting(false);
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     },
-    [isLogin, isSubmitting, formData, errors, validateForm],
+    [isLogin, isSubmitting, formData, errors, validateForm, notify],
   );
 
   // Handle login with enhanced security
@@ -200,18 +199,18 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
       const success = await onLogin(sanitizedData);
       if (success) {
         authRateLimiter.reset(sanitizedData.username);
-        // Don't show success toast here as it will be handled by the parent component
+        // Don't show success notify here as it will be handled by the parent component
         return true;
       } else {
-        toast.error('Invalid credentials. Please try again.');
+        notify('Invalid credentials. Please try again.', { type: 'error' });
         return false;
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.error(error.message || 'Login failed. Please try again.');
+      notify(error.message || 'Login failed. Please try again.', { type: 'error' });
       return false;
     }
-  }, [formData, onLogin]);
+  }, [formData, onLogin, notify]);
 
   // Handle registration with enhanced security
   const handleRegister = useCallback(async () => {
@@ -225,11 +224,11 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
     try {
       await onRegister(sanitizedData);
       authRateLimiter.reset(sanitizedData.username);
-      toast.success('Registration successful!');
+      notify('Registration successful!', { type: 'success' });
     } catch (error) {
       throw new Error('Registration failed. Please try again.');
     }
-  }, [formData, onRegister]);
+  }, [formData, onRegister, notify]);
 
   // Handle guest mode
   const handleGuestMode = useCallback(async () => {
@@ -237,12 +236,12 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
       await measurePerformance('Guest Mode Access', async () => {
         await onGuestMode();
       });
-      toast.info('Entering guest mode');
+      notify('Entering guest mode', { type: 'info' });
     } catch (error) {
       logError(error, 'Guest Mode', ERROR_SEVERITY.MEDIUM);
-      toast.error('Failed to enter guest mode');
+      notify('Failed to enter guest mode', { type: 'error' });
     }
-  }, [onGuestMode]);
+  }, [onGuestMode, notify]);
 
   // Get input class name based on validation state
   const getInputClassName = useCallback(
@@ -418,8 +417,9 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
               type="button"
               className="forgot-password-link"
               onClick={() => {
-                toast.info(
+                notify(
                   'Forgot password feature coming soon! Please contact admin.',
+                  { type: 'info' }
                 );
               }}
             >

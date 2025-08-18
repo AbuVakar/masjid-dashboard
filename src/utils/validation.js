@@ -3,7 +3,7 @@
  * Provides input validation, sanitization, and security checks
  */
 
-import { toast } from 'react-toastify';
+import { notify } from './notification';
 
 // Constants for validation rules
 export const VALIDATION_RULES = {
@@ -459,7 +459,7 @@ export const validateRegistrationData = (userData) => {
  */
 export const displayValidationErrors = (errors) => {
   if (Array.isArray(errors) && errors.length > 0) {
-    errors.forEach((error) => toast.error(error));
+    errors.forEach((error) => notify(error, { type: 'error' }));
   }
 };
 

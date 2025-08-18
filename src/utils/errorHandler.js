@@ -3,7 +3,7 @@
  * Provides comprehensive error handling, performance tracking, and recovery mechanisms
  */
 
-import { toast } from 'react-toastify';
+import { notify } from './notification';
 
 // Error severity levels
 export const ERROR_SEVERITY = {
@@ -107,7 +107,7 @@ export const measurePerformance = async (
       console.warn(
         `🐌 VERY SLOW OPERATION: ${operationName} took ${duration.toFixed(2)}ms`,
       );
-      toast.warn(`${operationName} is taking longer than expected`);
+      notify(`${operationName} is taking longer than expected`, { type: 'warning' });
     } else if (duration > PERFORMANCE_THRESHOLDS.SLOW_OPERATION) {
       console.warn(
         `🐌 SLOW OPERATION: ${operationName} took ${duration.toFixed(2)}ms`,
@@ -319,7 +319,7 @@ export const initializeErrorHandling = () => {
     }
 
     logError(error, 'Unhandled Promise Rejection', ERROR_SEVERITY.HIGH);
-    toast.error('An unexpected error occurred. Please try again.');
+    notify('An unexpected error occurred. Please try again.', { type: 'error' });
   });
 
   // Global error handler

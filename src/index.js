@@ -3,28 +3,17 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { NotificationProvider } from './context/NotificationContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
-    <ToastContainer
-      position="top-right"
-      autoClose={2500}
-      hideProgressBar={false}
-      newestOnTop
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-      theme="colored"
-    />
-  </>,
+  <React.StrictMode>
+    <NotificationProvider>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </NotificationProvider>
+  </React.StrictMode>,
 );
 
 // Global last-resort handlers
@@ -41,7 +30,6 @@ window.addEventListener('unhandledrejection', (event) => {
 
   // eslint-disable-next-line no-console
   console.error('Unhandled promise rejection:', event.reason);
-  toast.error('An unexpected error occurred. Please try again.');
 });
 
 window.addEventListener('error', (event) => {

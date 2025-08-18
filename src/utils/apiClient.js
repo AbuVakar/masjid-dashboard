@@ -4,7 +4,7 @@
  */
 
 import { logError, ERROR_SEVERITY } from './errorHandler';
-import { toast } from 'react-toastify';
+import { notify } from './notification';
 
 const API_BASE_URL =
   process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -135,19 +135,19 @@ export const apiRequest = async (endpoint, options = {}) => {
 
     // Show user-friendly error message
     if (error.message.includes('timeout')) {
-      toast.error('Server is taking too long to respond. Please try again.');
+      notify('Server is taking too long to respond. Please try again.', { type: 'error' });
     } else if (error.message.includes('Network error')) {
-      toast.error('Network error. Please check your internet connection.');
+      notify('Network error. Please check your internet connection.', { type: 'error' });
     } else if (error.status === 404) {
-      toast.error('Resource not found.');
+      notify('Resource not found.', { type: 'error' });
     } else if (error.status === 401) {
-      toast.error('Authentication required. Please login again.');
+      notify('Authentication required. Please login again.', { type: 'error' });
     } else if (error.status === 403) {
-      toast.error("Access denied. You don't have permission for this action.");
+      notify("Access denied. You don't have permission for this action.", { type: 'error' });
     } else if (error.status >= 500) {
-      toast.error('Server error. Please try again later.');
+      notify('Server error. Please try again later.', { type: 'error' });
     } else {
-      toast.error(error.message || 'An unexpected error occurred.');
+      notify(error.message || 'An unexpected error occurred.', { type: 'error' });
     }
 
     throw error;

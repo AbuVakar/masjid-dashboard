@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { toast } from 'react-toastify';
 
 export const useNotifications = () => {
   const [showNotificationGuide, setShowNotificationGuide] = useState(false);
@@ -58,7 +57,7 @@ export const useNotifications = () => {
   const requestNotificationPermission = useCallback(async () => {
     try {
       if (!('Notification' in window)) {
-        toast.error('Notifications not supported in this browser');
+        console.error('Notifications not supported in this browser');
         return false;
       }
 
@@ -67,7 +66,7 @@ export const useNotifications = () => {
       }
 
       if (Notification.permission === 'denied') {
-        toast.error(
+        console.error(
           'Notifications are blocked. Please enable them in browser settings.',
         );
         return false;
@@ -75,15 +74,14 @@ export const useNotifications = () => {
 
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
-        toast.success('Notifications enabled!');
         return true;
       } else {
-        toast.error('Notification permission denied');
+        console.error('Notification permission denied');
         return false;
       }
     } catch (error) {
       console.error('Error requesting notification permission:', error);
-      toast.error('Failed to enable notifications');
+      console.error('Failed to enable notifications');
       return false;
     }
   }, []);
@@ -271,18 +269,18 @@ export const useNotifications = () => {
         // Send notification
         await sendServiceWorkerNotification(title, body, enhancedOptions);
 
-        // Show fallback toast with priority styling
-        const toastType =
+        // Show fallback console log with priority styling
+        const logType =
           priority === 'urgent'
             ? 'error'
             : priority === 'high'
-              ? 'warning'
+              ? 'warn'
               : 'info';
-        toast[toastType](`${title}: ${body}`);
+        console[logType](`${title}: ${body}`);
       } catch (error) {
         console.error('Notification failed:', error);
-        // Always show fallback toast
-        toast.info(`${title}: ${body}`);
+        // Always show fallback console log
+        console.info(`${title}: ${body}`);
       }
     },
     [notifyPrefs, sendServiceWorkerNotification],

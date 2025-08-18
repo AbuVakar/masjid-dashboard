@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { toast } from 'react-toastify';
+import { useNotify } from '../context/NotificationContext';
 import {
   FaUpload,
   FaLink,
@@ -36,6 +36,7 @@ const ResourcesUpload = ({
   const [isUploading, setIsUploading] = useState(false);
   const [errors, setErrors] = useState({});
   const [newTag, setNewTag] = useState('');
+  const { notify } = useNotify();
 
   // File type configurations
   const fileTypes = useMemo(
@@ -128,7 +129,7 @@ const ResourcesUpload = ({
       if (selectedFile) {
         // Validate file size (10MB limit)
         if (selectedFile.size > 10 * 1024 * 1024) {
-          toast.error('File size must be less than 10MB');
+          notify('File size must be less than 10MB', { type: 'error' });
           return;
         }
 
@@ -144,7 +145,7 @@ const ResourcesUpload = ({
             .map((ext) => ext.replace('.', ''));
 
           if (!allowedExtensions.includes(fileExtension)) {
-            toast.error(`Please select a valid ${allowedTypes.label} file`);
+            notify(`Please select a valid ${allowedTypes.label} file`, { type: 'error' });
             return;
           }
         }
@@ -225,7 +226,7 @@ const ResourcesUpload = ({
       e.preventDefault();
 
       if (!validateForm()) {
-        toast.error('Please fix the errors in the form');
+        notify('Please fix the errors in the form', { type: 'error' });
         return;
       }
 
@@ -262,7 +263,7 @@ const ResourcesUpload = ({
         });
       } catch (error) {
         logError(error, 'ResourcesUpload:handleSubmit', ERROR_SEVERITY.MEDIUM);
-        toast.error('Failed to save resource. Please try again.');
+        notify('Failed to save resource. Please try again.', { type: 'error' });
       } finally {
         setIsUploading(false);
         setUploadProgress(0);

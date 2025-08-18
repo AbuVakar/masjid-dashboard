@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -23,6 +21,7 @@ import { useFilters } from './hooks/useFilters';
 import { useUser } from './hooks/useUser';
 import { useNotifications } from './hooks/useNotifications';
 import { useResources } from './hooks/useResources';
+import { useNotify } from './context/NotificationContext';
 
 // Utilities
 import {
@@ -34,6 +33,7 @@ import {
 
 // Services
 import { apiService } from './services/api';
+import { initialHouses } from './data/initialData';
 
 // Initialize error handling on app start
 initializeErrorHandling();
@@ -54,10 +54,12 @@ function App() {
     Isha: '19:30',
   });
 
+  // State for initial data
+  const [houses, setHouses] = useState(initialHouses);
+  const [members, setMembers] = useState(initialHouses.flatMap(h => h.members));
+
   // Custom hooks
   const {
-    houses,
-    members,
     loading,
     error,
     saveHouse,
@@ -83,9 +85,7 @@ function App() {
     isGuest,
   } = useUser();
 
-  const { notify, notifyDataBackup, notifySystemUpdate, notifyCommunityEvent } =
-    useNotifications();
-
+  const { notify } = useNotify();
   const { resources: resourcesData } = useResources();
 
   // Performance monitoring for filtered data
@@ -108,7 +108,7 @@ function App() {
       });
     } catch (error) {
       logError(error, 'Load Demo Data', ERROR_SEVERITY.MEDIUM);
-      toast.error('Failed to load demo data. Please try again.');
+      notify('Failed to load demo data. Please try again.', { type: 'error' });
       throw error;
     }
   }, [refreshData, notify]);
@@ -154,7 +154,7 @@ function App() {
         setModalData(null);
       } catch (error) {
         logError(error, `Save ${type}`, ERROR_SEVERITY.MEDIUM);
-        toast.error(`Failed to save ${type}. Please try again.`);
+        notify(`Failed to save ${type}. Please try again.`, { type: 'error' });
       } finally {
         setOperationLoading(false);
       }
@@ -185,7 +185,7 @@ function App() {
         notify(`Successfully deleted ${type}`, { type: 'success' });
       } catch (error) {
         logError(error, `Delete ${type}`, ERROR_SEVERITY.MEDIUM);
-        toast.error(`Failed to delete ${type}. Please try again.`);
+        notify(`Failed to delete ${type}. Please try again.`, { type: 'error' });
       } finally {
         setOperationLoading(false);
       }
@@ -208,14 +208,14 @@ function App() {
         });
 
         // Send system update notification
-        notifySystemUpdate('User logged in successfully');
+        notify('User logged in successfully', { type: 'info' });
       } catch (error) {
         logError(error, 'User Login', ERROR_SEVERITY.HIGH);
-        toast.error('Login failed. Please check your credentials.');
+        notify('Login failed. Please check your credentials.', { type: 'error' });
         throw error;
       }
     },
-    [login, notify, notifySystemUpdate],
+    [login, notify],
   );
 
   const handleUserRegister = useCallback(
@@ -228,18 +228,17 @@ function App() {
         // Notify successful registration
         notify(`Welcome to Silsila-ul-Ahwaal, ${userData.username}!`, {
           type: 'success',
-          category: 'authentication',
         });
 
         // Send community event notification
-        notifyCommunityEvent('New user registered');
+        notify('New user registered', { type: 'info' });
       } catch (error) {
         logError(error, 'User Registration', ERROR_SEVERITY.HIGH);
-        toast.error('Registration failed. Please try again.');
+        notify('Registration failed. Please try again.', { type: 'error' });
         throw error;
       }
     },
-    [register, notify, notifyCommunityEvent],
+    [register, notify],
   );
 
   const handleGuestMode = useCallback(async () => {
@@ -251,11 +250,10 @@ function App() {
       // Notify guest mode access
       notify('Entering guest mode with limited access', {
         type: 'info',
-        category: 'authentication',
       });
     } catch (error) {
       logError(error, 'Guest Mode', ERROR_SEVERITY.MEDIUM);
-      toast.error('Failed to enter guest mode.');
+      notify('Failed to enter guest mode.', { type: 'error' });
       throw error;
     }
   }, [enableGuestMode, notify]);
@@ -288,12 +286,12 @@ function App() {
       });
 
       // Notify backup completion
-      notifyDataBackup('Data backup completed successfully');
+      notify('Data backup completed successfully', { type: 'success' });
     } catch (error) {
       logError(error, 'Data Backup', ERROR_SEVERITY.MEDIUM);
-      toast.error('Backup failed. Please try again.');
+      notify('Backup failed. Please try again.', { type: 'error' });
     }
-  }, [exportData, notifyDataBackup]);
+  }, [exportData, notify]);
 
   const handleRestore = useCallback(
     async (data) => {
@@ -303,13 +301,13 @@ function App() {
         });
 
         // Notify restore completion
-        notifyDataBackup('Data restored successfully');
+        notify('Data restored successfully', { type: 'success' });
       } catch (error) {
         logError(error, 'Data Restore', ERROR_SEVERITY.MEDIUM);
-        toast.error('Restore failed. Please check the file format.');
+        notify('Restore failed. Please check the file format.', { type: 'error' });
       }
     },
-    [importData, notifyDataBackup],
+    [importData, notify],
   );
 
   // Export functions
@@ -354,7 +352,7 @@ function App() {
       notify('Excel file exported successfully!', { type: 'success' });
     } catch (error) {
       logError(error, 'Export Excel', ERROR_SEVERITY.MEDIUM);
-      toast.error('Failed to export Excel file: ' + error.message);
+      notify('Failed to export Excel file: ' + error.message, { type: 'error' });
     } finally {
       setOperationLoading(false);
     }
@@ -441,7 +439,7 @@ function App() {
       notify('PDF file exported successfully!', { type: 'success' });
     } catch (error) {
       logError(error, 'Export PDF', ERROR_SEVERITY.MEDIUM);
-      toast.error('Failed to export PDF file');
+      notify('Failed to export PDF file', { type: 'error' });
     } finally {
       setOperationLoading(false);
     }
@@ -535,9 +533,9 @@ function App() {
   useEffect(() => {
     if (error) {
       logError(new Error(error), 'Data Loading', ERROR_SEVERITY.HIGH);
-      toast.error('Failed to load data. Please refresh the page.');
+      notify('Failed to load data. Please refresh the page.', { type: 'error' });
     }
-  }, [error]);
+  }, [error, notify]);
 
   // Load prayer times from localStorage on app start
   useEffect(() => {
@@ -744,7 +742,6 @@ function App() {
           />
         )}
 
-        <ToastContainer />
       </div>
     </ErrorBoundary>
   );
