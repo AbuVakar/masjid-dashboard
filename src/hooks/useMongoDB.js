@@ -1,8 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { 
-  logError,
-  ERROR_SEVERITY 
-} from '../utils/errorHandler';
+import { logError, ERROR_SEVERITY } from '../utils/errorHandler';
 import { apiClient, checkServerHealth } from '../utils/apiClient';
 import { sanitizeHouseData } from '../utils/sanitization';
 
@@ -21,18 +18,20 @@ export const useMongoDB = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Check server health first
       const isServerHealthy = await checkServerHealth();
       if (!isServerHealthy) {
         throw new Error('Server is not reachable');
       }
-      
+
       const data = await apiClient.get('/houses');
       setHouses(data.houses || []);
     } catch (error) {
       logError(error, 'Load Initial Data', ERROR_SEVERITY.HIGH);
-      setError(error.message || 'Failed to load data. Please check your connection.');
+      setError(
+        error.message || 'Failed to load data. Please check your connection.',
+      );
     } finally {
       setLoading(false);
     }
@@ -45,15 +44,18 @@ export const useMongoDB = () => {
   // Get all members from all houses
   const members = useMemo(() => {
     if (!Array.isArray(houses)) return [];
-    
+
     return houses.reduce((allMembers, house) => {
       if (house.members && Array.isArray(house.members)) {
-        return [...allMembers, ...house.members.map(member => ({
-          ...member,
-          houseId: house._id,
-          houseNumber: house.houseNumber || house.number,
-          street: house.street
-        }))];
+        return [
+          ...allMembers,
+          ...house.members.map((member) => ({
+            ...member,
+            houseId: house._id,
+            houseNumber: house.houseNumber || house.number,
+            street: house.street,
+          })),
+        ];
       }
       return allMembers;
     }, []);
@@ -63,19 +65,21 @@ export const useMongoDB = () => {
   const saveHouse = useCallback(async (houseData) => {
     try {
       setLastOperation('saving');
-      
+
       // Sanitize house data to prevent XSS
       const sanitizedData = sanitizeHouseData(houseData);
-      
-      const endpoint = sanitizedData._id ? `/houses/${sanitizedData._id}` : '/houses';
+
+      const endpoint = sanitizedData._id
+        ? `/houses/${sanitizedData._id}`
+        : '/houses';
       const method = sanitizedData._id ? 'put' : 'post';
-      
+
       const savedHouse = await apiClient[method](endpoint, sanitizedData);
-      
-      setHouses(prevHouses => {
+
+      setHouses((prevHouses) => {
         if (houseData._id) {
-          return prevHouses.map(house => 
-            house._id === houseData._id ? savedHouse : house
+          return prevHouses.map((house) =>
+            house._id === houseData._id ? savedHouse : house,
           );
         } else {
           return [...prevHouses, savedHouse];
@@ -95,10 +99,12 @@ export const useMongoDB = () => {
   const deleteHouse = useCallback(async (houseId) => {
     try {
       setLastOperation('deleting');
-      
+
       await apiClient.delete(`/houses/${houseId}`);
 
-      setHouses(prevHouses => prevHouses.filter(house => house._id !== houseId));
+      setHouses((prevHouses) =>
+        prevHouses.filter((house) => house._id !== houseId),
+      );
       setLastOperation('deleted');
     } catch (error) {
       logError(error, 'Delete House', ERROR_SEVERITY.MEDIUM);
@@ -111,19 +117,19 @@ export const useMongoDB = () => {
   const saveMember = useCallback(async (houseId, memberData) => {
     try {
       setLastOperation('saving');
-      
-      const endpoint = memberData._id 
+
+      const endpoint = memberData._id
         ? `/houses/${houseId}/members/${memberData._id}`
         : `/houses/${houseId}/members`;
-      
+
       const method = memberData._id ? 'put' : 'post';
-      
+
       const updatedHouse = await apiClient[method](endpoint, memberData);
-      
-      setHouses(prevHouses => 
-        prevHouses.map(house => 
-          house._id === houseId ? updatedHouse : house
-        )
+
+      setHouses((prevHouses) =>
+        prevHouses.map((house) =>
+          house._id === houseId ? updatedHouse : house,
+        ),
       );
 
       setLastOperation('saved');
@@ -139,13 +145,15 @@ export const useMongoDB = () => {
   const deleteMember = useCallback(async (houseId, memberId) => {
     try {
       setLastOperation('deleting');
-      
-      const updatedHouse = await apiClient.delete(`/houses/${houseId}/members/${memberId}`);
-      
-      setHouses(prevHouses => 
-        prevHouses.map(house => 
-          house._id === houseId ? updatedHouse : house
-        )
+
+      const updatedHouse = await apiClient.delete(
+        `/houses/${houseId}/members/${memberId}`,
+      );
+
+      setHouses((prevHouses) =>
+        prevHouses.map((house) =>
+          house._id === houseId ? updatedHouse : house,
+        ),
       );
 
       setLastOperation('deleted');
@@ -171,24 +179,24 @@ export const useMongoDB = () => {
   const importData = useCallback(async (data) => {
     try {
       setLastOperation('importing');
-      
+
       // Clear existing data first
       const allHouses = await apiClient.get('/houses');
-      
+
       // Delete all existing houses
       for (const house of allHouses.houses || []) {
         await apiClient.delete(`/houses/${house._id}`);
       }
-      
+
       // Import new data
       for (const house of data) {
         await apiClient.post('/houses', house);
       }
-      
+
       // Reload data
       const newData = await apiClient.get('/houses');
       setHouses(newData.houses || []);
-      
+
       setLastOperation('imported');
     } catch (error) {
       logError(error, 'Import Data', ERROR_SEVERITY.MEDIUM);
@@ -201,29 +209,34 @@ export const useMongoDB = () => {
   const getStats = useMemo(() => {
     if (!Array.isArray(houses)) return {};
 
-    const stats = houses.reduce((acc, house) => {
-      const members = house.members || [];
-      
-      acc.totalHouses += 1;
-      acc.totalMembers += members.length;
-      acc.totalAdults += members.filter(m => m.age >= 14).length;
-      acc.totalChildren += members.filter(m => m.age < 14).length;
-      acc.totalHafiz += members.filter(m => m.occupation === 'Hafiz').length;
-      acc.totalUlma += members.filter(m => m.occupation === 'Ulma').length;
-      acc.housesWithTaleem += house.taleem ? 1 : 0;
-      acc.housesWithMashwara += house.mashwara ? 1 : 0;
-      
-      return acc;
-    }, {
-      totalHouses: 0,
-      totalMembers: 0,
-      totalAdults: 0,
-      totalChildren: 0,
-      totalHafiz: 0,
-      totalUlma: 0,
-      housesWithTaleem: 0,
-      housesWithMashwara: 0
-    });
+    const stats = houses.reduce(
+      (acc, house) => {
+        const members = house.members || [];
+
+        acc.totalHouses += 1;
+        acc.totalMembers += members.length;
+        acc.totalAdults += members.filter((m) => m.age >= 14).length;
+        acc.totalChildren += members.filter((m) => m.age < 14).length;
+        acc.totalHafiz += members.filter(
+          (m) => m.occupation === 'Hafiz',
+        ).length;
+        acc.totalUlma += members.filter((m) => m.occupation === 'Ulma').length;
+        acc.housesWithTaleem += house.taleem ? 1 : 0;
+        acc.housesWithMashwara += house.mashwara ? 1 : 0;
+
+        return acc;
+      },
+      {
+        totalHouses: 0,
+        totalMembers: 0,
+        totalAdults: 0,
+        totalChildren: 0,
+        totalHafiz: 0,
+        totalUlma: 0,
+        housesWithTaleem: 0,
+        housesWithMashwara: 0,
+      },
+    );
 
     return stats;
   }, [houses]);
@@ -241,6 +254,6 @@ export const useMongoDB = () => {
     exportData,
     importData,
     getStats,
-    refreshData: loadInitialData
+    refreshData: loadInitialData,
   };
 };

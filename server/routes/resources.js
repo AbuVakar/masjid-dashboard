@@ -6,71 +6,77 @@ const { asyncHandler, AppError } = require('../middleware/errorHandler');
 // @desc    Get all resources
 // @route   GET /api/resources
 // @access  Public
-router.get('/', asyncHandler(async (req, res) => {
-  const { 
-    page = 1, 
-    limit = 20, 
-    search, 
-    category, 
-    tags,
-    sortBy = 'createdAt',
-    sortOrder = 'desc'
-  } = req.query;
+router.get(
+  '/',
+  asyncHandler(async (req, res) => {
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      category,
+      tags,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = req.query;
 
-  // Build query
-  let query = { status: 'active' };
+    // Build query
+    let query = { status: 'active' };
 
-  // Search functionality
-  if (search) {
-    query.$text = { $search: search };
-  }
+    // Search functionality
+    if (search) {
+      query.$text = { $search: search };
+    }
 
-  // Category filter
-  if (category) {
-    query.category = category;
-  }
+    // Category filter
+    if (category) {
+      query.category = category;
+    }
 
-  // Tags filter
-  if (tags) {
-    query.tags = { $in: tags.split(',') };
-  }
+    // Tags filter
+    if (tags) {
+      query.tags = { $in: tags.split(',') };
+    }
 
-  // Build sort object
-  const sort = {};
-  sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    // Build sort object
+    const sort = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
 
-  // Execute query with pagination
-  const resources = await Resource.find(query)
-    .limit(limit * 1)
-    .skip((page - 1) * limit)
-    .sort(sort);
+    // Execute query with pagination
+    const resources = await Resource.find(query)
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .sort(sort);
 
-  // Get total count
-  const total = await Resource.countDocuments(query);
+    // Get total count
+    const total = await Resource.countDocuments(query);
 
-  res.json({
-    resources,
-    totalPages: Math.ceil(total / limit),
-    currentPage: parseInt(page),
-    total
-  });
-}));
+    res.json({
+      resources,
+      totalPages: Math.ceil(total / limit),
+      currentPage: parseInt(page),
+      total,
+    });
+  }),
+);
 
 // @desc    Get single resource
 // @route   GET /api/resources/:id
 // @access  Public
-router.get('/:id', asyncHandler(async (req, res) => {
-  const resource = await Resource.findById(req.params.id);
-  
-  if (!resource) {
-    throw new AppError('Resource not found', 404, 'RESOURCE_NOT_FOUND');
-  }
+router.get(
+  '/:id',
+  asyncHandler(async (req, res) => {
+    const resource = await Resource.findById(req.params.id);
 
-  // Increment view count
-  await resource.incrementView();
+    if (!resource) {
+      throw new AppError('Resource not found', 404, 'RESOURCE_NOT_FOUND');
+    }
 
-  res.json(resource);
-}));
+    // Increment view count
+    await resource.incrementView();
+
+    res.json(resource);
+  }),
+);
 
 // @desc    Create resource
 // @route   POST /api/resources
@@ -87,7 +93,7 @@ router.post('/', async (req, res) => {
       fileType,
       tags,
       isPublic,
-      uploadedBy
+      uploadedBy,
     } = req.body;
 
     const resource = new Resource({
@@ -100,7 +106,7 @@ router.post('/', async (req, res) => {
       fileType,
       tags: tags || [],
       isPublic: isPublic !== undefined ? isPublic : true,
-      uploadedBy: uploadedBy || 'admin'
+      uploadedBy: uploadedBy || 'admin',
     });
 
     const savedResource = await resource.save();
@@ -126,7 +132,7 @@ router.put('/:id', async (req, res) => {
       fileType,
       tags,
       isPublic,
-      status
+      status,
     } = req.body;
 
     const resource = await Resource.findByIdAndUpdate(
@@ -141,9 +147,9 @@ router.put('/:id', async (req, res) => {
         fileType,
         tags,
         isPublic,
-        status
+        status,
       },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!resource) {
@@ -163,7 +169,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const resource = await Resource.findByIdAndDelete(req.params.id);
-    
+
     if (!resource) {
       return res.status(404).json({ message: 'Resource not found' });
     }
@@ -181,7 +187,7 @@ router.delete('/:id', async (req, res) => {
 router.post('/:id/download', async (req, res) => {
   try {
     const resource = await Resource.findById(req.params.id);
-    
+
     if (!resource) {
       return res.status(404).json({ message: 'Resource not found' });
     }
@@ -207,9 +213,9 @@ router.get('/stats/overview', async (req, res) => {
           totalDownloads: { $sum: '$downloadCount' },
           totalViews: { $sum: '$viewCount' },
           categories: { $addToSet: '$category' },
-          totalSize: { $sum: '$fileSize' }
-        }
-      }
+          totalSize: { $sum: '$fileSize' },
+        },
+      },
     ]);
 
     // Get category-wise counts
@@ -218,10 +224,10 @@ router.get('/stats/overview', async (req, res) => {
         $group: {
           _id: '$category',
           count: { $sum: 1 },
-          totalDownloads: { $sum: '$downloadCount' }
-        }
+          totalDownloads: { $sum: '$downloadCount' },
+        },
       },
-      { $sort: { count: -1 } }
+      { $sort: { count: -1 } },
     ]);
 
     res.json({
@@ -230,9 +236,9 @@ router.get('/stats/overview', async (req, res) => {
         totalDownloads: 0,
         totalViews: 0,
         categories: [],
-        totalSize: 0
+        totalSize: 0,
       },
-      categoryStats
+      categoryStats,
     });
   } catch (error) {
     console.error('Error fetching resource stats:', error);

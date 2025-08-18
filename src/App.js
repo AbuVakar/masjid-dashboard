@@ -25,11 +25,11 @@ import { useNotifications } from './hooks/useNotifications';
 import { useResources } from './hooks/useResources';
 
 // Utilities
-import { 
+import {
   initializeErrorHandling,
   measurePerformance,
   logError,
-  ERROR_SEVERITY 
+  ERROR_SEVERITY,
 } from './utils/errorHandler';
 
 // Services
@@ -51,49 +51,40 @@ function App() {
     Dhuhr: '12:30',
     Asr: '15:45',
     Maghrib: '18:15',
-    Isha: '19:30'
+    Isha: '19:30',
   });
 
   // Custom hooks
-  const { 
-    houses, 
-    members, 
-    loading, 
-    error, 
-    saveHouse, 
-    deleteHouse, 
-    saveMember, 
+  const {
+    houses,
+    members,
+    loading,
+    error,
+    saveHouse,
+    deleteHouse,
+    saveMember,
     deleteMember,
     exportData,
     importData,
-    refreshData
+    refreshData,
   } = useMongoDB();
 
-  const { 
-    filters, 
-    setFilters, 
-    filteredHouses, 
-    resetFilters,
-    streets
-  } = useFilters(houses);
+  const { filters, setFilters, filteredHouses, resetFilters, streets } =
+    useFilters(houses);
 
-  const { 
-    user, 
-    login, 
-    logout: logoutUser, 
-    register, 
-    enableGuestMode, 
-    isAuthenticated, 
-    isAdmin, 
-    isGuest 
+  const {
+    user,
+    login,
+    logout: logoutUser,
+    register,
+    enableGuestMode,
+    isAuthenticated,
+    isAdmin,
+    isGuest,
   } = useUser();
 
-  const { 
-    notify, 
-    notifyDataBackup,
-    notifySystemUpdate,
-    notifyCommunityEvent
-  } = useNotifications();
+  const { notify, notifyDataBackup, notifySystemUpdate, notifyCommunityEvent } =
+    useNotifications();
 
   const { resources: resourcesData } = useResources();
 
@@ -123,119 +114,133 @@ function App() {
   }, [refreshData, notify]);
 
   // Enhanced error handling for data operations
-  const handleSave = useCallback(async (data, type) => {
-    setOperationLoading(true);
-    try {
-      await measurePerformance(`Save ${type}`, async () => {
-        if (type === 'house') {
-          await saveHouse(data);
-        } else if (type === 'member') {
-          await saveMember(data.houseId, data.member);
-        } else if (type === 'timetable') {
-          // Handle timetable save - update prayer times in the app state
-          if (data && data.times) {
-            setPrayerTimes(data.times);
-            // Save to localStorage for persistence
-            localStorage.setItem('prayerTimes', JSON.stringify(data.times));
+  const handleSave = useCallback(
+    async (data, type) => {
+      setOperationLoading(true);
+      try {
+        await measurePerformance(`Save ${type}`, async () => {
+          if (type === 'house') {
+            await saveHouse(data);
+          } else if (type === 'member') {
+            await saveMember(data.houseId, data.member);
+          } else if (type === 'timetable') {
+            // Handle timetable save - update prayer times in the app state
+            if (data && data.times) {
+              setPrayerTimes(data.times);
+              // Save to localStorage for persistence
+              localStorage.setItem('prayerTimes', JSON.stringify(data.times));
+            }
+          } else if (type === 'info') {
+            // Handle info modal saves (aumoor, running, etc.)
+            if (data && data.type) {
+              // Save to localStorage for persistence
+              const existingData = JSON.parse(
+                localStorage.getItem('infoData_v1') || '{}',
+              );
+              existingData[data.type] = data;
+              localStorage.setItem('infoData_v1', JSON.stringify(existingData));
+            }
+          } else if (type === 'demo') {
+            // Handle demo data loading
+            await loadDemoData();
           }
-        } else if (type === 'info') {
-          // Handle info modal saves (aumoor, running, etc.)
-          if (data && data.type) {
-            // Save to localStorage for persistence
-            const existingData = JSON.parse(localStorage.getItem('infoData_v1') || '{}');
-            existingData[data.type] = data;
-            localStorage.setItem('infoData_v1', JSON.stringify(existingData));
-          }
-        } else if (type === 'demo') {
-          // Handle demo data loading
-          await loadDemoData();
-        }
-      });
+        });
 
-      // Notify success
-      notify(`Successfully saved ${type}`, { type: 'success' });
-      
-      // Close modal
-      setShowModal(false);
-      setModalData(null);
-    } catch (error) {
-      logError(error, `Save ${type}`, ERROR_SEVERITY.MEDIUM);
-      toast.error(`Failed to save ${type}. Please try again.`);
-    } finally {
-      setOperationLoading(false);
-    }
-  }, [saveHouse, saveMember, notify, loadDemoData]);
+        // Notify success
+        notify(`Successfully saved ${type}`, { type: 'success' });
+
+        // Close modal
+        setShowModal(false);
+        setModalData(null);
+      } catch (error) {
+        logError(error, `Save ${type}`, ERROR_SEVERITY.MEDIUM);
+        toast.error(`Failed to save ${type}. Please try again.`);
+      } finally {
+        setOperationLoading(false);
+      }
+    },
+    [saveHouse, saveMember, notify, loadDemoData],
+  );
 
   // Enhanced delete operations with confirmation
-  const handleDelete = useCallback(async (id, type, houseId = null) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete this ${type}? This action cannot be undone.`
-    );
+  const handleDelete = useCallback(
+    async (id, type, houseId = null) => {
+      const confirmed = window.confirm(
+        `Are you sure you want to delete this ${type}? This action cannot be undone.`,
+      );
 
-    if (!confirmed) return;
+      if (!confirmed) return;
 
-    setOperationLoading(true);
-    try {
-      await measurePerformance(`Delete ${type}`, async () => {
-        if (type === 'house') {
-          await deleteHouse(id);
-        } else if (type === 'member') {
-          await deleteMember(houseId, id);
-        }
-      });
+      setOperationLoading(true);
+      try {
+        await measurePerformance(`Delete ${type}`, async () => {
+          if (type === 'house') {
+            await deleteHouse(id);
+          } else if (type === 'member') {
+            await deleteMember(houseId, id);
+          }
+        });
 
-      // Notify success
-      notify(`Successfully deleted ${type}`, { type: 'success' });
-    } catch (error) {
-      logError(error, `Delete ${type}`, ERROR_SEVERITY.MEDIUM);
-      toast.error(`Failed to delete ${type}. Please try again.`);
-    } finally {
-      setOperationLoading(false);
-    }
-  }, [deleteHouse, deleteMember, notify]);
+        // Notify success
+        notify(`Successfully deleted ${type}`, { type: 'success' });
+      } catch (error) {
+        logError(error, `Delete ${type}`, ERROR_SEVERITY.MEDIUM);
+        toast.error(`Failed to delete ${type}. Please try again.`);
+      } finally {
+        setOperationLoading(false);
+      }
+    },
+    [deleteHouse, deleteMember, notify],
+  );
 
   // Enhanced user authentication with error handling
-  const handleUserLogin = useCallback(async (userData) => {
-    try {
-      await measurePerformance('User Login', async () => {
-        await login(userData);
-      });
+  const handleUserLogin = useCallback(
+    async (userData) => {
+      try {
+        await measurePerformance('User Login', async () => {
+          await login(userData);
+        });
 
-      // Notify successful login
-      notify(`Welcome back, ${userData.name || userData.username}!`, { 
-        type: 'success',
-        category: 'authentication'
-      });
+        // Notify successful login
+        notify(`Welcome back, ${userData.name || userData.username}!`, {
+          type: 'success',
+          category: 'authentication',
+        });
 
-      // Send system update notification
-      notifySystemUpdate('User logged in successfully');
-    } catch (error) {
-      logError(error, 'User Login', ERROR_SEVERITY.HIGH);
-      toast.error('Login failed. Please check your credentials.');
-      throw error;
-    }
-  }, [login, notify, notifySystemUpdate]);
+        // Send system update notification
+        notifySystemUpdate('User logged in successfully');
+      } catch (error) {
+        logError(error, 'User Login', ERROR_SEVERITY.HIGH);
+        toast.error('Login failed. Please check your credentials.');
+        throw error;
+      }
+    },
+    [login, notify, notifySystemUpdate],
+  );
 
-  const handleUserRegister = useCallback(async (userData) => {
-    try {
-      await measurePerformance('User Registration', async () => {
-        await register(userData);
-      });
+  const handleUserRegister = useCallback(
+    async (userData) => {
+      try {
+        await measurePerformance('User Registration', async () => {
+          await register(userData);
+        });
 
-      // Notify successful registration
-      notify(`Welcome to Silsila-ul-Ahwaal, ${userData.username}!`, { 
-        type: 'success',
-        category: 'authentication'
-      });
+        // Notify successful registration
+        notify(`Welcome to Silsila-ul-Ahwaal, ${userData.username}!`, {
+          type: 'success',
+          category: 'authentication',
+        });
 
-      // Send community event notification
-      notifyCommunityEvent('New user registered');
-    } catch (error) {
-      logError(error, 'User Registration', ERROR_SEVERITY.HIGH);
-      toast.error('Registration failed. Please try again.');
-      throw error;
-    }
-  }, [register, notify, notifyCommunityEvent]);
+        // Send community event notification
+        notifyCommunityEvent('New user registered');
+      } catch (error) {
+        logError(error, 'User Registration', ERROR_SEVERITY.HIGH);
+        toast.error('Registration failed. Please try again.');
+        throw error;
+      }
+    },
+    [register, notify, notifyCommunityEvent],
+  );
 
   const handleGuestMode = useCallback(async () => {
     try {
@@ -244,9 +249,9 @@ function App() {
       });
 
       // Notify guest mode access
-      notify('Entering guest mode with limited access', { 
+      notify('Entering guest mode with limited access', {
         type: 'info',
-        category: 'authentication'
+        category: 'authentication',
       });
     } catch (error) {
       logError(error, 'Guest Mode', ERROR_SEVERITY.MEDIUM);
@@ -290,19 +295,22 @@ function App() {
     }
   }, [exportData, notifyDataBackup]);
 
-  const handleRestore = useCallback(async (data) => {
-    try {
-      await measurePerformance('Data Restore', async () => {
-        await importData(data);
-      });
+  const handleRestore = useCallback(
+    async (data) => {
+      try {
+        await measurePerformance('Data Restore', async () => {
+          await importData(data);
+        });
 
-      // Notify restore completion
-      notifyDataBackup('Data restored successfully');
-    } catch (error) {
-      logError(error, 'Data Restore', ERROR_SEVERITY.MEDIUM);
-      toast.error('Restore failed. Please check the file format.');
-    }
-  }, [importData, notifyDataBackup]);
+        // Notify restore completion
+        notifyDataBackup('Data restored successfully');
+      } catch (error) {
+        logError(error, 'Data Restore', ERROR_SEVERITY.MEDIUM);
+        toast.error('Restore failed. Please check the file format.');
+      }
+    },
+    [importData, notifyDataBackup],
+  );
 
   // Export functions
   const handleExportExcel = useCallback(async () => {
@@ -310,36 +318,39 @@ function App() {
       setOperationLoading(true);
       await measurePerformance('Export Excel', async () => {
         const data = await exportData();
-        
+
         // Process data in chunks to prevent memory issues
         const chunkSize = 1000;
         const chunks = [];
         for (let i = 0; i < data.length; i += chunkSize) {
           chunks.push(data.slice(i, i + chunkSize));
         }
-        
+
         const processedData = [];
         for (const chunk of chunks) {
-          const processedChunk = chunk.map(house => ({
+          const processedChunk = chunk.map((house) => ({
             'House Number': house.number,
-            'Street': house.street,
+            Street: house.street,
             'Total Members': house.members?.length || 0,
-            'Adults': house.members?.filter(m => m.age >= 14).length || 0,
-            'Children': house.members?.filter(m => m.age < 14).length || 0,
-            'Taleem': house.taleem ? 'Yes' : 'No',
-            'Mashwara': house.mashwara ? 'Yes' : 'No',
-            'Notes': house.notes || ''
+            Adults: house.members?.filter((m) => m.age >= 14).length || 0,
+            Children: house.members?.filter((m) => m.age < 14).length || 0,
+            Taleem: house.taleem ? 'Yes' : 'No',
+            Mashwara: house.mashwara ? 'Yes' : 'No',
+            Notes: house.notes || '',
           }));
           processedData.push(...processedChunk);
         }
-        
+
         const worksheet = XLSX.utils.json_to_sheet(processedData);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Houses');
-        
-        XLSX.writeFile(workbook, `masjid-houses-${new Date().toISOString().split('T')[0]}.xlsx`);
+
+        XLSX.writeFile(
+          workbook,
+          `masjid-houses-${new Date().toISOString().split('T')[0]}.xlsx`,
+        );
       });
-      
+
       notify('Excel file exported successfully!', { type: 'success' });
     } catch (error) {
       logError(error, 'Export Excel', ERROR_SEVERITY.MEDIUM);
@@ -354,67 +365,79 @@ function App() {
       setOperationLoading(true);
       await measurePerformance('Export PDF', async () => {
         const data = await exportData();
-        
+
         const doc = new jsPDF();
-        
+
         // Title
         doc.setFontSize(20);
         doc.text('Masjid Dashboard - Houses Report', 20, 20);
-        
+
         // Date
         doc.setFontSize(12);
         doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
-        
+
         let yPosition = 50;
-        
+
         data.forEach((house, index) => {
           if (yPosition > 250) {
             doc.addPage();
             yPosition = 20;
           }
-          
+
           // House header
           doc.setFontSize(14);
           doc.setFont(undefined, 'bold');
           doc.text(`House ${house.number} - ${house.street}`, 20, yPosition);
           yPosition += 10;
-          
+
           // House details
           doc.setFontSize(10);
           doc.setFont(undefined, 'normal');
           doc.text(`Members: ${house.members?.length || 0}`, 30, yPosition);
           yPosition += 5;
-          doc.text(`Adults: ${house.members?.filter(m => m.age >= 14).length || 0}`, 30, yPosition);
+          doc.text(
+            `Adults: ${house.members?.filter((m) => m.age >= 14).length || 0}`,
+            30,
+            yPosition,
+          );
           yPosition += 5;
-          doc.text(`Children: ${house.members?.filter(m => m.age < 14).length || 0}`, 30, yPosition);
+          doc.text(
+            `Children: ${house.members?.filter((m) => m.age < 14).length || 0}`,
+            30,
+            yPosition,
+          );
           yPosition += 5;
           doc.text(`Taleem: ${house.taleem ? 'Yes' : 'No'}`, 30, yPosition);
           yPosition += 5;
           doc.text(`Mashwara: ${house.mashwara ? 'Yes' : 'No'}`, 30, yPosition);
           yPosition += 10;
-          
+
           // Members table
           if (house.members && house.members.length > 0) {
             doc.setFontSize(9);
             doc.text('Members:', 30, yPosition);
             yPosition += 5;
-            
-            house.members.forEach(member => {
+
+            house.members.forEach((member) => {
               if (yPosition > 250) {
                 doc.addPage();
                 yPosition = 20;
               }
-              doc.text(`${member.name} (${member.age}) - ${member.occupation}`, 40, yPosition);
+              doc.text(
+                `${member.name} (${member.age}) - ${member.occupation}`,
+                40,
+                yPosition,
+              );
               yPosition += 4;
             });
           }
-          
+
           yPosition += 10;
         });
-        
+
         doc.save(`masjid-houses-${new Date().toISOString().split('T')[0]}.pdf`);
       });
-      
+
       notify('PDF file exported successfully!', { type: 'success' });
     } catch (error) {
       logError(error, 'Export PDF', ERROR_SEVERITY.MEDIUM);
@@ -441,25 +464,28 @@ function App() {
   }, [openModal]);
 
   // Navigation handler
-  const handleNavigation = useCallback((view, data = {}) => {
-    if (view === 'dashboard') {
-      setCurrentView('dashboard');
-    } else if (view === 'resources') {
-      setCurrentView('resources');
-    } else if (view === 'main') {
-      setCurrentView('main');
-    } else if (view === 'add-house') {
-      openModal('house');
-    } else if (view === 'add-member') {
-      openModal('member');
-    } else if (view === 'upload-resource') {
-      setCurrentView('resources');
-      // Could add a flag to open upload form directly
-    } else {
-      // Handle other navigation (existing logic)
-      openModal(view, data);
-    }
-  }, [openModal]);
+  const handleNavigation = useCallback(
+    (view, data = {}) => {
+      if (view === 'dashboard') {
+        setCurrentView('dashboard');
+      } else if (view === 'resources') {
+        setCurrentView('resources');
+      } else if (view === 'main') {
+        setCurrentView('main');
+      } else if (view === 'add-house') {
+        openModal('house');
+      } else if (view === 'add-member') {
+        openModal('member');
+      } else if (view === 'upload-resource') {
+        setCurrentView('resources');
+        // Could add a flag to open upload form directly
+      } else {
+        // Handle other navigation (existing logic)
+        openModal(view, data);
+      }
+    },
+    [openModal],
+  );
 
   // Enhanced clear all data (commented out for future use)
   // const handleClearAllData = useCallback(async () => {
@@ -484,7 +510,7 @@ function App() {
   //     });
 
   //     // Notify bulk operation
-  //     notify(`Successfully saved ${housesData.length} houses`, { 
+  //     notify(`Successfully saved ${housesData.length} houses`, {
   //       type: 'success',
   //       category: 'dataBackup'
   //     });
@@ -495,14 +521,15 @@ function App() {
   // }, [bulkSaveHouses, notify]);
 
   // Access control functions
-  const canEdit = useCallback((item = null) => {
-    if (isGuest) return false;
-    if (isAdmin) return true;
-    if (!isAuthenticated) return false;
-    return true; // Regular users can edit
-  }, [isAdmin, isGuest, isAuthenticated]);
-
-
+  const canEdit = useCallback(
+    (item = null) => {
+      if (isGuest) return false;
+      if (isAdmin) return true;
+      if (!isAuthenticated) return false;
+      return true; // Regular users can edit
+    },
+    [isAdmin, isGuest, isAuthenticated],
+  );
 
   // Error handling for data loading
   useEffect(() => {
@@ -527,8 +554,7 @@ function App() {
 
   // Performance monitoring for component mount
   useEffect(() => {
-    measurePerformance('App Component Mount', () => {
-      });
+    measurePerformance('App Component Mount', () => {});
   }, []);
 
   // Render loading state
@@ -546,12 +572,12 @@ function App() {
     return (
       <ErrorBoundary>
         <div className="app">
-      <UserAuth
-        onLogin={handleUserLogin}
-        onRegister={handleUserRegister}
+          <UserAuth
+            onLogin={handleUserLogin}
+            onRegister={handleUserRegister}
             onGuestMode={handleGuestMode}
             loading={operationLoading}
-      />
+          />
           <ToastContainer />
         </div>
       </ErrorBoundary>
@@ -561,8 +587,8 @@ function App() {
   // Main application
   return (
     <ErrorBoundary fallback={<ErrorFallback />}>
-    <div className="app">
-        <Header 
+      <div className="app">
+        <Header
           user={user}
           onLogout={handleLogout}
           onOpenAnalytics={handleOpenAnalytics}
@@ -570,7 +596,10 @@ function App() {
           isAdmin={isAdmin}
           isGuest={isGuest}
           onNavClick={handleNavigation}
-          L={{ title: 'Silsila-ul-Ahwaal', subtitle: 'Har Ghar Deen ka Markaz' }}
+          L={{
+            title: 'Silsila-ul-Ahwaal',
+            subtitle: 'Har Ghar Deen ka Markaz',
+          }}
           prayerTimes={prayerTimes}
           onEnableNotifications={() => {}}
           currentUser={user}
@@ -579,10 +608,12 @@ function App() {
           }}
           onNotificationTestToggle={() => {}}
         />
-      
-      <main className="main-content">
+
+        <main className="main-content">
           {currentView === 'dashboard' ? (
-            <ErrorBoundary fallback={<ErrorFallback componentName="Dashboard" />}>
+            <ErrorBoundary
+              fallback={<ErrorFallback componentName="Dashboard" />}
+            >
               <Dashboard
                 houses={houses}
                 members={members}
@@ -592,55 +623,61 @@ function App() {
               />
             </ErrorBoundary>
           ) : currentView === 'resources' ? (
-            <ErrorBoundary fallback={<ErrorFallback componentName="Resources" />}>
+            <ErrorBoundary
+              fallback={<ErrorFallback componentName="Resources" />}
+            >
               <Resources isAdmin={isAdmin} />
             </ErrorBoundary>
           ) : (
             <>
               <HeroTypewriter />
-              
+
               {/* Temporary Debug Component */}
               {/* <FilterDebug 
                 houses={houses}
                 filters={filters}
                 filteredHouses={memoizedFilteredHouses}
               /> */}
-        
-              <ErrorBoundary fallback={<ErrorFallback componentName="Filters" />}>
-        <Filters 
-          filters={filters}
-          onFiltersChange={setFilters}
-          onAddHouse={() => openModal('house')}
-          onClearAll={handleClearFilters}
-          onReset={resetFilters}
-          onExportExcel={handleExportExcel}
-          onExportPDF={handleExportPDF}
-          onOpenNotifyPrefs={() => openModal('notifications')}
-          onOpenAnalytics={handleOpenAnalytics}
-          onLoadDemoData={() => openModal('demo')}
-          streets={streets}
-          isAdmin={isAdmin}
-          L={{
-            searchPlaceholder: 'Search house # or name',
-            streetAll: 'Street (All)',
-            occupationAll: 'Occupation (All)',
-            dawatAll: 'Dawat (All)',
-            dawatCountType: 'Dawat count (type)',
-            times: 'Times',
-            educationAll: 'Education (All)',
-            quranAny: 'Quran (Any)',
-            minAge: 'Min age',
-            maxAge: 'Max age',
-            exportExcel: 'Export Excel',
-            exportPDF: 'Export PDF',
-            addHouse: 'Add House',
-            clear: 'Clear All',
-            reset: 'Reset'
-          }}
-        />
+
+              <ErrorBoundary
+                fallback={<ErrorFallback componentName="Filters" />}
+              >
+                <Filters
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  onAddHouse={() => openModal('house')}
+                  onClearAll={handleClearFilters}
+                  onReset={resetFilters}
+                  onExportExcel={handleExportExcel}
+                  onExportPDF={handleExportPDF}
+                  onOpenNotifyPrefs={() => openModal('notifications')}
+                  onOpenAnalytics={handleOpenAnalytics}
+                  onLoadDemoData={() => openModal('demo')}
+                  streets={streets}
+                  isAdmin={isAdmin}
+                  L={{
+                    searchPlaceholder: 'Search house # or name',
+                    streetAll: 'Street (All)',
+                    occupationAll: 'Occupation (All)',
+                    dawatAll: 'Dawat (All)',
+                    dawatCountType: 'Dawat count (type)',
+                    times: 'Times',
+                    educationAll: 'Education (All)',
+                    quranAny: 'Quran (Any)',
+                    minAge: 'Min age',
+                    maxAge: 'Max age',
+                    exportExcel: 'Export Excel',
+                    exportPDF: 'Export PDF',
+                    addHouse: 'Add House',
+                    clear: 'Clear All',
+                    reset: 'Reset',
+                  }}
+                />
               </ErrorBoundary>
 
-              <ErrorBoundary fallback={<ErrorFallback componentName="House Table" />}>
+              <ErrorBoundary
+                fallback={<ErrorFallback componentName="House Table" />}
+              >
                 <HouseTable
                   houses={memoizedFilteredHouses}
                   expandedHouse={expandedHouse}
@@ -650,7 +687,7 @@ function App() {
                   onAddMember={openModal}
                   onEditMember={openModal}
                   onDeleteMember={handleDelete}
-          isAdmin={isAdmin}
+                  isAdmin={isAdmin}
                   loading={operationLoading}
                   L={{
                     searchPlaceholder: 'Search house # or name',
@@ -662,7 +699,7 @@ function App() {
                     educationAll: 'Education (All)',
                     quranAny: 'Quran (Any)',
                     minAge: 'Min age',
-                    maxAge: 'Max age'
+                    maxAge: 'Max age',
                   }}
                 />
               </ErrorBoundary>
@@ -670,16 +707,19 @@ function App() {
               {memoizedFilteredHouses.length === 0 && !loading && (
                 <div className="empty-state">
                   <h3>No houses found</h3>
-                  <p>Try adjusting your filters or add some houses to get started.</p>
+                  <p>
+                    Try adjusting your filters or add some houses to get
+                    started.
+                  </p>
                   {canEdit() && (
-            <button 
+                    <button
                       className="btn-primary"
                       onClick={() => openModal('house')}
                     >
                       Add First House
-            </button>
-          )}
-        </div>
+                    </button>
+                  )}
+                </div>
               )}
             </>
           )}
@@ -705,7 +745,7 @@ function App() {
         )}
 
         <ToastContainer />
-          </div>
+      </div>
     </ErrorBoundary>
   );
 }

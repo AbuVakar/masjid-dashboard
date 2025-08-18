@@ -16,11 +16,11 @@ export const exportData = (data, filename = 'masjid-backup') => {
     const exportData = {
       version: '1.0',
       timestamp: new Date().toISOString(),
-      data: data
+      data: data,
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-      type: 'application/json'
+      type: 'application/json',
     });
 
     const url = URL.createObjectURL(blob);
@@ -47,11 +47,11 @@ export const exportData = (data, filename = 'masjid-backup') => {
 export const importData = async (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
+
     reader.onload = (event) => {
       try {
         const content = JSON.parse(event.target.result);
-        
+
         // Validate backup format
         if (!content.version || !content.data) {
           throw new Error('Invalid backup format');
@@ -90,7 +90,7 @@ export const createBackup = (currentData) => {
     houses: currentData.houses || [],
     users: currentData.users || [],
     settings: currentData.settings || {},
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 };
 
@@ -130,7 +130,11 @@ export const validateBackup = (data) => {
  * @param {boolean} overwrite - Whether to overwrite existing data
  * @returns {Object} Merged data
  */
-export const mergeBackupData = (existingData, backupData, overwrite = false) => {
+export const mergeBackupData = (
+  existingData,
+  backupData,
+  overwrite = false,
+) => {
   const merged = { ...existingData };
 
   if (overwrite) {
@@ -141,14 +145,18 @@ export const mergeBackupData = (existingData, backupData, overwrite = false) => 
   } else {
     // Smart merge
     if (backupData.houses) {
-      const existingIds = new Set(existingData.houses?.map(h => h.id) || []);
-      const newHouses = backupData.houses.filter(h => !existingIds.has(h.id));
+      const existingIds = new Set(existingData.houses?.map((h) => h.id) || []);
+      const newHouses = backupData.houses.filter((h) => !existingIds.has(h.id));
       merged.houses = [...(existingData.houses || []), ...newHouses];
     }
 
     if (backupData.users) {
-      const existingUserIds = new Set(existingData.users?.map(u => u.id) || []);
-      const newUsers = backupData.users.filter(u => !existingUserIds.has(u.id));
+      const existingUserIds = new Set(
+        existingData.users?.map((u) => u.id) || [],
+      );
+      const newUsers = backupData.users.filter(
+        (u) => !existingUserIds.has(u.id),
+      );
       merged.users = [...(existingData.users || []), ...newUsers];
     }
 

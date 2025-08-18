@@ -11,10 +11,10 @@ const connectDB = require('./config/db');
 const validateEnvironment = require('./config/validateEnv');
 
 // Import error handling
-const { 
-  errorHandler, 
-  notFoundHandler, 
-  setupProcessErrorHandlers
+const {
+  errorHandler,
+  notFoundHandler,
+  setupProcessErrorHandlers,
 } = require('./middleware/errorHandler');
 
 // Import logging
@@ -35,24 +35,23 @@ const app = express();
 // Validate environment variables
 validateEnvironment();
 
-// Connect to MongoDB
-connectDB();
-
 // Security middleware
 app.use(helmet());
 
 // CORS configuration
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    credentials: true,
+  }),
+);
 
 // Rate limiting with different limits for different endpoints
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
   message: {
-    error: 'Too many requests from this IP, please try again later.'
+    error: 'Too many requests from this IP, please try again later.',
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -62,7 +61,7 @@ const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 20, // limit each IP to 20 requests per windowMs for auth (increased for testing)
   message: {
-    error: 'Too many authentication attempts, please try again later.'
+    error: 'Too many authentication attempts, please try again later.',
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -111,7 +110,7 @@ app.get('/api/health', (req, res) => {
     status: 'OK',
     message: 'Masjid Dashboard API is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
   });
 });
 
@@ -123,16 +122,16 @@ app.get('/', (req, res) => {
     endpoints: {
       houses: '/api/houses',
       resources: '/api/resources',
-      health: '/api/health'
-    }
+      health: '/api/health',
+    },
   });
 });
 
+// 404 handler - must be last
+app.use(notFoundHandler);
+
 // Centralized error handling middleware
 app.use(errorHandler);
-
-// 404 handler - must be last
-app.use('*', notFoundHandler);
 
 // Setup process error handlers
 setupProcessErrorHandlers();
@@ -142,12 +141,13 @@ const PORT = process.env.PORT || 5000;
 
 let server;
 if (process.env.NODE_ENV !== 'test') {
-  server = app.listen(PORT, () => {
+  server = app.listen(PORT, async () => {
+    await connectDB();
     enhancedLogger.info('Server started', {
       port: PORT,
       environment: process.env.NODE_ENV || 'development',
       apiUrl: `http://localhost:${PORT}`,
-      corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000'
+      corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
     });
   });
 }

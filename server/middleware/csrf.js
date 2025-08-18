@@ -16,14 +16,14 @@ const csrfTokens = new Map();
 const generateCSRFToken = (sessionId) => {
   const token = crypto.randomBytes(32).toString('hex');
   const timestamp = Date.now();
-  
+
   // Store token with timestamp for expiration
   csrfTokens.set(sessionId, {
     token,
     timestamp,
-    expiresAt: timestamp + (15 * 60 * 1000) // 15 minutes
+    expiresAt: timestamp + 15 * 60 * 1000, // 15 minutes
   });
-  
+
   return token;
 };
 
@@ -35,22 +35,22 @@ const generateCSRFToken = (sessionId) => {
  */
 const validateCSRFToken = (sessionId, token) => {
   const stored = csrfTokens.get(sessionId);
-  
+
   if (!stored) {
     return false;
   }
-  
+
   // Check if token is expired
   if (Date.now() > stored.expiresAt) {
     csrfTokens.delete(sessionId);
     return false;
   }
-  
+
   // Check if token matches
   if (stored.token !== token) {
     return false;
   }
-  
+
   return true;
 };
 
@@ -79,29 +79,29 @@ const csrfToken = (req, res, next) => {
   if (req.method === 'GET' || req.path.startsWith('/uploads/')) {
     return next();
   }
-  
+
   // Skip CSRF in test environment
   if (process.env.NODE_ENV === 'test') {
     return next();
   }
-  
+
   // Generate session ID from user agent and IP
   const sessionId = crypto
     .createHash('sha256')
     .update(`${req.ip}-${req.get('User-Agent')}`)
     .digest('hex');
-  
+
   // Generate CSRF token
   const token = generateCSRFToken(sessionId);
-  
+
   // Add token to response headers
   res.setHeader('X-CSRF-Token', token);
-  
+
   // Add token to response body for forms
   if (req.path.includes('/api/')) {
     res.locals.csrfToken = token;
   }
-  
+
   next();
 };
 
@@ -113,49 +113,50 @@ const validateCSRF = (req, res, next) => {
   if (req.method === 'GET' || req.path.startsWith('/uploads/')) {
     return next();
   }
-  
+
   // Skip CSRF for API health checks
   if (req.path === '/api/health') {
     return next();
   }
-  
+
   // Skip CSRF in test environment
   if (process.env.NODE_ENV === 'test') {
     return next();
   }
-  
+
   // Generate session ID
   const sessionId = crypto
     .createHash('sha256')
     .update(`${req.ip}-${req.get('User-Agent')}`)
     .digest('hex');
-  
+
   // Get token from headers or body
-  const token = req.headers['x-csrf-token'] || req.body._csrf || req.query._csrf;
-  
+  const token =
+    req.headers['x-csrf-token'] || req.body._csrf || req.query._csrf;
+
   if (!token) {
     return res.status(403).json({
       success: false,
       error: {
         message: 'CSRF token missing',
-        code: 'CSRF_TOKEN_MISSING'
-      }
+        code: 'CSRF_TOKEN_MISSING',
+      },
     });
   }
-  
+
   if (!validateCSRFToken(sessionId, token)) {
     return res.status(403).json({
       success: false,
       error: {
         message: 'Invalid CSRF token',
-        code: 'CSRF_TOKEN_INVALID'
-      }
+        code: 'CSRF_TOKEN_INVALID',
+      },
     });
   }
-  
+
   // Remove token from body to prevent it from being saved
   delete req.body._csrf;
-  
+
   next();
 };
 
@@ -167,15 +168,15 @@ const getCSRFToken = (req, res) => {
     .createHash('sha256')
     .update(`${req.ip}-${req.get('User-Agent')}`)
     .digest('hex');
-  
+
   const token = generateCSRFToken(sessionId);
-  
+
   res.json({
     success: true,
     data: {
       token,
-      expiresIn: 15 * 60 * 1000 // 15 minutes
-    }
+      expiresIn: 15 * 60 * 1000, // 15 minutes
+    },
   });
 };
 
@@ -184,5 +185,5 @@ module.exports = {
   validateCSRF,
   getCSRFToken,
   generateCSRFToken,
-  validateCSRFToken
+  validateCSRFToken,
 };

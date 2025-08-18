@@ -1,16 +1,23 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
-import { FaEye, FaEyeSlash, FaUser, FaLock, FaMobile, FaEnvelope } from 'react-icons/fa';
-import { 
-  validateLoginCredentials, 
-  validateRegistrationData, 
+import {
+  FaEye,
+  FaEyeSlash,
+  FaUser,
+  FaLock,
+  FaMobile,
+  FaEnvelope,
+} from 'react-icons/fa';
+import {
+  validateLoginCredentials,
+  validateRegistrationData,
   displayValidationErrors,
-  authRateLimiter 
+  authRateLimiter,
 } from '../utils/validation';
-import { 
-  logError, 
+import {
+  logError,
   measurePerformance,
-  ERROR_SEVERITY 
+  ERROR_SEVERITY,
 } from '../utils/errorHandler';
 
 // Demo user credentials for testing (removed for security)
@@ -36,7 +43,7 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
     password: '',
     confirmPassword: '',
     mobile: '',
-    email: ''
+    email: '',
   });
 
   // Clear form data when component mounts and when switching modes
@@ -46,7 +53,7 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
       password: '',
       confirmPassword: '',
       mobile: '',
-      email: ''
+      email: '',
     });
     setErrors({});
     // Ensure password is hidden
@@ -61,7 +68,7 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
       password: '',
       confirmPassword: '',
       mobile: '',
-      email: ''
+      email: '',
     });
     setShowPassword(false);
     setShowConfirmPassword(false);
@@ -80,14 +87,17 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
   }, [isLogin]);
 
   // Handle input changes with validation
-  const handleInputChange = useCallback((field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Clear field-specific error
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  }, [errors]);
+  const handleInputChange = useCallback(
+    (field, value) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+
+      // Clear field-specific error
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: '' }));
+      }
+    },
+    [errors],
+  );
 
   // Validate form data
   const validateForm = useCallback(() => {
@@ -96,7 +106,7 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
     if (isLogin) {
       const validation = validateLoginCredentials(formData);
       if (!validation.isValid) {
-        validation.errors.forEach(error => {
+        validation.errors.forEach((error) => {
           if (error.includes('Username')) newErrors.username = error;
           if (error.includes('Password')) newErrors.password = error;
         });
@@ -104,7 +114,7 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
     } else {
       const validation = validateRegistrationData(formData);
       if (!validation.isValid) {
-        validation.errors.forEach(error => {
+        validation.errors.forEach((error) => {
           if (error.includes('Username')) newErrors.username = error;
           if (error.includes('Password')) newErrors.password = error;
           if (error.includes('confirm')) newErrors.confirmPassword = error;
@@ -119,65 +129,70 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
   }, [isLogin, formData]);
 
   // Handle form submission with security measures
-  const handleSubmit = useCallback(async (e) => {
-    e.preventDefault();
-    
-    if (isSubmitting) return; // Prevent double submission
-    
-    // Clear any existing error messages
-    setErrors({});
-    
-    // Rate limiting check
-    const userIdentifier = formData.username || 'anonymous';
-    if (!authRateLimiter.isAllowed(userIdentifier)) {
-      toast.error('Too many attempts. Please wait 15 minutes before trying again.');
-      return;
-    }
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-    // Validate form
-    if (!validateForm()) {
-      displayValidationErrors(Object.values(errors).filter(Boolean));
-      return;
-    }
+      if (isSubmitting) return; // Prevent double submission
 
-    setIsSubmitting(true);
+      // Clear any existing error messages
+      setErrors({});
 
-    try {
-      await measurePerformance(
-        isLogin ? 'User Login' : 'User Registration',
-        async () => {
-          if (isLogin) {
-            const success = await handleLogin();
-            if (success) {
-              // Clear form on successful login
-              setFormData({
-                username: '',
-                password: '',
-                confirmPassword: '',
-                mobile: '',
-                email: ''
-              });
+      // Rate limiting check
+      const userIdentifier = formData.username || 'anonymous';
+      if (!authRateLimiter.isAllowed(userIdentifier)) {
+        toast.error(
+          'Too many attempts. Please wait 15 minutes before trying again.',
+        );
+        return;
+      }
+
+      // Validate form
+      if (!validateForm()) {
+        displayValidationErrors(Object.values(errors).filter(Boolean));
+        return;
+      }
+
+      setIsSubmitting(true);
+
+      try {
+        await measurePerformance(
+          isLogin ? 'User Login' : 'User Registration',
+          async () => {
+            if (isLogin) {
+              const success = await handleLogin();
+              if (success) {
+                // Clear form on successful login
+                setFormData({
+                  username: '',
+                  password: '',
+                  confirmPassword: '',
+                  mobile: '',
+                  email: '',
+                });
+              }
+            } else {
+              await handleRegister();
             }
-          } else {
-            await handleRegister();
-          }
-        },
-        { context: isLogin ? 'Login' : 'Registration' }
-      );
-    } catch (error) {
-      logError(error, 'Authentication', ERROR_SEVERITY.HIGH);
-      toast.error('Authentication failed. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLogin, isSubmitting, formData, errors, validateForm]);
+          },
+          { context: isLogin ? 'Login' : 'Registration' },
+        );
+      } catch (error) {
+        logError(error, 'Authentication', ERROR_SEVERITY.HIGH);
+        toast.error('Authentication failed. Please try again.');
+      } finally {
+        setIsSubmitting(false);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [isLogin, isSubmitting, formData, errors, validateForm],
+  );
 
   // Handle login with enhanced security
   const handleLogin = useCallback(async () => {
     const sanitizedData = {
       username: formData.username.trim(),
-      password: formData.password
+      password: formData.password,
     };
 
     // Real backend login for all users including admin and demo
@@ -204,7 +219,7 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
       username: formData.username.trim(),
       password: formData.password,
       mobile: formData.mobile.trim(),
-      email: formData.email.trim()
+      email: formData.email.trim(),
     };
 
     try {
@@ -230,19 +245,24 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
   }, [onGuestMode]);
 
   // Get input class name based on validation state
-  const getInputClassName = useCallback((field) => {
-    const baseClass = 'auth-input';
-    if (errors[field]) return `${baseClass} error`;
-    if (formData[field]) return `${baseClass} valid`;
-    return baseClass;
-  }, [errors, formData]);
+  const getInputClassName = useCallback(
+    (field) => {
+      const baseClass = 'auth-input';
+      if (errors[field]) return `${baseClass} error`;
+      if (formData[field]) return `${baseClass} valid`;
+      return baseClass;
+    },
+    [errors, formData],
+  );
 
   return (
     <div className="auth-container">
       <div className="auth-header">
         <h2>🕌 Silsila-ul-Ahwaal</h2>
         <p className="auth-subtitle">
-          {isLogin ? 'Welcome back! Please sign in to continue.' : 'Create your account to get started.'}
+          {isLogin
+            ? 'Welcome back! Please sign in to continue.'
+            : 'Create your account to get started.'}
         </p>
       </div>
 
@@ -263,7 +283,9 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
             autoComplete="username"
             required
           />
-          {errors.username && <div className="error-message">{errors.username}</div>}
+          {errors.username && (
+            <div className="error-message">{errors.username}</div>
+          )}
         </div>
 
         {/* Password Field */}
@@ -292,7 +314,9 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
           </div>
-          {errors.password && <div className="error-message">{errors.password}</div>}
+          {errors.password && (
+            <div className="error-message">{errors.password}</div>
+          )}
         </div>
 
         {/* Confirm Password Field (Registration only) */}
@@ -307,7 +331,9 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
                 id="confirmPassword"
                 className={getInputClassName('confirmPassword')}
                 value={formData.confirmPassword}
-                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange('confirmPassword', e.target.value)
+                }
                 placeholder="Confirm your password"
                 disabled={isSubmitting || loading}
                 autoComplete="new-password"
@@ -322,7 +348,9 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
                 {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
             </div>
-            {errors.confirmPassword && <div className="error-message">{errors.confirmPassword}</div>}
+            {errors.confirmPassword && (
+              <div className="error-message">{errors.confirmPassword}</div>
+            )}
           </div>
         )}
 
@@ -342,7 +370,9 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
               disabled={isSubmitting || loading}
               autoComplete="tel"
             />
-            {errors.mobile && <div className="error-message">{errors.mobile}</div>}
+            {errors.mobile && (
+              <div className="error-message">{errors.mobile}</div>
+            )}
           </div>
         )}
 
@@ -362,7 +392,9 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
               disabled={isSubmitting || loading}
               autoComplete="email"
             />
-            {errors.email && <div className="error-message">{errors.email}</div>}
+            {errors.email && (
+              <div className="error-message">{errors.email}</div>
+            )}
           </div>
         )}
 
@@ -386,7 +418,9 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
               type="button"
               className="forgot-password-link"
               onClick={() => {
-                toast.info('Forgot password feature coming soon! Please contact admin.');
+                toast.info(
+                  'Forgot password feature coming soon! Please contact admin.',
+                );
               }}
             >
               🔑 Forgot Password?
@@ -403,7 +437,9 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
           onClick={() => setIsLogin(!isLogin)}
           disabled={isSubmitting || loading}
         >
-          {isLogin ? '📝 Need an account? Sign up' : '🔐 Already have an account? Sign in'}
+          {isLogin
+            ? '📝 Need an account? Sign up'
+            : '🔐 Already have an account? Sign in'}
         </button>
       </div>
 
@@ -418,8 +454,6 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
           👤 Continue as Guest
         </button>
       </div>
-
-
     </div>
   );
 };

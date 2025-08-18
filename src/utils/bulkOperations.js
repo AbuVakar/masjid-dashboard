@@ -27,12 +27,14 @@ export const bulkDeleteHouses = async (houses, onDelete) => {
     });
 
     if (validationErrors.length > 0) {
-      toast.error('Validation errors: ' + validationErrors.slice(0, 3).join(', '));
+      toast.error(
+        'Validation errors: ' + validationErrors.slice(0, 3).join(', '),
+      );
       return false;
     }
 
     const confirmed = window.confirm(
-      `Are you sure you want to delete ${houses.length} house(s)? This action cannot be undone.`
+      `Are you sure you want to delete ${houses.length} house(s)? This action cannot be undone.`,
     );
 
     if (!confirmed) {
@@ -82,7 +84,7 @@ export const bulkDeleteMembers = async (members, onDeleteMember) => {
     }
 
     const confirmed = window.confirm(
-      `Are you sure you want to delete ${members.length} member(s)? This action cannot be undone.`
+      `Are you sure you want to delete ${members.length} member(s)? This action cannot be undone.`,
     );
 
     if (!confirmed) {
@@ -123,7 +125,7 @@ export const bulkEditHouses = async (houses, updates, onUpdate) => {
     }
 
     const confirmed = window.confirm(
-      `Are you sure you want to update ${houses.length} house(s)?`
+      `Are you sure you want to update ${houses.length} house(s)?`,
     );
 
     if (!confirmed) {
@@ -165,7 +167,7 @@ export const bulkEditMembers = async (members, updates, onUpdateMember) => {
     }
 
     const confirmed = window.confirm(
-      `Are you sure you want to update ${members.length} member(s)?`
+      `Are you sure you want to update ${members.length} member(s)?`,
     );
 
     if (!confirmed) {
@@ -254,7 +256,7 @@ export const getBulkSummary = (selectedItems, type) => {
   if (!selectedItems || selectedItems.length === 0) {
     return {
       count: 0,
-      message: `No ${type} selected`
+      message: `No ${type} selected`,
     };
   }
 
@@ -263,6 +265,6 @@ export const getBulkSummary = (selectedItems, type) => {
     message: `${selectedItems.length} ${type} selected`,
     canDelete: selectedItems.length > 0,
     canEdit: selectedItems.length > 0,
-    canExport: selectedItems.length > 0
+    canExport: selectedItems.length > 0,
   };
 };

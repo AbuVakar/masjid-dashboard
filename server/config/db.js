@@ -10,14 +10,14 @@ const connectDB = async () => {
     minPoolSize: 1,
     maxIdleTimeMS: 30000,
     retryWrites: true,
-    w: 'majority'
+    w: 'majority',
   };
-  
+
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI, options);
 
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-    
+
     // Handle connection events
     mongoose.connection.on('error', (err) => {
       console.error('❌ MongoDB connection error:', err);
@@ -33,7 +33,6 @@ const connectDB = async () => {
       console.log('✅ MongoDB connection closed through app termination');
       process.exit(0);
     });
-
   } catch (error) {
     console.error('❌ Error connecting to MongoDB:', error.message);
     process.exit(1);

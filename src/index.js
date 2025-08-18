@@ -12,18 +12,33 @@ root.render(
     <ErrorBoundary>
       <App />
     </ErrorBoundary>
-    <ToastContainer position="top-right" autoClose={2500} hideProgressBar={false} newestOnTop closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="colored" />
-  </>
+    <ToastContainer
+      position="top-right"
+      autoClose={2500}
+      hideProgressBar={false}
+      newestOnTop
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme="colored"
+    />
+  </>,
 );
 
 // Global last-resort handlers
 window.addEventListener('unhandledrejection', (event) => {
   // Suppress browser extension errors
-  if (event.reason && typeof event.reason === 'string' && 
-      (event.reason.includes('content-script') || event.reason.includes('getThumbnail'))) {
+  if (
+    event.reason &&
+    typeof event.reason === 'string' &&
+    (event.reason.includes('content-script') ||
+      event.reason.includes('getThumbnail'))
+  ) {
     return;
   }
-  
+
   // eslint-disable-next-line no-console
   console.error('Unhandled promise rejection:', event.reason);
   toast.error('An unexpected error occurred. Please try again.');
@@ -31,11 +46,15 @@ window.addEventListener('unhandledrejection', (event) => {
 
 window.addEventListener('error', (event) => {
   // Suppress browser extension errors
-  if (event.error && typeof event.error === 'string' && 
-      (event.error.includes('content-script') || event.error.includes('getThumbnail'))) {
+  if (
+    event.error &&
+    typeof event.error === 'string' &&
+    (event.error.includes('content-script') ||
+      event.error.includes('getThumbnail'))
+  ) {
     return;
   }
-  
+
   // eslint-disable-next-line no-console
   console.error('Unhandled error:', event.error || event.message);
   // Avoid double-toasting Errors already caught by ErrorBoundary
@@ -55,7 +74,10 @@ if ('serviceWorker' in navigator) {
             const newWorker = registration.installing;
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                if (
+                  newWorker.state === 'installed' &&
+                  navigator.serviceWorker.controller
+                ) {
                   newWorker.postMessage({ type: 'SKIP_WAITING' });
                 }
               });
@@ -65,9 +87,12 @@ if ('serviceWorker' in navigator) {
         .catch(() => {});
     } else {
       // In development, ensure any existing SW is removed to prevent stale caches
-      navigator.serviceWorker.getRegistrations().then((regs) => {
-        regs.forEach((r) => r.unregister());
-      }).catch(() => {});
+      navigator.serviceWorker
+        .getRegistrations()
+        .then((regs) => {
+          regs.forEach((r) => r.unregister());
+        })
+        .catch(() => {});
     }
   });
 }

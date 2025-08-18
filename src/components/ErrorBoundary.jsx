@@ -5,11 +5,11 @@ import { logError } from '../utils/errorHandler';
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { 
-      hasError: false, 
-      error: null, 
+    this.state = {
+      hasError: false,
+      error: null,
       errorInfo: null,
-      retryCount: 0
+      retryCount: 0,
     };
   }
 
@@ -22,12 +22,12 @@ class ErrorBoundary extends React.Component {
     // Log error with context
     logError(error, 'ErrorBoundary', 'high', {
       componentStack: errorInfo.componentStack,
-      retryCount: this.state.retryCount
+      retryCount: this.state.retryCount,
     });
 
     this.setState({
       error,
-      errorInfo
+      errorInfo,
     });
 
     // Show user-friendly notification
@@ -35,11 +35,11 @@ class ErrorBoundary extends React.Component {
   }
 
   handleRetry = () => {
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       hasError: false,
       error: null,
       errorInfo: null,
-      retryCount: prevState.retryCount + 1
+      retryCount: prevState.retryCount + 1,
     }));
   };
 
@@ -48,7 +48,7 @@ class ErrorBoundary extends React.Component {
       hasError: false,
       error: null,
       errorInfo: null,
-      retryCount: 0
+      retryCount: 0,
     });
   };
 
@@ -59,35 +59,42 @@ class ErrorBoundary extends React.Component {
         <div className="error-boundary">
           <div className="error-boundary-content">
             <div className="error-icon">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="15" y1="9" x2="9" y2="15"/>
-                <line x1="9" y1="9" x2="15" y2="15"/>
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
               </svg>
             </div>
-            
+
             <h2>Something went wrong</h2>
-            <p>We're sorry, but this component encountered an error. Please try again.</p>
-            
+            <p>
+              We're sorry, but this component encountered an error. Please try
+              again.
+            </p>
+
             <div className="error-actions">
-              <button 
-                className="btn-retry" 
+              <button
+                className="btn-retry"
                 onClick={this.handleRetry}
                 disabled={this.state.retryCount >= 3}
               >
                 Try Again
               </button>
-              
-              <button 
-                className="btn-reset" 
-                onClick={this.handleReset}
-              >
+
+              <button className="btn-reset" onClick={this.handleReset}>
                 Reset
               </button>
-              
-              <button 
-                className="btn-home" 
-                onClick={() => window.location.href = '/'}
+
+              <button
+                className="btn-home"
+                onClick={() => (window.location.href = '/')}
               >
                 Go Home
               </button>
@@ -95,7 +102,10 @@ class ErrorBoundary extends React.Component {
 
             {this.state.retryCount >= 3 && (
               <div className="error-warning">
-                <p>Multiple retries failed. Please refresh the page or contact support.</p>
+                <p>
+                  Multiple retries failed. Please refresh the page or contact
+                  support.
+                </p>
               </div>
             )}
 
@@ -105,7 +115,7 @@ class ErrorBoundary extends React.Component {
                 <div className="error-stack">
                   <h4>Error:</h4>
                   <pre>{this.state.error.toString()}</pre>
-                  
+
                   {this.state.errorInfo && (
                     <>
                       <h4>Component Stack:</h4>

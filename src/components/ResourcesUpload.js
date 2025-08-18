@@ -1,18 +1,36 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
-import { FaUpload, FaLink, FaImage, FaVideo, FaFilePdf, FaFileWord, FaTimes, FaTags } from 'react-icons/fa';
-import { logError, measurePerformance, ERROR_SEVERITY } from '../utils/errorHandler';
+import {
+  FaUpload,
+  FaLink,
+  FaImage,
+  FaVideo,
+  FaFilePdf,
+  FaFileWord,
+  FaTimes,
+  FaTags,
+} from 'react-icons/fa';
+import {
+  logError,
+  measurePerformance,
+  ERROR_SEVERITY,
+} from '../utils/errorHandler';
 
-const ResourcesUpload = ({ onSave, onCancel, initialData = null, isAdmin = false }) => {
+const ResourcesUpload = ({
+  onSave,
+  onCancel,
+  initialData = null,
+  isAdmin = false,
+}) => {
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
     description: initialData?.description || '',
     category: initialData?.category || 'pdf',
     type: initialData?.type || 'file',
     fileUrl: initialData?.fileUrl || '',
-    tags: initialData?.tags || []
+    tags: initialData?.tags || [],
   });
-  
+
   const [file, setFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
@@ -20,13 +38,42 @@ const ResourcesUpload = ({ onSave, onCancel, initialData = null, isAdmin = false
   const [newTag, setNewTag] = useState('');
 
   // File type configurations
-  const fileTypes = useMemo(() => ({
-    pdf: { icon: FaFilePdf, label: 'PDF Document', accept: '.pdf', mimeType: 'application/pdf' },
-    document: { icon: FaFileWord, label: 'Word Document', accept: '.doc,.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
-    image: { icon: FaImage, label: 'Image', accept: '.jpg,.jpeg,.png,.gif', mimeType: 'image/*' },
-    video: { icon: FaVideo, label: 'Video', accept: '.mp4,.avi,.mov', mimeType: 'video/*' },
-    link: { icon: FaLink, label: 'External Link', accept: null, mimeType: null }
-  }), []);
+  const fileTypes = useMemo(
+    () => ({
+      pdf: {
+        icon: FaFilePdf,
+        label: 'PDF Document',
+        accept: '.pdf',
+        mimeType: 'application/pdf',
+      },
+      document: {
+        icon: FaFileWord,
+        label: 'Word Document',
+        accept: '.doc,.docx',
+        mimeType:
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      },
+      image: {
+        icon: FaImage,
+        label: 'Image',
+        accept: '.jpg,.jpeg,.png,.gif',
+        mimeType: 'image/*',
+      },
+      video: {
+        icon: FaVideo,
+        label: 'Video',
+        accept: '.mp4,.avi,.mov',
+        mimeType: 'video/*',
+      },
+      link: {
+        icon: FaLink,
+        label: 'External Link',
+        accept: null,
+        mimeType: null,
+      },
+    }),
+    [],
+  );
 
   // Validation
   const validateForm = useCallback(() => {
@@ -75,70 +122,84 @@ const ResourcesUpload = ({ onSave, onCancel, initialData = null, isAdmin = false
   };
 
   // Handle file selection
-  const handleFileChange = useCallback((e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      // Validate file size (10MB limit)
-      if (selectedFile.size > 10 * 1024 * 1024) {
-        toast.error('File size must be less than 10MB');
-        return;
-      }
-
-      // Validate file type based on category
-      const allowedTypes = fileTypes[formData.category];
-      if (allowedTypes && allowedTypes.accept) {
-        const fileExtension = selectedFile.name.split('.').pop().toLowerCase();
-        const allowedExtensions = allowedTypes.accept.split(',').map(ext => ext.replace('.', ''));
-        
-        if (!allowedExtensions.includes(fileExtension)) {
-          toast.error(`Please select a valid ${allowedTypes.label} file`);
+  const handleFileChange = useCallback(
+    (e) => {
+      const selectedFile = e.target.files[0];
+      if (selectedFile) {
+        // Validate file size (10MB limit)
+        if (selectedFile.size > 10 * 1024 * 1024) {
+          toast.error('File size must be less than 10MB');
           return;
         }
-      }
 
-      setFile(selectedFile);
-      setFormData(prev => ({ ...prev, fileUrl: '' }));
-      setErrors(prev => ({ ...prev, file: null, fileUrl: null }));
-    }
-  }, [formData.category, fileTypes]);
+        // Validate file type based on category
+        const allowedTypes = fileTypes[formData.category];
+        if (allowedTypes && allowedTypes.accept) {
+          const fileExtension = selectedFile.name
+            .split('.')
+            .pop()
+            .toLowerCase();
+          const allowedExtensions = allowedTypes.accept
+            .split(',')
+            .map((ext) => ext.replace('.', ''));
+
+          if (!allowedExtensions.includes(fileExtension)) {
+            toast.error(`Please select a valid ${allowedTypes.label} file`);
+            return;
+          }
+        }
+
+        setFile(selectedFile);
+        setFormData((prev) => ({ ...prev, fileUrl: '' }));
+        setErrors((prev) => ({ ...prev, file: null, fileUrl: null }));
+      }
+    },
+    [formData.category, fileTypes],
+  );
 
   // Handle form input changes
   const handleInputChange = useCallback((field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setErrors(prev => ({ ...prev, [field]: null }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: null }));
   }, []);
 
   // Handle category change
   const handleCategoryChange = useCallback((category) => {
-    setFormData(prev => ({ 
-      ...prev, 
+    setFormData((prev) => ({
+      ...prev,
       category,
       type: category === 'link' ? 'link' : 'file',
-      fileUrl: category === 'link' ? prev.fileUrl : ''
+      fileUrl: category === 'link' ? prev.fileUrl : '',
     }));
     setFile(null);
-    setErrors(prev => ({ ...prev, file: null, fileUrl: null }));
+    setErrors((prev) => ({ ...prev, file: null, fileUrl: null }));
   }, []);
 
   // Handle tag management
   const addTag = useCallback(() => {
     if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData(prev => ({ ...prev, tags: [...prev.tags, newTag.trim()] }));
+      setFormData((prev) => ({ ...prev, tags: [...prev.tags, newTag.trim()] }));
       setNewTag('');
-      setErrors(prev => ({ ...prev, tags: null }));
+      setErrors((prev) => ({ ...prev, tags: null }));
     }
   }, [newTag, formData.tags]);
 
   const removeTag = useCallback((tagToRemove) => {
-    setFormData(prev => ({ ...prev, tags: prev.tags.filter(tag => tag !== tagToRemove) }));
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
+    }));
   }, []);
 
-  const handleTagKeyPress = useCallback((e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addTag();
-    }
-  }, [addTag]);
+  const handleTagKeyPress = useCallback(
+    (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addTag();
+      }
+    },
+    [addTag],
+  );
 
   // Simulate file upload (in real app, this would upload to cloud storage)
   const simulateFileUpload = useCallback(async (file) => {
@@ -159,53 +220,64 @@ const ResourcesUpload = ({ onSave, onCancel, initialData = null, isAdmin = false
   }, []);
 
   // Handle form submission
-  const handleSubmit = useCallback(async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      toast.error('Please fix the errors in the form');
-      return;
-    }
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-    setIsUploading(true);
-    setUploadProgress(0);
+      if (!validateForm()) {
+        toast.error('Please fix the errors in the form');
+        return;
+      }
 
-    try {
-      await measurePerformance('Resource Upload', async () => {
-        let finalFileUrl = formData.fileUrl;
-
-        // Handle file upload if file is selected
-        if (file && formData.type === 'file') {
-          finalFileUrl = await simulateFileUpload(file);
-        }
-
-        const resourceData = {
-          ...formData,
-          fileUrl: finalFileUrl,
-          originalFileName: file ? file.name : null,
-          fileSize: file ? file.size : null,
-          mimeType: file ? file.type : null,
-          uploadedBy: 'admin', // In real app, get from user context
-          isPublic: true
-        };
-
-        if (initialData?.id) {
-          resourceData.id = initialData.id;
-          resourceData.createdAt = initialData.createdAt;
-          resourceData.downloadCount = initialData.downloadCount;
-        }
-
-        await onSave(resourceData);
-        onCancel();
-      });
-    } catch (error) {
-      logError(error, 'ResourcesUpload:handleSubmit', ERROR_SEVERITY.MEDIUM);
-      toast.error('Failed to save resource. Please try again.');
-    } finally {
-      setIsUploading(false);
+      setIsUploading(true);
       setUploadProgress(0);
-    }
-  }, [formData, file, validateForm, simulateFileUpload, onSave, onCancel, initialData]);
+
+      try {
+        await measurePerformance('Resource Upload', async () => {
+          let finalFileUrl = formData.fileUrl;
+
+          // Handle file upload if file is selected
+          if (file && formData.type === 'file') {
+            finalFileUrl = await simulateFileUpload(file);
+          }
+
+          const resourceData = {
+            ...formData,
+            fileUrl: finalFileUrl,
+            originalFileName: file ? file.name : null,
+            fileSize: file ? file.size : null,
+            mimeType: file ? file.type : null,
+            uploadedBy: 'admin', // In real app, get from user context
+            isPublic: true,
+          };
+
+          if (initialData?.id) {
+            resourceData.id = initialData.id;
+            resourceData.createdAt = initialData.createdAt;
+            resourceData.downloadCount = initialData.downloadCount;
+          }
+
+          await onSave(resourceData);
+          onCancel();
+        });
+      } catch (error) {
+        logError(error, 'ResourcesUpload:handleSubmit', ERROR_SEVERITY.MEDIUM);
+        toast.error('Failed to save resource. Please try again.');
+      } finally {
+        setIsUploading(false);
+        setUploadProgress(0);
+      }
+    },
+    [
+      formData,
+      file,
+      validateForm,
+      simulateFileUpload,
+      onSave,
+      onCancel,
+      initialData,
+    ],
+  );
 
   // Get current file type configuration
   const currentFileType = fileTypes[formData.category];
@@ -294,7 +366,7 @@ const ResourcesUpload = ({ onSave, onCancel, initialData = null, isAdmin = false
           <label className="block text-sm font-medium text-gray-700 mb-2">
             {formData.type === 'file' ? 'File Upload' : 'Link URL'} *
           </label>
-          
+
           {formData.type === 'file' ? (
             <div className="space-y-3">
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
@@ -315,7 +387,7 @@ const ResourcesUpload = ({ onSave, onCancel, initialData = null, isAdmin = false
                   </p>
                 </label>
               </div>
-              
+
               {file && (
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
@@ -339,7 +411,9 @@ const ResourcesUpload = ({ onSave, onCancel, initialData = null, isAdmin = false
 
               {/* Alternative: Direct URL input */}
               <div className="mt-3">
-                <p className="text-sm text-gray-600 mb-2">Or provide a direct file URL:</p>
+                <p className="text-sm text-gray-600 mb-2">
+                  Or provide a direct file URL:
+                </p>
                 <input
                   type="url"
                   value={formData.fileUrl}
@@ -360,9 +434,11 @@ const ResourcesUpload = ({ onSave, onCancel, initialData = null, isAdmin = false
               placeholder="https://example.com/resource"
             />
           )}
-          
+
           {(errors.file || errors.fileUrl) && (
-            <p className="text-red-500 text-sm mt-1">{errors.file || errors.fileUrl}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.file || errors.fileUrl}
+            </p>
           )}
         </div>
 
@@ -389,7 +465,7 @@ const ResourcesUpload = ({ onSave, onCancel, initialData = null, isAdmin = false
                 Add
               </button>
             </div>
-            
+
             {formData.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {formData.tags.map((tag, index) => (
@@ -410,7 +486,7 @@ const ResourcesUpload = ({ onSave, onCancel, initialData = null, isAdmin = false
                 ))}
               </div>
             )}
-            
+
             {errors.tags && (
               <p className="text-red-500 text-sm">{errors.tags}</p>
             )}
@@ -448,7 +524,11 @@ const ResourcesUpload = ({ onSave, onCancel, initialData = null, isAdmin = false
             className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isUploading}
           >
-            {isUploading ? 'Uploading...' : (initialData ? 'Update Resource' : 'Upload Resource')}
+            {isUploading
+              ? 'Uploading...'
+              : initialData
+                ? 'Update Resource'
+                : 'Upload Resource'}
           </button>
         </div>
       </form>
