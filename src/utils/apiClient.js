@@ -135,19 +135,27 @@ export const apiRequest = async (endpoint, options = {}) => {
 
     // Show user-friendly error message
     if (error.message.includes('timeout')) {
-      notify('Server is taking too long to respond. Please try again.', { type: 'error' });
+      notify('Server is taking too long to respond. Please try again.', {
+        type: 'error',
+      });
     } else if (error.message.includes('Network error')) {
-      notify('Network error. Please check your internet connection.', { type: 'error' });
+      notify('Network error. Please check your internet connection.', {
+        type: 'error',
+      });
     } else if (error.status === 404) {
       notify('Resource not found.', { type: 'error' });
     } else if (error.status === 401) {
       notify('Authentication required. Please login again.', { type: 'error' });
     } else if (error.status === 403) {
-      notify("Access denied. You don't have permission for this action.", { type: 'error' });
+      notify("Access denied. You don't have permission for this action.", {
+        type: 'error',
+      });
     } else if (error.status >= 500) {
       notify('Server error. Please try again later.', { type: 'error' });
     } else {
-      notify(error.message || 'An unexpected error occurred.', { type: 'error' });
+      notify(error.message || 'An unexpected error occurred.', {
+        type: 'error',
+      });
     }
 
     throw error;

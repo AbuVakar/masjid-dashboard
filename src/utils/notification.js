@@ -10,7 +10,9 @@ const events = new EventTarget();
  * @param {number} [options.duration=5000] - The duration in milliseconds.
  */
 export const notify = (message, options = {}) => {
-  events.dispatchEvent(new CustomEvent('show_notification', { detail: { message, options } }));
+  events.dispatchEvent(
+    new CustomEvent('show_notification', { detail: { message, options } }),
+  );
 };
 
 export default events;

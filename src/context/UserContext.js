@@ -75,7 +75,7 @@ export const UserProvider = ({ children }) => {
     logout,
     register,
     enableGuestMode,
-    refreshUser: verifyUser
+    refreshUser: verifyUser,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

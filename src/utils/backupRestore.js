@@ -66,7 +66,9 @@ export const importData = async (file) => {
         resolve(content.data);
       } catch (error) {
         console.error('Import failed:', error);
-        notify('Failed to import data. Invalid file format.', { type: 'error' });
+        notify('Failed to import data. Invalid file format.', {
+          type: 'error',
+        });
         reject(error);
       }
     };

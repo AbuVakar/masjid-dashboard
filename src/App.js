@@ -55,7 +55,9 @@ function App() {
         notify(`Welcome back, ${userData.username}!`, { type: 'success' });
       } catch (error) {
         logError(error, 'User Login', ERROR_SEVERITY.HIGH);
-        notify('Login failed. Please check your credentials.', { type: 'error' });
+        notify('Login failed. Please check your credentials.', {
+          type: 'error',
+        });
         throw error;
       }
     },

@@ -1,4 +1,10 @@
-import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+} from 'react';
 import { apiService } from '../services/api';
 import { useNotify } from './NotificationContext';
 
@@ -43,7 +49,6 @@ export const HouseProvider = ({ children }) => {
     // Implementation for deleting a member
   };
 
-
   const value = {
     houses,
     loading,
@@ -55,7 +60,9 @@ export const HouseProvider = ({ children }) => {
     deleteMember,
   };
 
-  return <HouseContext.Provider value={value}>{children}</HouseContext.Provider>;
+  return (
+    <HouseContext.Provider value={value}>{children}</HouseContext.Provider>
+  );
 };
 
 export const useHouses = () => {

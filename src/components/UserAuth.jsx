@@ -142,7 +142,10 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
       // Rate limiting check
       const userIdentifier = formData.username || 'anonymous';
       if (!authRateLimiter.isAllowed(userIdentifier)) {
-        notify('Too many attempts. Please wait 15 minutes before trying again.', { type: 'error' });
+        notify(
+          'Too many attempts. Please wait 15 minutes before trying again.',
+          { type: 'error' },
+        );
         return;
       }
 
@@ -207,7 +210,9 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      notify(error.message || 'Login failed. Please try again.', { type: 'error' });
+      notify(error.message || 'Login failed. Please try again.', {
+        type: 'error',
+      });
       return false;
     }
   }, [formData, onLogin, notify]);
@@ -419,7 +424,7 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
               onClick={() => {
                 notify(
                   'Forgot password feature coming soon! Please contact admin.',
-                  { type: 'info' }
+                  { type: 'info' },
                 );
               }}
             >

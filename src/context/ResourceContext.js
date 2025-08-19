@@ -1,4 +1,10 @@
-import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+} from 'react';
 import { apiService } from '../services/api';
 import { useNotify } from './NotificationContext';
 
@@ -44,7 +50,11 @@ export const ResourceProvider = ({ children }) => {
     deleteResource,
   };
 
-  return <ResourceContext.Provider value={value}>{children}</ResourceContext.Provider>;
+  return (
+    <ResourceContext.Provider value={value}>
+      {children}
+    </ResourceContext.Provider>
+  );
 };
 
 export const useResources = () => {

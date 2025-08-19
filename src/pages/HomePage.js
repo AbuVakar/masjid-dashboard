@@ -13,15 +13,21 @@ import { useNotify } from '../context/NotificationContext';
 import { useHouses } from '../context/HouseContext';
 import { useFilters } from '../hooks/useFilters';
 
-import { measurePerformance, logError, ERROR_SEVERITY } from '../utils/errorHandler';
+import {
+  measurePerformance,
+  logError,
+  ERROR_SEVERITY,
+} from '../utils/errorHandler';
 
 const HomePage = ({ openModal }) => {
   const [expandedHouse, setExpandedHouse] = useState(null);
   const [operationLoading, setOperationLoading] = useState(false);
 
-  const { houses, loading, deleteHouse, deleteMember, exportData } = useHouses();
+  const { houses, loading, deleteHouse, deleteMember, exportData } =
+    useHouses();
   const { isAdmin, isGuest, isAuthenticated } = useUser();
-  const { filters, setFilters, filteredHouses, resetFilters, streets } = useFilters(houses);
+  const { filters, setFilters, filteredHouses, resetFilters, streets } =
+    useFilters(houses);
   const { notify } = useNotify();
 
   const memoizedFilteredHouses = useMemo(() => {
@@ -48,7 +54,9 @@ const HomePage = ({ openModal }) => {
         notify(`Successfully deleted ${type}`, { type: 'success' });
       } catch (error) {
         logError(error, `Delete ${type}`, ERROR_SEVERITY.MEDIUM);
-        notify(`Failed to delete ${type}. Please try again.`, { type: 'error' });
+        notify(`Failed to delete ${type}. Please try again.`, {
+          type: 'error',
+        });
       } finally {
         setOperationLoading(false);
       }

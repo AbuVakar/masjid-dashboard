@@ -184,7 +184,7 @@ const ResourcesGallery = ({
 
           notify(
             `Successfully ${resource.type === 'link' ? 'opened' : 'downloaded'} ${resource.title}`,
-            { type: 'success' }
+            { type: 'success' },
           );
         });
       } catch (error) {

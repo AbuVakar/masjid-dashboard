@@ -1,4 +1,10 @@
-import React, { createContext, useState, useCallback, useContext, useEffect } from 'react';
+import React, {
+  createContext,
+  useState,
+  useCallback,
+  useContext,
+  useEffect,
+} from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import './Notification.css';
 import notificationEvents from '../utils/notification';
@@ -28,10 +34,16 @@ export const NotificationProvider = ({ children }) => {
       notify(message, options);
     };
 
-    notificationEvents.addEventListener('show_notification', handleShowNotification);
+    notificationEvents.addEventListener(
+      'show_notification',
+      handleShowNotification,
+    );
 
     return () => {
-      notificationEvents.removeEventListener('show_notification', handleShowNotification);
+      notificationEvents.removeEventListener(
+        'show_notification',
+        handleShowNotification,
+      );
     };
   }, [notify]);
 

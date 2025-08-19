@@ -294,7 +294,8 @@ router.post(
     // Always return a generic success message to prevent email enumeration
     res.json({
       success: true,
-      message: 'If an account with that email exists, password reset instructions have been sent.',
+      message:
+        'If an account with that email exists, password reset instructions have been sent.',
     });
   }),
 );
@@ -315,7 +316,11 @@ router.post(
     });
 
     if (!user) {
-      throw new AppError('Invalid or expired reset token', 400, 'INVALID_TOKEN');
+      throw new AppError(
+        'Invalid or expired reset token',
+        400,
+        'INVALID_TOKEN',
+      );
     }
 
     // Hash new password

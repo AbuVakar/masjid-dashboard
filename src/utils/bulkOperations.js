@@ -27,10 +27,9 @@ export const bulkDeleteHouses = async (houses, onDelete) => {
     });
 
     if (validationErrors.length > 0) {
-      notify(
-        'Validation errors: ' + validationErrors.slice(0, 3).join(', '),
-        { type: 'error' }
-      );
+      notify('Validation errors: ' + validationErrors.slice(0, 3).join(', '), {
+        type: 'error',
+      });
       return false;
     }
 
@@ -57,7 +56,9 @@ export const bulkDeleteHouses = async (houses, onDelete) => {
     }
 
     if (successCount > 0) {
-      notify(`Successfully deleted ${successCount} house(s)`, { type: 'success' });
+      notify(`Successfully deleted ${successCount} house(s)`, {
+        type: 'success',
+      });
     }
     if (errorCount > 0) {
       notify(`Failed to delete ${errorCount} house(s)`, { type: 'error' });
@@ -97,7 +98,9 @@ export const bulkDeleteMembers = async (members, onDeleteMember) => {
       await onDeleteMember(member.houseId, member.id);
     }
 
-    notify(`Successfully deleted ${members.length} member(s)`, { type: 'success' });
+    notify(`Successfully deleted ${members.length} member(s)`, {
+      type: 'success',
+    });
     return true;
   } catch (error) {
     console.error('Bulk delete members failed:', error);
@@ -139,7 +142,9 @@ export const bulkEditHouses = async (houses, updates, onUpdate) => {
       await onUpdate(updatedHouse);
     }
 
-    notify(`Successfully updated ${houses.length} house(s)`, { type: 'success' });
+    notify(`Successfully updated ${houses.length} house(s)`, {
+      type: 'success',
+    });
     return true;
   } catch (error) {
     console.error('Bulk edit failed:', error);
@@ -181,7 +186,9 @@ export const bulkEditMembers = async (members, updates, onUpdateMember) => {
       await onUpdateMember(member.houseId, updatedMember);
     }
 
-    notify(`Successfully updated ${members.length} member(s)`, { type: 'success' });
+    notify(`Successfully updated ${members.length} member(s)`, {
+      type: 'success',
+    });
     return true;
   } catch (error) {
     console.error('Bulk edit members failed:', error);

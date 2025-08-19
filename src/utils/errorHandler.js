@@ -107,7 +107,9 @@ export const measurePerformance = async (
       console.warn(
         `🐌 VERY SLOW OPERATION: ${operationName} took ${duration.toFixed(2)}ms`,
       );
-      notify(`${operationName} is taking longer than expected`, { type: 'warning' });
+      notify(`${operationName} is taking longer than expected`, {
+        type: 'warning',
+      });
     } else if (duration > PERFORMANCE_THRESHOLDS.SLOW_OPERATION) {
       console.warn(
         `🐌 SLOW OPERATION: ${operationName} took ${duration.toFixed(2)}ms`,
@@ -319,7 +321,9 @@ export const initializeErrorHandling = () => {
     }
 
     logError(error, 'Unhandled Promise Rejection', ERROR_SEVERITY.HIGH);
-    notify('An unexpected error occurred. Please try again.', { type: 'error' });
+    notify('An unexpected error occurred. Please try again.', {
+      type: 'error',
+    });
   });
 
   // Global error handler

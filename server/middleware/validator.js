@@ -56,7 +56,10 @@ const rules = {
     return true;
   },
   mobile: (value) => {
-    if (value && (typeof value !== 'string' || !/^\+?[0-9\s-()]*$/.test(value))) {
+    if (
+      value &&
+      (typeof value !== 'string' || !/^\+?[0-9\s-()]*$/.test(value))
+    ) {
       return 'Please provide a valid mobile number.';
     }
     return true;
@@ -128,7 +131,10 @@ const validateMember = validate({
     return true;
   },
   age: (value) => {
-    if (value != null && (typeof value !== 'number' || value < 0 || value > 150)) {
+    if (
+      value != null &&
+      (typeof value !== 'number' || value < 0 || value > 150)
+    ) {
       return 'Age must be a valid number between 0 and 150.';
     }
     return true;
@@ -145,7 +151,8 @@ const validateResource = (req, res, next) => {
   }
 
   if (!description || description.trim().length < 10) {
-    errors.description = 'Description is required and must be at least 10 characters long.';
+    errors.description =
+      'Description is required and must be at least 10 characters long.';
   }
 
   if (!category || category.trim().length === 0) {

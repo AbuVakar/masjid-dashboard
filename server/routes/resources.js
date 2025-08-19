@@ -206,14 +206,13 @@ router.get(
     ]);
 
     res.json({
-      overview:
-        stats[0] || {
-          totalResources: 0,
-          totalDownloads: 0,
-          totalViews: 0,
-          categories: [],
-          totalSize: 0,
-        },
+      overview: stats[0] || {
+        totalResources: 0,
+        totalDownloads: 0,
+        totalViews: 0,
+        categories: [],
+        totalSize: 0,
+      },
       categoryStats,
     });
   }),

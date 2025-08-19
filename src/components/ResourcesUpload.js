@@ -145,7 +145,9 @@ const ResourcesUpload = ({
             .map((ext) => ext.replace('.', ''));
 
           if (!allowedExtensions.includes(fileExtension)) {
-            notify(`Please select a valid ${allowedTypes.label} file`, { type: 'error' });
+            notify(`Please select a valid ${allowedTypes.label} file`, {
+              type: 'error',
+            });
             return;
           }
         }
