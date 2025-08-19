@@ -4,6 +4,7 @@ const House = require('../models/House');
 const { asyncHandler, AppError } = require('../middleware/errorHandler');
 const { authenticateToken } = require('../middleware/auth');
 const { checkResourceExists } = require('../middleware/resource');
+const { validateHouse, validateMember } = require('../middleware/validator');
 
 // @desc    Get all houses
 // @route   GET /api/houses
@@ -72,6 +73,7 @@ const checkDuplicateHouseNumber = async (number, excludeId = null) => {
 router.post(
   '/',
   authenticateToken,
+  validateHouse,
   asyncHandler(async (req, res) => {
     const { number, street, members, taleem, mashwara, notes } = req.body;
 
@@ -98,6 +100,7 @@ router.put(
   '/:id',
   authenticateToken,
   checkResourceExists(House, 'House'),
+  validateHouse,
   asyncHandler(async (req, res) => {
     const { number, street, members, taleem, mashwara, notes } = req.body;
 
@@ -163,6 +166,7 @@ router.post(
   '/:id/members',
   authenticateToken,
   checkResourceExists(House, 'House'),
+  validateMember,
   asyncHandler(async (req, res) => {
     req.resource.members.push(req.body);
     const savedHouse = await req.resource.save();
@@ -177,21 +181,34 @@ router.put(
   '/:id/members/:memberId',
   authenticateToken,
   checkResourceExists(House, 'House'),
+  validateMember,
   asyncHandler(async (req, res) => {
-    const memberIndex = req.resource.members.findIndex(
-      (member) => member._id.toString() === req.params.memberId,
+    const { name, age, gender, occupation, contact, isResponsible } = req.body;
+
+    const result = await House.updateOne(
+      { _id: req.params.id, 'members._id': req.params.memberId },
+      {
+        $set: {
+          'members.$.name': name,
+          'members.$.age': age,
+          'members.$.gender': gender,
+          'members.$.occupation': occupation,
+          'members.$.contact': contact,
+          'members.$.isResponsible': isResponsible,
+        },
+      },
     );
 
-    if (memberIndex === -1) {
-      throw new AppError('Member not found', 404, 'MEMBER_NOT_FOUND');
+    if (result.modifiedCount === 0) {
+      throw new AppError(
+        'Member not found or no changes made',
+        404,
+        'MEMBER_NOT_FOUND',
+      );
     }
 
-    req.resource.members[memberIndex] = {
-      ...req.resource.members[memberIndex].toObject(),
-      ...req.body,
-    };
-    const savedHouse = await req.resource.save();
-    res.json(savedHouse);
+    const updatedHouse = await House.findById(req.params.id);
+    res.json(updatedHouse);
   }),
 );
 
@@ -203,11 +220,17 @@ router.delete(
   authenticateToken,
   checkResourceExists(House, 'House'),
   asyncHandler(async (req, res) => {
-    req.resource.members = req.resource.members.filter(
-      (member) => member._id.toString() !== req.params.memberId,
+    const result = await House.updateOne(
+      { _id: req.params.id },
+      { $pull: { members: { _id: req.params.memberId } } },
     );
-    const savedHouse = await req.resource.save();
-    res.json(savedHouse);
+
+    if (result.modifiedCount === 0) {
+      throw new AppError('Member not found', 404, 'MEMBER_NOT_FOUND');
+    }
+
+    const updatedHouse = await House.findById(req.params.id);
+    res.json(updatedHouse);
   }),
 );
 

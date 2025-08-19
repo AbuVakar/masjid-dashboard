@@ -6,6 +6,14 @@ const User = require('../models/User');
 const { asyncHandler, AppError } = require('../middleware/errorHandler');
 const { authenticateToken } = require('../middleware/auth');
 const { AuditLogger } = require('../utils/auditLogger');
+const {
+  validateRegistration,
+  validateLogin,
+  validateUpdateProfile,
+  validateChangePassword,
+  validateForgotPassword,
+  validateResetPassword,
+} = require('../middleware/validator');
 const crypto = require('crypto'); // Added for forgot password
 
 // @desc    Register user
@@ -13,26 +21,9 @@ const crypto = require('crypto'); // Added for forgot password
 // @access  Public
 router.post(
   '/register',
+  validateRegistration,
   asyncHandler(async (req, res) => {
     const { username, password, email, mobile, name } = req.body;
-
-    // Sanitize input data
-    const sanitizedData = {
-      username: username ? username.replace(/[<>]/g, '').trim() : username,
-      password,
-      email: email ? email.replace(/[<>]/g, '').trim() : email,
-      mobile: mobile ? mobile.replace(/[<>]/g, '').trim() : mobile,
-      name: name ? name.replace(/[<>]/g, '').trim() : name,
-    };
-
-    // Validate required fields
-    if (!username || !password) {
-      throw new AppError(
-        'Username and password are required',
-        400,
-        'MISSING_FIELDS',
-      );
-    }
 
     // Check if user exists
     const existingUser = await User.findOne({ username });
@@ -57,12 +48,16 @@ router.post(
     await user.save();
 
     // Generate JWT
-    const userForToken = user.toJSON();
-    const token = jwt.sign(
-      { user: userForToken },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' },
-    );
+    const payload = {
+      user: {
+        id: user._id,
+        username: user.username,
+        role: user.role,
+      },
+    };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: '24h',
+    });
 
     // Log successful registration
     await AuditLogger.logAuthEvent(
@@ -96,17 +91,9 @@ router.post(
 // @access  Public
 router.post(
   '/login',
+  validateLogin,
   asyncHandler(async (req, res) => {
     const { username, password } = req.body;
-
-    // Validate required fields
-    if (!username || !password) {
-      throw new AppError(
-        'Username and password are required',
-        400,
-        'MISSING_FIELDS',
-      );
-    }
 
     // Find user
     const user = await User.findOne({ username });
@@ -131,12 +118,16 @@ router.post(
     }
 
     // Generate JWT
-    const userForToken = user.toJSON();
-    const token = jwt.sign(
-      { user: userForToken },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' },
-    );
+    const payload = {
+      user: {
+        id: user._id,
+        username: user.username,
+        role: user.role,
+      },
+    };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: '24h',
+    });
 
     // Log successful login
     await AuditLogger.logAuthEvent(
@@ -196,6 +187,7 @@ router.get(
 router.put(
   '/profile',
   authenticateToken,
+  validateUpdateProfile,
   asyncHandler(async (req, res) => {
     const { name, email, mobile, preferences } = req.body;
 
@@ -233,16 +225,9 @@ router.put(
 router.put(
   '/change-password',
   authenticateToken,
+  validateChangePassword,
   asyncHandler(async (req, res) => {
     const { currentPassword, newPassword } = req.body;
-
-    if (!currentPassword || !newPassword) {
-      throw new AppError(
-        'Current password and new password are required',
-        400,
-        'MISSING_FIELDS',
-      );
-    }
 
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -276,66 +261,52 @@ router.put(
   }),
 );
 
-// Forgot Password - Send reset email
-router.post('/forgot-password', async (req, res) => {
-  try {
+// @desc    Request password reset
+// @route   POST /api/users/forgot-password
+// @access  Public
+router.post(
+  '/forgot-password',
+  validateForgotPassword,
+  asyncHandler(async (req, res) => {
     const { email } = req.body;
 
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        error: { message: 'Email is required' },
-      });
-    }
-
-    // Find user by email
+    // Find user by email. We don't throw an error if not found to prevent email enumeration.
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        error: { message: 'User not found with this email' },
-      });
+
+    if (user) {
+      // Generate reset token
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const resetTokenExpiry = Date.now() + 3600000; // 1 hour
+
+      // Save reset token to user
+      user.resetPasswordToken = resetToken;
+      user.resetPasswordExpires = resetTokenExpiry;
+      await user.save();
+
+      // In a real application, you would send an email to the user.
+      // For this project, we will log the reset link to the console.
+      const resetUrl = `${req.protocol}://${req.get(
+        'host',
+      )}/reset-password?token=${resetToken}`;
+      console.log('Password Reset Link:', resetUrl);
     }
 
-    // Generate reset token
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenExpiry = Date.now() + 3600000; // 1 hour
-
-    // Save reset token to user
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = resetTokenExpiry;
-    await user.save();
-
-    // In production, send email here
-    // For now, return the token (in production, send via email)
+    // Always return a generic success message to prevent email enumeration
     res.json({
       success: true,
-      message: 'Password reset instructions sent to your email',
-      data: {
-        resetToken: resetToken, // Remove this in production
-        expiresIn: '1 hour',
-      },
+      message: 'If an account with that email exists, password reset instructions have been sent.',
     });
-  } catch (error) {
-    console.error('Forgot password error:', error);
-    res.status(500).json({
-      success: false,
-      error: { message: 'Failed to process forgot password request' },
-    });
-  }
-});
+  }),
+);
 
-// Reset Password - Change password with token
-router.post('/reset-password', async (req, res) => {
-  try {
+// @desc    Reset Password
+// @route   POST /api/users/reset-password
+// @access  Public
+router.post(
+  '/reset-password',
+  validateResetPassword,
+  asyncHandler(async (req, res) => {
     const { token, newPassword } = req.body;
-
-    if (!token || !newPassword) {
-      return res.status(400).json({
-        success: false,
-        error: { message: 'Token and new password are required' },
-      });
-    }
 
     // Find user by reset token
     const user = await User.findOne({
@@ -344,10 +315,7 @@ router.post('/reset-password', async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({
-        success: false,
-        error: { message: 'Invalid or expired reset token' },
-      });
+      throw new AppError('Invalid or expired reset token', 400, 'INVALID_TOKEN');
     }
 
     // Hash new password
@@ -362,15 +330,9 @@ router.post('/reset-password', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Password reset successfully',
+      message: 'Password has been reset successfully.',
     });
-  } catch (error) {
-    console.error('Reset password error:', error);
-    res.status(500).json({
-      success: false,
-      error: { message: 'Failed to reset password' },
-    });
-  }
-});
+  }),
+);
 
 module.exports = router;
