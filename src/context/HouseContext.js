@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
 import { apiService } from '../services/api';
 import { useNotify } from './NotificationContext';
+import { useUser } from './UserContext';
 
 const HouseContext = createContext();
 
@@ -9,6 +10,7 @@ export const HouseProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { notify } = useNotify();
+  const { isAuthenticated } = useUser();
 
   const fetchData = useCallback(async () => {
     try {
@@ -24,8 +26,13 @@ export const HouseProvider = ({ children }) => {
   }, [notify]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (isAuthenticated) {
+      fetchData();
+    } else {
+      setHouses([]);
+      setLoading(false);
+    }
+  }, [isAuthenticated, fetchData]);
 
   const saveHouse = async (houseData) => {
     // Implementation for saving a house
