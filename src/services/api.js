@@ -3,7 +3,7 @@
 class ApiService {
   constructor() {
     this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-    this.token = null;
+    this.token = localStorage.getItem('accessToken') || null;
     this.csrfToken = null;
   }
 
@@ -13,6 +13,7 @@ class ApiService {
 
   removeToken() {
     this.token = null;
+    localStorage.removeItem('accessToken');
   }
 
   setCSRFToken(token) {
@@ -202,6 +203,7 @@ class ApiService {
     const response = await this.post('/users/register', userData);
     if (response.success && response.data.token) {
       this.setToken(response.data.token);
+      localStorage.setItem('accessToken', response.data.token);
     }
     return response;
   }
@@ -210,6 +212,7 @@ class ApiService {
     const response = await this.post('/users/login', credentials);
     if (response.success && response.data.token) {
       this.setToken(response.data.token);
+      localStorage.setItem('accessToken', response.data.token);
     }
     return response;
   }

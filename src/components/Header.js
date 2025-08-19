@@ -27,7 +27,7 @@ const Header = ({
   prayerTimes,
   isAdmin,
   onEnableNotifications,
-  currentUser,
+  user,
   onShowProfile,
   onNotificationTestToggle,
 }) => {
@@ -97,8 +97,8 @@ const Header = ({
         <div className="brand">
           <img src={logo} alt="Logo" className="logo-img" />
           <div className="brand-text">
-            <h1 id="ui_title">{L.title}</h1>
-            <div className="subtitle">{L.subtitle}</div>
+            <h1 id="ui_title">{L?.title || 'Masjid Dashboard'}</h1>
+            <div className="subtitle">{L?.subtitle || 'Community Management'}</div>
           </div>
         </div>
         <div className="mobile-controls">
@@ -339,9 +339,9 @@ const Header = ({
           <button
             className="navlink user-profile-btn"
             onClick={onShowProfile}
-            title={`Profile: ${currentUser?.name || 'User'}`}
+            title={`Profile: ${user?.name || 'User'}`}
           >
-            👤 <span>{currentUser?.name || 'User'}</span>
+            👤 <span>{user?.name || 'User'}</span>
           </button>
           <div className="translate-wrap" title="Select Language">
             <div id="google_translate_element" ref={translateRef}></div>
