@@ -4,7 +4,14 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config({ path: './config.env' });
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Import database connection and validation
 const connectDB = require('./config/db');
@@ -78,9 +85,13 @@ if (process.env.NODE_ENV !== 'test') {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// CSRF protection middleware (disabled for development)
-// app.use(csrfToken);
-// app.use(validateCSRF);
+// CSRF protection middleware
+// We will not apply CSRF to GET, HEAD, OPTIONS, TRACE requests.
+// And we will skip it in test environment
+if (process.env.NODE_ENV !== 'test') {
+  app.use(csrfToken);
+  app.use(validateCSRF);
+}
 
 // Enhanced request logging
 app.use(enhancedLogger.logRequest);

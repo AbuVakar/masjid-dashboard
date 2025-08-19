@@ -4,14 +4,23 @@ import './index.css';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import { NotificationProvider } from './context/NotificationContext';
+import { UserProvider } from './context/UserContext';
+import { HouseProvider } from './context/HouseContext';
+import { ResourceProvider } from './context/ResourceContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <NotificationProvider>
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
+      <UserProvider>
+        <HouseProvider>
+          <ResourceProvider>
+            <ErrorBoundary>
+              <App />
+            </ErrorBoundary>
+          </ResourceProvider>
+        </HouseProvider>
+      </UserProvider>
     </NotificationProvider>
   </React.StrictMode>,
 );

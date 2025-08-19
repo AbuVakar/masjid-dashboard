@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "dompurify": "^3.2.6",
-    "dotenv": "^17.2.1",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "react": "^19.1.1",
