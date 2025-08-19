@@ -155,27 +155,27 @@ const HeroTypewriter = ({ L }) => {
 
   return (
     <section
-      className="hero-tw"
-      aria-label="Madina Masjid Welcome Section"
+      className='hero-tw'
+      aria-label='Madina Masjid Welcome Section'
       style={{
         backgroundImage: `url(${bgImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
     >
-      <div className="hero-tw-inner">
-        <h1 className="hero-title">
+      <div className='hero-tw-inner'>
+        <h1 className='hero-title'>
           {L?.hero_title || 'Welcome to Madina Masjid - Badarkha'}
         </h1>
-        <p className="hero-sub" aria-hidden="true">
+        <p className='hero-sub' aria-hidden='true'>
           Silsila-ul-Ahwaal
         </p>
-        <div className="tw-line" aria-live="polite" aria-atomic="true">
+        <div className='tw-line' aria-live='polite' aria-atomic='true'>
           {displayMainText}
-          {isRefShown && <span className="ref-text"> - {displayRef}</span>}
+          {isRefShown && <span className='ref-text'> - {displayRef}</span>}
           <span
             className={`cursor ${showCursor ? 'visible' : ''}`}
-            aria-hidden="true"
+            aria-hidden='true'
           >
             |
           </span>

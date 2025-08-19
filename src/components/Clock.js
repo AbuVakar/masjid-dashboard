@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { FaClock, FaPray } from 'react-icons/fa';
 
 // Function to calculate sunset time for given coordinates
-const calculateSunset = (date, lat, lng) => {
-  // Convert coordinates to decimal degrees
-  const latitude = 28 + 58 / 60 + 24 / 3600; // 28°58'24"N
-  const longitude = 77 + 41 / 60 + 22 / 3600; // 77°41'22"E
+const calculateSunset = (date) => {
+  // Convert coordinates to decimal degrees (hardcoded for Delhi area)
+  // const latitude = 28 + 58 / 60 + 24 / 3600; // 28°58'24"N
+  // const longitude = 77 + 41 / 60 + 22 / 3600; // 77°41'22"E
 
   // Get day of year
   const dayOfYear = Math.floor(
@@ -62,8 +62,6 @@ const Clock = ({ time, nextPrayer, prayerTimes: propPrayerTimes }) => {
   const [displayTime, setDisplayTime] = useState('--:--:--');
   const [displayNextPrayer, setDisplayNextPrayer] = useState('Next: --');
   const [dayName, setDayName] = useState('');
-  const [currentPrayerTimes, setCurrentPrayerTimes] =
-    useState(defaultPrayerTimes);
 
   const pad = useCallback((n) => (n < 10 ? `0${n}` : `${n}`), []);
 
@@ -96,7 +94,6 @@ const Clock = ({ time, nextPrayer, prayerTimes: propPrayerTimes }) => {
 
     // Get current prayer times with dynamic Maghrib
     const effectivePrayerTimes = getCurrentPrayerTimes();
-    setCurrentPrayerTimes(effectivePrayerTimes);
 
     // Next prayer calculation (sort by time for robustness)
     const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
@@ -147,12 +144,12 @@ const Clock = ({ time, nextPrayer, prayerTimes: propPrayerTimes }) => {
   }, [updateClock]);
 
   return (
-    <div className="clock-container">
-      <div className="time">
-        <FaClock /> <span className="clock-time">{displayTime}</span>{' '}
-        <span className="clock-day">{dayName}</span>
+    <div className='clock-container'>
+      <div className='time'>
+        <FaClock /> <span className='clock-time'>{displayTime}</span>{' '}
+        <span className='clock-day'>{dayName}</span>
       </div>
-      <div className="prayer-time">
+      <div className='prayer-time'>
         <FaPray /> {displayNextPrayer}
       </div>
     </div>

@@ -34,11 +34,44 @@ export const ResourceProvider = ({ children }) => {
   }, [fetchData]);
 
   const saveResource = async (resourceData) => {
-    // Implementation for saving a resource
+    try {
+      setLoading(true);
+      let result;
+      if (resourceData.id) {
+        result = await apiService.updateResource(resourceData.id, resourceData);
+      } else {
+        result = await apiService.createResource(resourceData);
+      }
+      if (result.success) {
+        await fetchData(); // Refresh the data
+        notify('Resource saved successfully!', { type: 'success' });
+      }
+      return result;
+    } catch (err) {
+      setError(err.message);
+      notify(`Failed to save resource: ${err.message}`, { type: 'error' });
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const deleteResource = async (resourceId) => {
-    // Implementation for deleting a resource
+    try {
+      setLoading(true);
+      const result = await apiService.deleteResource(resourceId);
+      if (result.success) {
+        await fetchData(); // Refresh the data
+        notify('Resource deleted successfully!', { type: 'success' });
+      }
+      return result;
+    } catch (err) {
+      setError(err.message);
+      notify(`Failed to delete resource: ${err.message}`, { type: 'error' });
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const value = {

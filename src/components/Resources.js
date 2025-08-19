@@ -9,7 +9,7 @@ import {
   FaDownload,
   FaFileExport,
 } from 'react-icons/fa';
-import { useResources } from '../hooks/useResources';
+import { useResources } from '../context/ResourceContext';
 import ResourcesUpload from './ResourcesUpload';
 import ResourcesGallery from './ResourcesGallery';
 import {
@@ -118,44 +118,46 @@ const Resources = ({ isAdmin = false }) => {
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <div className="text-red-500 mb-4">
-          <FaTimes size={48} className="mx-auto" />
+      <div className='text-center py-12'>
+        <div className='text-red-500 mb-4'>
+          <FaTimes size={48} className='mx-auto' />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <h3 className='text-lg font-medium text-gray-900 mb-2'>
           Error Loading Resources
         </h3>
-        <p className="text-gray-600">{error}</p>
+        <p className='text-gray-600'>{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+      <div className='bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-white/20'>
+        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0'>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Resources</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className='text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent'>
+              Resources
+            </h1>
+            <p className='text-gray-600 mt-2 text-sm md:text-base font-medium'>
               Manage and share learning resources with the community
             </p>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className='flex items-center space-x-3'>
             {isAdmin && (
               <button
                 onClick={() => setShowUploadForm(true)}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                className='flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 font-medium'
               >
-                <FaPlus size={16} />
-                <span>Add Resource</span>
+                <FaUpload size={16} />
+                <span>Upload Resource</span>
               </button>
             )}
 
             <button
               onClick={handleExportResources}
-              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              className='flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-300 hover:shadow-md'
             >
               <FaFileExport size={16} />
               <span>Export</span>
@@ -164,49 +166,61 @@ const Resources = ({ isAdmin = false }) => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <div className="flex items-center">
-              <FaImages className="text-blue-500 mr-3" size={20} />
+        <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mt-6'>
+          <div className='bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-white/20 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300'>
+            <div className='flex items-center'>
+              <div className='p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg text-white shadow-lg mr-3'>
+                <FaImages size={16} />
+              </div>
               <div>
-                <p className="text-sm text-blue-600">Total Resources</p>
-                <p className="text-2xl font-bold text-blue-900">
+                <p className='text-xs font-semibold text-blue-600 uppercase tracking-wide'>
+                  Total Resources
+                </p>
+                <p className='text-2xl font-bold bg-gradient-to-r from-blue-900 to-indigo-900 bg-clip-text text-transparent'>
                   {stats.totalResources}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-green-50 p-4 rounded-lg">
-            <div className="flex items-center">
-              <FaDownload className="text-green-500 mr-3" size={20} />
+          <div className='bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-white/20 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300'>
+            <div className='flex items-center'>
+              <div className='p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg text-white shadow-lg mr-3'>
+                <FaDownload size={16} />
+              </div>
               <div>
-                <p className="text-sm text-green-600">Total Downloads</p>
-                <p className="text-2xl font-bold text-green-900">
+                <p className='text-xs font-semibold text-green-600 uppercase tracking-wide'>
+                  Total Downloads
+                </p>
+                <p className='text-2xl font-bold bg-gradient-to-r from-green-900 to-emerald-900 bg-clip-text text-transparent'>
                   {stats.totalDownloads}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-purple-50 p-4 rounded-lg">
-            <div className="flex items-center">
-              <FaChartBar className="text-purple-500 mr-3" size={20} />
+          <div className='bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-xl border border-white/20 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300'>
+            <div className='flex items-center'>
+              <div className='p-2 bg-gradient-to-r from-purple-500 to-violet-600 rounded-lg text-white shadow-lg mr-3'>
+                <FaChartBar size={16} />
+              </div>
               <div>
-                <p className="text-sm text-purple-600">Avg Downloads</p>
-                <p className="text-2xl font-bold text-purple-900">
+                <p className='text-xs font-semibold text-purple-600 uppercase tracking-wide'>
+                  Avg Downloads
+                </p>
+                <p className='text-2xl font-bold bg-gradient-to-r from-purple-900 to-violet-900 bg-clip-text text-transparent'>
                   {stats.averageDownloads}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-orange-50 p-4 rounded-lg">
-            <div className="flex items-center">
-              <FaUpload className="text-orange-500 mr-3" size={20} />
+          <div className='bg-orange-50 p-4 rounded-lg'>
+            <div className='flex items-center'>
+              <FaUpload className='text-orange-500 mr-3' size={20} />
               <div>
-                <p className="text-sm text-orange-600">Categories</p>
-                <p className="text-2xl font-bold text-orange-900">
+                <p className='text-sm text-orange-600'>Categories</p>
+                <p className='text-2xl font-bold text-orange-900'>
                   {Object.keys(stats.categories).length}
                 </p>
               </div>
@@ -216,9 +230,9 @@ const Resources = ({ isAdmin = false }) => {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-lg shadow-sm">
-        <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6">
+      <div className='bg-white rounded-lg shadow-sm'>
+        <div className='border-b border-gray-200'>
+          <nav className='flex space-x-8 px-6'>
             <button
               onClick={() => setActiveTab('gallery')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
@@ -227,7 +241,7 @@ const Resources = ({ isAdmin = false }) => {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              <div className="flex items-center space-x-2">
+              <div className='flex items-center space-x-2'>
                 <FaImages size={16} />
                 <span>Gallery</span>
               </div>
@@ -241,7 +255,7 @@ const Resources = ({ isAdmin = false }) => {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              <div className="flex items-center space-x-2">
+              <div className='flex items-center space-x-2'>
                 <FaChartBar size={16} />
                 <span>Statistics</span>
               </div>
@@ -249,7 +263,7 @@ const Resources = ({ isAdmin = false }) => {
           </nav>
         </div>
 
-        <div className="p-6">
+        <div className='p-6'>
           {activeTab === 'gallery' ? (
             <ResourcesGallery
               resources={resources}
@@ -267,8 +281,8 @@ const Resources = ({ isAdmin = false }) => {
 
       {/* Upload Modal */}
       {showUploadForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50'>
+          <div className='w-full max-w-4xl max-h-[90vh] overflow-y-auto'>
             <ResourcesUpload
               onSave={handleSaveResource}
               onCancel={handleCloseUploadForm}
@@ -285,25 +299,25 @@ const Resources = ({ isAdmin = false }) => {
 // Resources Statistics Component
 const ResourcesStats = ({ stats }) => {
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Category Distribution */}
-      <div className="bg-gray-50 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+      <div className='bg-gray-50 rounded-lg p-6'>
+        <h3 className='text-lg font-medium text-gray-900 mb-4'>
           Resources by Category
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
           {Object.entries(stats.categories).map(([category, count]) => (
-            <div key={category} className="bg-white p-4 rounded-lg shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700 capitalize">
+            <div key={category} className='bg-white p-4 rounded-lg shadow-sm'>
+              <div className='flex items-center justify-between'>
+                <span className='text-sm font-medium text-gray-700 capitalize'>
                   {category}
                 </span>
-                <span className="text-lg font-bold text-blue-600">{count}</span>
+                <span className='text-lg font-bold text-blue-600'>{count}</span>
               </div>
-              <div className="mt-2">
-                <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className='mt-2'>
+                <div className='w-full bg-gray-200 rounded-full h-2'>
                   <div
-                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                    className='bg-blue-500 h-2 rounded-full transition-all duration-300'
                     style={{
                       width: `${stats.totalResources > 0 ? (count / stats.totalResources) * 100 : 0}%`,
                     }}
@@ -316,25 +330,25 @@ const ResourcesStats = ({ stats }) => {
       </div>
 
       {/* File Type Distribution */}
-      <div className="bg-gray-50 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+      <div className='bg-gray-50 rounded-lg p-6'>
+        <h3 className='text-lg font-medium text-gray-900 mb-4'>
           Resources by Type
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           {Object.entries(stats.fileTypes).map(([type, count]) => (
-            <div key={type} className="bg-white p-4 rounded-lg shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700 capitalize">
+            <div key={type} className='bg-white p-4 rounded-lg shadow-sm'>
+              <div className='flex items-center justify-between'>
+                <span className='text-sm font-medium text-gray-700 capitalize'>
                   {type}
                 </span>
-                <span className="text-lg font-bold text-green-600">
+                <span className='text-lg font-bold text-green-600'>
                   {count}
                 </span>
               </div>
-              <div className="mt-2">
-                <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className='mt-2'>
+                <div className='w-full bg-gray-200 rounded-full h-2'>
                   <div
-                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                    className='bg-green-500 h-2 rounded-full transition-all duration-300'
                     style={{
                       width: `${stats.totalResources > 0 ? (count / stats.totalResources) * 100 : 0}%`,
                     }}
@@ -347,26 +361,26 @@ const ResourcesStats = ({ stats }) => {
       </div>
 
       {/* Download Statistics */}
-      <div className="bg-gray-50 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+      <div className='bg-gray-50 rounded-lg p-6'>
+        <h3 className='text-lg font-medium text-gray-900 mb-4'>
           Download Statistics
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white p-4 rounded-lg shadow-sm text-center">
-            <p className="text-sm text-gray-600">Total Downloads</p>
-            <p className="text-3xl font-bold text-blue-600">
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+          <div className='bg-white p-4 rounded-lg shadow-sm text-center'>
+            <p className='text-sm text-gray-600'>Total Downloads</p>
+            <p className='text-3xl font-bold text-blue-600'>
               {stats.totalDownloads}
             </p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm text-center">
-            <p className="text-sm text-gray-600">Average Downloads</p>
-            <p className="text-3xl font-bold text-green-600">
+          <div className='bg-white p-4 rounded-lg shadow-sm text-center'>
+            <p className='text-sm text-gray-600'>Average Downloads</p>
+            <p className='text-3xl font-bold text-green-600'>
               {stats.averageDownloads}
             </p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm text-center">
-            <p className="text-sm text-gray-600">Total Resources</p>
-            <p className="text-3xl font-bold text-purple-600">
+          <div className='bg-white p-4 rounded-lg shadow-sm text-center'>
+            <p className='text-sm text-gray-600'>Total Resources</p>
+            <p className='text-3xl font-bold text-purple-600'>
               {stats.totalResources}
             </p>
           </div>

@@ -153,7 +153,11 @@ router.delete(
       throw new AppError('Resource not found', 404, 'RESOURCE_NOT_FOUND');
     }
 
-    res.json({ message: 'Resource deleted successfully' });
+    res.json({
+      success: true,
+      message: 'Resource deleted successfully',
+      data: null,
+    });
   }),
 );
 
@@ -170,7 +174,11 @@ router.post(
     }
 
     await resource.incrementDownload();
-    res.json({ message: 'Download count incremented' });
+    res.json({
+      success: true,
+      message: 'Download count incremented',
+      data: null,
+    });
   }),
 );
 

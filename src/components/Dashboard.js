@@ -5,6 +5,7 @@ import DashboardHeader from './dashboard/DashboardHeader';
 import SummaryStats from './dashboard/SummaryStats';
 import DashboardSection from './dashboard/DashboardSection';
 import QuickActions from './dashboard/QuickActions';
+import ErrorBoundary from './ErrorBoundary';
 
 const Dashboard = ({
   houses = [],
@@ -18,41 +19,59 @@ const Dashboard = ({
   const summaryStats = getSummaryStats(stats, houses, members);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <DashboardHeader onNavigate={onNavigate} />
-        <SummaryStats summaryStats={summaryStats} />
+    <ErrorBoundary>
+      <div className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-3 md:p-4'>
+        <div className='max-w-6xl mx-auto space-y-4'>
+          <ErrorBoundary>
+            <DashboardHeader onNavigate={onNavigate} />
+          </ErrorBoundary>
 
-        {dashboardCards.map((section, sectionIndex) => (
-          <DashboardSection
-            key={sectionIndex}
-            section={section}
-            onNavigate={onNavigate}
-          />
-        ))}
+          <ErrorBoundary>
+            <SummaryStats summaryStats={summaryStats} />
+          </ErrorBoundary>
 
-        {isAdmin && <QuickActions onNavigate={onNavigate} />}
+          <div className='space-y-4'>
+            {dashboardCards.map((section, sectionIndex) => (
+              <ErrorBoundary key={sectionIndex}>
+                <DashboardSection
+                  key={sectionIndex}
+                  section={section}
+                  onNavigate={onNavigate}
+                />
+              </ErrorBoundary>
+            ))}
+          </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-          <div className="text-center">
-            <p className="text-gray-600 text-sm">
-              Last updated: {new Date().toLocaleString()}
-            </p>
-            <p className="text-gray-500 text-xs mt-2">
-              Dashboard data refreshes automatically
-            </p>
-            <div className="mt-4">
-              <button
-                onClick={() => onNavigate('main')}
-                className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
-              >
-                ← Back to Main View
-              </button>
+          {isAdmin && (
+            <ErrorBoundary>
+              <QuickActions onNavigate={onNavigate} />
+            </ErrorBoundary>
+          )}
+
+          <div className='bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-4 border border-white/30'>
+            <div className='text-center space-y-3'>
+              <div className='flex items-center justify-center space-x-2 text-gray-600'>
+                <div className='w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse'></div>
+                <p className='text-xs font-medium'>
+                  Last updated: {new Date().toLocaleString()}
+                </p>
+              </div>
+              <p className='text-gray-500 text-xs'>
+                Dashboard data refreshes automatically
+              </p>
+              <div className='pt-1'>
+                <button
+                  onClick={() => onNavigate('main')}
+                  className='px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 text-sm font-medium'
+                >
+                  ← Back to Main View
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 

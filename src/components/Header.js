@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   FaMosque,
   FaUserAlt,
@@ -91,121 +91,168 @@ const Header = ({
   const [showResourcesDropdown, setShowResourcesDropdown] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Handle dropdown interactions
+  const handleJamaatDropdownToggle = useCallback(() => {
+    setShowJamaatDropdown((prev) => !prev);
+    setShowResourcesDropdown(false); // Close other dropdown
+  }, []);
+
+  const handleResourcesDropdownToggle = useCallback(() => {
+    setShowResourcesDropdown((prev) => !prev);
+    setShowJamaatDropdown(false); // Close other dropdown
+  }, []);
+
+  const handleJamaatDropdownMouseEnter = useCallback(() => {
+    setShowJamaatDropdown(true);
+    setShowResourcesDropdown(false);
+  }, []);
+
+  const handleJamaatDropdownMouseLeave = useCallback(() => {
+    setShowJamaatDropdown(false);
+  }, []);
+
+  const handleResourcesDropdownMouseEnter = useCallback(() => {
+    setShowResourcesDropdown(true);
+    setShowJamaatDropdown(false);
+  }, []);
+
+  const handleResourcesDropdownMouseLeave = useCallback(() => {
+    setShowResourcesDropdown(false);
+  }, []);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.nav-dropdown')) {
+        setShowJamaatDropdown(false);
+        setShowResourcesDropdown(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   return (
-    <div className="header-container">
-      <div className="header-top">
-        <div className="brand">
-          <img src={logo} alt="Logo" className="logo-img" />
-          <div className="brand-text">
-            <h1 id="ui_title">{L?.title || 'Masjid Dashboard'}</h1>
-            <div className="subtitle">{L?.subtitle || 'Community Management'}</div>
+    <div className='header-container'>
+      <div className='header-top'>
+        <div className='brand'>
+          <img src={logo} alt='Logo' className='logo-img' />
+          <div className='brand-text'>
+            <h1 id='ui_title'>{L?.title || 'Silsila-ul-Ahwaal'}</h1>
+            <div className='subtitle'>
+              {L?.subtitle || 'Har Ghar Deen ka Markaz'}
+            </div>
           </div>
         </div>
-        <div className="mobile-controls">
+        <div className='mobile-controls'>
           <button
-            className="mobile-menu-btn navlink"
-            aria-label="Toggle menu"
+            className='mobile-menu-btn navlink'
+            aria-label='Toggle menu'
             onClick={() => setIsMobileMenuOpen((o) => !o)}
           >
             ☰ <span>Menu</span>
           </button>
           <button
-            className="navlink notify-mobile"
+            className='navlink notify-mobile'
             onClick={onEnableNotifications}
-            title="Enable Notifications"
-            aria-label="Enable Notifications"
+            title='Enable Notifications'
+            aria-label='Enable Notifications'
           >
             🔔
           </button>
         </div>
         <nav className={`nav-links ${isMobileMenuOpen ? 'open' : ''}`}>
           <button
-            className="navlink"
+            className='navlink'
             onClick={() => onNavClick('dashboard', {})}
           >
             <FaChartBar /> <span>Dashboard</span>
           </button>
           <button
-            className="navlink"
+            className='navlink'
             onClick={() => onNavClick('timetable', { times: prayerTimes })}
           >
             <FaMosque /> <span>Timetable</span>
           </button>
           <button
-            className="navlink"
+            className='navlink'
             onClick={() => onNavClick('info', 'aumoor')}
           >
             <FaUserAlt /> <span>Aumoor</span>
           </button>
           <button
-            className="navlink"
+            className='navlink'
             onClick={() => onNavClick('analytics', {})}
           >
             <FaBook /> <span>Analytics</span>
           </button>
           {/* Jama'at Activities Dropdown */}
           <div
-            className="nav-dropdown"
-            onMouseEnter={() => setShowJamaatDropdown(true)}
-            onMouseLeave={() => setShowJamaatDropdown(false)}
+            className='nav-dropdown'
+            onMouseEnter={handleJamaatDropdownMouseEnter}
+            onMouseLeave={handleJamaatDropdownMouseLeave}
           >
             <button
-              className="navlink"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setShowJamaatDropdown((v) => !v);
-              }}
+              className='navlink dropdown-trigger'
+              onClick={handleJamaatDropdownToggle}
+              aria-expanded={showJamaatDropdown}
+              aria-haspopup='true'
             >
               <FaUsers /> <span>Jama'at Activities</span>{' '}
-              <FaChevronDown size={12} style={{ marginLeft: '4px' }} />
+              <FaChevronDown
+                size={12}
+                style={{
+                  marginLeft: '4px',
+                  transform: showJamaatDropdown
+                    ? 'rotate(180deg)'
+                    : 'rotate(0deg)',
+                  transition: 'transform 0.2s ease',
+                }}
+              />
             </button>
             {showJamaatDropdown && (
               <div
-                className="dropdown-menu"
-                onMouseEnter={() => setShowJamaatDropdown(true)}
-                onMouseLeave={() => setShowJamaatDropdown(false)}
+                className='dropdown-menu'
+                onMouseEnter={handleJamaatDropdownMouseEnter}
+                onMouseLeave={handleJamaatDropdownMouseLeave}
               >
                 <button
-                  className="dropdown-item"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                  className='dropdown-item'
+                  onClick={() => {
                     onNavClick('info', 'running');
                     setShowJamaatDropdown(false);
+                    setIsMobileMenuOpen(false);
                   }}
                 >
                   <FaCalendarAlt size={14} /> <span>Upcoming Jamaat</span>
                 </button>
                 <button
-                  className="dropdown-item"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                  className='dropdown-item'
+                  onClick={() => {
                     onNavClick('info', 'running');
                     setShowJamaatDropdown(false);
+                    setIsMobileMenuOpen(false);
                   }}
                 >
                   <FaWalking size={14} /> <span>Running Jamaat</span>
                 </button>
                 <button
-                  className="dropdown-item"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                  className='dropdown-item'
+                  onClick={() => {
                     onNavClick('info', 'running');
                     setShowJamaatDropdown(false);
+                    setIsMobileMenuOpen(false);
                   }}
                 >
                   <FaBullhorn size={14} /> <span>Current Tashkeel</span>
                 </button>
                 <button
-                  className="dropdown-item"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                  className='dropdown-item'
+                  onClick={() => {
                     onNavClick('info', 'running');
                     setShowJamaatDropdown(false);
+                    setIsMobileMenuOpen(false);
                   }}
                 >
                   <FaBell size={14} /> <span>Taqaze</span>
@@ -216,91 +263,97 @@ const Header = ({
 
           {/* Resources Dropdown */}
           <div
-            className="nav-dropdown"
-            onMouseEnter={() => setShowResourcesDropdown(true)}
-            onMouseLeave={() => setShowResourcesDropdown(false)}
+            className='nav-dropdown'
+            onMouseEnter={handleResourcesDropdownMouseEnter}
+            onMouseLeave={handleResourcesDropdownMouseLeave}
           >
             <button
-              className="navlink"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setShowResourcesDropdown((v) => !v);
-              }}
+              className='navlink dropdown-trigger'
+              onClick={handleResourcesDropdownToggle}
+              aria-expanded={showResourcesDropdown}
+              aria-haspopup='true'
             >
               <FaBook /> <span>Resources</span>{' '}
-              <FaChevronDown size={12} style={{ marginLeft: '4px' }} />
+              <FaChevronDown
+                size={12}
+                style={{
+                  marginLeft: '4px',
+                  transform: showResourcesDropdown
+                    ? 'rotate(180deg)'
+                    : 'rotate(0deg)',
+                  transition: 'transform 0.2s ease',
+                }}
+              />
             </button>
             {showResourcesDropdown && (
               <div
-                className="dropdown-menu"
-                onMouseEnter={() => setShowResourcesDropdown(true)}
-                onMouseLeave={() => setShowResourcesDropdown(false)}
+                className='dropdown-menu'
+                onMouseEnter={handleResourcesDropdownMouseEnter}
+                onMouseLeave={handleResourcesDropdownMouseLeave}
               >
                 <button
-                  className="dropdown-item"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                  className='dropdown-item'
+                  onClick={() => {
                     onNavClick('resources', {});
                     setShowResourcesDropdown(false);
+                    setIsMobileMenuOpen(false);
                   }}
                 >
                   <FaImages size={14} /> <span>Learning Resources</span>
                 </button>
                 <button
-                  className="dropdown-item"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                  className='dropdown-item'
+                  onClick={() => {
                     onNavClick('info', 'resources_imp');
                     setShowResourcesDropdown(false);
+                    setIsMobileMenuOpen(false);
                   }}
                 >
                   <FaBookOpen size={14} />{' '}
                   <span>Important Islamic Resources</span>
                 </button>
                 <button
-                  className="dropdown-item"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                  className='dropdown-item'
+                  onClick={() => {
                     onNavClick('info', 'resources_dawah');
                     setShowResourcesDropdown(false);
+                    setIsMobileMenuOpen(false);
                   }}
                 >
                   <FaBookOpen size={14} /> <span>Dawah Guidelines</span>
                 </button>
                 <button
-                  className="dropdown-item"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                  className='dropdown-item'
+                  onClick={() => {
                     onNavClick('info', 'resources_gallery');
                     setShowResourcesDropdown(false);
+                    setIsMobileMenuOpen(false);
                   }}
                 >
                   <FaImages size={14} /> <span>Gallery</span>
                 </button>
                 <button
-                  className="dropdown-item"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                  className='dropdown-item'
+                  onClick={() => {
                     onNavClick('info', 'resources_misc');
                     setShowResourcesDropdown(false);
+                    setIsMobileMenuOpen(false);
                   }}
                 >
                   <FaEllipsisH size={14} /> <span>Miscellaneous</span>
                 </button>
-                <div style={{ borderTop: '1px solid #eee', margin: '6px 0' }} />
+                <div
+                  style={{
+                    borderTop: '1px solid rgba(255,255,255,0.2)',
+                    margin: '6px 0',
+                  }}
+                />
                 <button
-                  className="dropdown-item"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onNavClick('info', 'contact'); // read-only contacts list
+                  className='dropdown-item'
+                  onClick={() => {
+                    onNavClick('info', 'contact');
                     setShowResourcesDropdown(false);
+                    setIsMobileMenuOpen(false);
                   }}
                 >
                   <FaPhoneAlt size={14} /> <span>Contacts List</span>
@@ -310,17 +363,17 @@ const Header = ({
           </div>
 
           <button
-            className="navlink"
+            className='navlink'
             onClick={() => onNavClick('contact_admin', {})}
           >
             <FaPhoneAlt /> <span>Contact Us</span>
           </button>
-          <button className="navlink" onClick={() => onNavClick('about', {})}>
+          <button className='navlink' onClick={() => onNavClick('about', {})}>
             <FaBookOpen /> <span>About Us</span>
           </button>
         </nav>
-        <div className="header-actions">
-          <div className="clock-display">
+        <div className='header-actions'>
+          <div className='clock-display'>
             <Clock prayerTimes={prayerTimes} />
           </div>
           {/* Google Translate widget renders here; dropdown removed */}
@@ -329,22 +382,22 @@ const Header = ({
           {/* Offline indicator (App can render via children if desired) */}
 
           <button
-            className="navlink notify-desktop"
+            className='navlink notify-desktop'
             onClick={onEnableNotifications}
-            title="Enable Notifications"
+            title='Enable Notifications'
           >
             🔔
           </button>
 
           <button
-            className="navlink user-profile-btn"
+            className='navlink user-profile-btn'
             onClick={onShowProfile}
             title={`Profile: ${user?.name || 'User'}`}
           >
             👤 <span>{user?.name || 'User'}</span>
           </button>
-          <div className="translate-wrap" title="Select Language">
-            <div id="google_translate_element" ref={translateRef}></div>
+          <div className='translate-wrap' title='Select Language'>
+            <div id='google_translate_element' ref={translateRef}></div>
           </div>
         </div>
       </div>

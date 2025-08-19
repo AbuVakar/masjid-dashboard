@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNotify } from '../context/NotificationContext';
+import { sanitizeString } from '../utils/validation';
 import InfoModal from './InfoModal';
 import UserProfile from './UserProfile';
-import Analytics from './Analytics';
 import BackupRestoreModal from './BackupRestoreModal';
+import PrayerTimeHistory from './PrayerTimeHistory';
 
 const Modal = ({
   type,
@@ -37,6 +38,9 @@ const Modal = ({
     Maghrib: data?.times?.Maghrib || '19:10',
     Isha: data?.times?.Isha || '20:45',
   });
+
+  // Prayer time history view state
+  const [showHistory, setShowHistory] = useState(false);
 
   // Update times when data prop changes
   useEffect(() => {
@@ -72,7 +76,7 @@ const Modal = ({
           ? {
               ...(data?.member || {}),
               houseId: data?.houseId,
-              id: data?.member?.id,
+              id: data?.member?.id || data?.memberId,
               maktab: data?.member?.maktab ?? 'no',
               dawatCounts: data?.member?.dawatCounts || {
                 '3-day': 0,
@@ -122,81 +126,120 @@ const Modal = ({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    const sanitizedValue = sanitizeString(value);
+
     if (name === 'dawat') {
       // When Dawat Status changes, update dawatCounts accordingly
       let newCounts = { '3-day': 0, '10-day': 0, '40-day': 0, '4-month': 0 };
-      if (value === '3-day') newCounts['3-day'] = 1;
-      else if (value === '10-day') newCounts['10-day'] = 1;
-      else if (value === '40-day') newCounts['40-day'] = 1;
-      else if (value === '4-month') newCounts['4-month'] = 1;
+      if (sanitizedValue === '3-day') newCounts['3-day'] = 1;
+      else if (sanitizedValue === '10-day') newCounts['10-day'] = 1;
+      else if (sanitizedValue === '40-day') newCounts['40-day'] = 1;
+      else if (sanitizedValue === '4-month') newCounts['4-month'] = 1;
       setFormData((prev) => ({
         ...prev,
-        dawat: value,
+        dawat: sanitizedValue,
         dawatCounts: newCounts,
       }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     }
   };
 
-  const handleSubmit = () => {
-    let payload = { ...formData };
-    if (type === 'member') {
-      // Basic validation
-      if (!payload.name || payload.name.trim().length === 0) {
-        notify('Member name is required', { type: 'error' });
-        return;
+  const handleSubmit = async () => {
+    try {
+      let payload = { ...formData };
+
+      if (type === 'member') {
+        // Basic validation
+        if (!payload.name || payload.name.trim().length === 0) {
+          notify('Member name is required', { type: 'error' });
+          return;
+        }
+        const ageNum = Number(payload.age);
+        if (Number.isNaN(ageNum) || ageNum < 0 || ageNum > 120) {
+          notify('Please enter a valid age (0-120)', { type: 'error' });
+          return;
+        }
+        if (!payload.gender) {
+          notify('Please select gender', { type: 'error' });
+          return;
+        }
+        if (!payload.role) {
+          notify('Please select role', { type: 'error' });
+          return;
+        }
+        if (payload.mobile && !/^\+?\d{7,15}$/.test(String(payload.mobile))) {
+          notify('Please enter a valid mobile number', { type: 'error' });
+          return;
+        }
+
+        // Convert age to number and ensure all required fields are present
+        payload.age = ageNum;
+        payload.mode = data?.mode;
+        payload.houseId = data?.houseId;
+
+        // Ensure required fields have default values
+        payload.gender = payload.gender || 'Male';
+        payload.role = payload.role || 'Member';
+        payload.occupation = payload.occupation || 'Other';
+        payload.education = payload.education || 'Below 8th';
+        payload.quran = payload.quran || 'no';
+        payload.maktab = payload.maktab || 'no';
+        payload.dawat = payload.dawat || 'Nil';
+        payload.dawatCounts = payload.dawatCounts || {
+          '3-day': 0,
+          '10-day': 0,
+          '40-day': 0,
+          '4-month': 0,
+        };
+
+        if (data?.mode === 'edit') {
+          payload.id = data?.member?.id || data?.memberId;
+        }
+
+        // Debug logging
+        console.log('Member payload:', payload);
+        console.log('Modal data:', data);
+      } else if (type === 'house') {
+        if (!payload.number && payload.number !== 0) {
+          notify('House number is required', { type: 'error' });
+          return;
+        }
+        if (!payload.street || payload.street.trim().length === 0) {
+          notify('Street is required', { type: 'error' });
+          return;
+        }
+        payload.mode = data?.mode;
+        if (data?.mode === 'edit') payload.id = data?.house?.id;
       }
-      const ageNum = Number(payload.age);
-      if (Number.isNaN(ageNum) || ageNum < 0 || ageNum > 120) {
-        notify('Please enter a valid age (0-120)', { type: 'error' });
-        return;
+
+      if (onSave) {
+        await onSave(payload, type);
+      } else {
+        console.warn('onSave function not provided to Modal component');
+        onClose();
       }
-      if (!payload.gender) {
-        notify('Please select gender', { type: 'error' });
-        return;
-      }
-      if (!payload.role) {
-        notify('Please select role', { type: 'error' });
-        return;
-      }
-      if (payload.mobile && !/^\+?\d{7,15}$/.test(String(payload.mobile))) {
-        notify('Please enter a valid mobile number', { type: 'error' });
-        return;
-      }
-      payload.mode = data?.mode;
-      payload.houseId = data?.houseId;
-      if (data?.mode === 'edit') payload.id = data?.member?.id;
-    } else if (type === 'house') {
-      if (!payload.number && payload.number !== 0) {
-        notify('House number is required', { type: 'error' });
-        return;
-      }
-      if (!payload.street || payload.street.trim().length === 0) {
-        notify('Street is required', { type: 'error' });
-        return;
-      }
-      payload.mode = data?.mode;
-      if (data?.mode === 'edit') payload.id = data?.house?.id;
+    } catch (error) {
+      console.error('Modal save error:', error);
+      notify(`Failed to save: ${error.message}`, { type: 'error' });
     }
-    onSave(payload, type);
   };
 
   if (type === 'house') {
     return (
-      <div className="modal-backdrop">
-        <div className="modal">
+      <div className='modal-backdrop'>
+        <div className='modal'>
           <h3>
             {data?.mode === 'add'
               ? 'Add New House'
               : `Edit House — ${data?.house?.number ?? ''}`}
           </h3>
-          <div className="form-row">
+          <div className='form-row'>
             <div>
               <label>House Number</label>
               <input
-                name="number"
-                type="number"
+                name='number'
+                type='number'
                 value={formData.number || ''}
                 onChange={handleChange}
               />
@@ -204,14 +247,14 @@ const Modal = ({
             <div>
               <label>Street</label>
               <input
-                name="street"
+                name='street'
                 value={formData.street || ''}
                 onChange={handleChange}
               />
             </div>
           </div>
-          <div className="actions">
-            <button className="ghost" onClick={onClose}>
+          <div className='actions'>
+            <button className='ghost' onClick={onClose}>
               Cancel
             </button>
             <button onClick={handleSubmit}>
@@ -225,17 +268,17 @@ const Modal = ({
 
   if (type === 'member') {
     return (
-      <div className="modal-backdrop">
-        <div className="modal">
+      <div className='modal-backdrop'>
+        <div className='modal'>
           <h3>
             {data?.mode === 'add' ? 'Add Member' : 'Edit Member'} — House{' '}
             {data?.houseId ?? ''}
           </h3>
-          <div className="form-row">
+          <div className='form-row'>
             <div>
               <label>Name</label>
               <input
-                name="name"
+                name='name'
                 value={formData.name || ''}
                 onChange={handleChange}
               />
@@ -243,7 +286,7 @@ const Modal = ({
             <div>
               <label>Father's Name</label>
               <input
-                name="fatherName"
+                name='fatherName'
                 placeholder={formData.fatherNameDefault || ''}
                 value={formData.fatherName || ''}
                 onChange={handleChange}
@@ -252,19 +295,19 @@ const Modal = ({
             <div>
               <label>Age</label>
               <input
-                name="age"
-                type="number"
-                min="0"
+                name='age'
+                type='number'
+                min='0'
                 value={formData.age || ''}
                 onChange={handleChange}
               />
             </div>
           </div>
-          <div className="form-row">
+          <div className='form-row'>
             <div>
               <label>Gender</label>
               <select
-                name="gender"
+                name='gender'
                 value={formData.gender}
                 onChange={handleChange}
               >
@@ -274,17 +317,17 @@ const Modal = ({
             </div>
             <div>
               <label>Role</label>
-              <select name="role" value={formData.role} onChange={handleChange}>
+              <select name='role' value={formData.role} onChange={handleChange}>
                 <option>Member</option>
                 <option>Head</option>
               </select>
             </div>
           </div>
-          <div className="form-row">
+          <div className='form-row'>
             <div>
               <label>Occupation</label>
               <input
-                name="occupation"
+                name='occupation'
                 value={formData.occupation || ''}
                 onChange={handleChange}
               />
@@ -292,7 +335,7 @@ const Modal = ({
             <div>
               <label>Education</label>
               <select
-                name="education"
+                name='education'
                 value={formData.education}
                 onChange={handleChange}
               >
@@ -304,53 +347,53 @@ const Modal = ({
               </select>
             </div>
           </div>
-          <div className="form-row">
+          <div className='form-row'>
             <div>
               <label>Quran Read</label>
               <select
-                name="quran"
+                name='quran'
                 value={formData.quran}
                 onChange={handleChange}
               >
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
+                <option value='yes'>Yes</option>
+                <option value='no'>No</option>
               </select>
             </div>
             {Number(formData.age) < 14 && (
               <div>
                 <label>Maktab</label>
                 <select
-                  name="maktab"
+                  name='maktab'
                   value={formData.maktab || 'no'}
                   onChange={handleChange}
                 >
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
+                  <option value='yes'>Yes</option>
+                  <option value='no'>No</option>
                 </select>
               </div>
             )}
             <div>
               <label>Dawat Status</label>
               <select
-                name="dawat"
+                name='dawat'
                 value={formData.dawat || ''}
                 onChange={handleChange}
               >
-                <option value="Nil">Nil</option>
-                <option value="3-day">3 days</option>
-                <option value="10-day">10 days</option>
-                <option value="40-day">40 days</option>
-                <option value="4-month">4 months</option>
+                <option value='Nil'>Nil</option>
+                <option value='3-day'>3 days</option>
+                <option value='10-day'>10 days</option>
+                <option value='40-day'>40 days</option>
+                <option value='4-month'>4 months</option>
               </select>
             </div>
           </div>
-          <div className="form-row">
+          <div className='form-row'>
             <div>
               <label>3 days count</label>
               <input
-                type="number"
-                min="0"
-                name="dc_3"
+                type='number'
+                min='0'
+                name='dc_3'
                 value={formData.dawatCounts?.['3-day'] ?? 0}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -366,9 +409,9 @@ const Modal = ({
             <div>
               <label>10 days count</label>
               <input
-                type="number"
-                min="0"
-                name="dc_10"
+                type='number'
+                min='0'
+                name='dc_10'
                 value={formData.dawatCounts?.['10-day'] ?? 0}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -382,13 +425,13 @@ const Modal = ({
               />
             </div>
           </div>
-          <div className="form-row">
+          <div className='form-row'>
             <div>
               <label>40 days count</label>
               <input
-                type="number"
-                min="0"
-                name="dc_40"
+                type='number'
+                min='0'
+                name='dc_40'
                 value={formData.dawatCounts?.['40-day'] ?? 0}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -404,9 +447,9 @@ const Modal = ({
             <div>
               <label>4 months count</label>
               <input
-                type="number"
-                min="0"
-                name="dc_4m"
+                type='number'
+                min='0'
+                name='dc_4m'
                 value={formData.dawatCounts?.['4-month'] ?? 0}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -420,18 +463,18 @@ const Modal = ({
               />
             </div>
           </div>
-          <div className="form-row">
+          <div className='form-row'>
             <div>
               <label>Mobile</label>
               <input
-                name="mobile"
+                name='mobile'
                 value={formData.mobile || ''}
                 onChange={handleChange}
               />
             </div>
           </div>
-          <div className="actions">
-            <button className="ghost" onClick={onClose}>
+          <div className='actions'>
+            <button className='ghost' onClick={onClose}>
               Cancel
             </button>
             <button onClick={handleSubmit}>
@@ -445,13 +488,23 @@ const Modal = ({
 
   // Timetable modal (editable prayer times)
   if (type === 'timetable') {
+    // Show history view if requested
+    if (showHistory) {
+      return <PrayerTimeHistory onBack={() => setShowHistory(false)} />;
+    }
+
     const onChange = (e) => {
       const { name, value } = e.target;
       setTimes((t) => ({ ...t, [name]: value }));
     };
 
     const handleSaveClick = () => {
-      onSave({ times }, type);
+      if (onSave) {
+        onSave({ times }, type);
+      } else {
+        console.warn('onSave function not provided to Modal component');
+        onClose();
+      }
     };
 
     const handleResetClick = () => {
@@ -471,13 +524,13 @@ const Modal = ({
     };
 
     return (
-      <div className="modal-backdrop">
-        <div className="modal">
-          <div className="timetable-ayah">
-            <div className="ayah-text">
+      <div className='modal-backdrop'>
+        <div className='modal'>
+          <div className='timetable-ayah'>
+            <div className='ayah-text'>
               Beshak Namaz apne muqarrar waqto mein momino par farz hai
             </div>
-            <div className="ayah-ref">(Surah An Nisa — Ayat 103)</div>
+            <div className='ayah-ref'>(Surah An Nisa — Ayat 103)</div>
           </div>
 
           <div
@@ -498,115 +551,122 @@ const Modal = ({
             Fridays, Dhuhr switches to Juma at 1:10 PM.
           </div>
 
-          <div className="timetable-grid">
-            <div className="time-field">
+          <div className='timetable-grid'>
+            <div className='time-field'>
               <label>Fajr</label>
               <input
-                type="time"
-                step="60"
-                name="Fajr"
+                type='time'
+                step='60'
+                name='Fajr'
                 value={times.Fajr}
                 onChange={onChange}
               />
             </div>
-            <div className="time-field">
+            <div className='time-field'>
               <label>Dhuhr</label>
               <input
-                type="time"
-                step="60"
-                name="Dhuhr"
+                type='time'
+                step='60'
+                name='Dhuhr'
                 value={times.Dhuhr}
                 onChange={onChange}
               />
             </div>
-            <div className="time-field">
+            <div className='time-field'>
               <label>Asr</label>
               <input
-                type="time"
-                step="60"
-                name="Asr"
+                type='time'
+                step='60'
+                name='Asr'
                 value={times.Asr}
                 onChange={onChange}
               />
             </div>
-            <div className="time-field">
+            <div className='time-field'>
               <label>
-                Maghrib <span className="badge-auto">Auto</span>
+                Maghrib <span className='badge-auto'>Auto</span>
               </label>
               <input
-                type="time"
-                step="60"
-                name="Maghrib"
+                type='time'
+                step='60'
+                name='Maghrib'
                 value={times.Maghrib}
                 onChange={onChange}
                 disabled
               />
             </div>
-            <div className="time-field">
+            <div className='time-field'>
               <label>Isha</label>
               <input
-                type="time"
-                step="60"
-                name="Isha"
+                type='time'
+                step='60'
+                name='Isha'
                 value={times.Isha}
                 onChange={onChange}
               />
             </div>
           </div>
 
-          <div className="prayer-summary">
-            <div className="summary-heading">
-              <span className="heading-title">Prayer Timetable</span>
-              <span className="heading-sub">Fazilatien</span>
+          <div className='prayer-summary'>
+            <div className='summary-heading'>
+              <span className='heading-title'>Prayer Timetable</span>
+              <span className='heading-sub'>Fazilatien</span>
             </div>
-            <ul className="prayer-list">
-              <li className="prayer-item">
-                <div className="prayer-name">Fajr</div>
-                <div className="prayer-time">{times.Fajr}</div>
-                <div className="prayer-quote">
+            <ul className='prayer-list'>
+              <li className='prayer-item'>
+                <div className='prayer-name'>Fajr</div>
+                <div className='prayer-time'>{times.Fajr}</div>
+                <div className='prayer-quote'>
                   Fajr chehre ka noor hai — ise kabhi na chhodo.
                 </div>
               </li>
-              <li className="prayer-item">
-                <div className="prayer-name">Dhuhr</div>
-                <div className="prayer-time">{times.Dhuhr}</div>
-                <div className="prayer-quote">
+              <li className='prayer-item'>
+                <div className='prayer-name'>Dhuhr</div>
+                <div className='prayer-time'>{times.Dhuhr}</div>
+                <div className='prayer-quote'>
                   Dhuhr rooh ko sukoon deta hai, din ki thakan ko mitaata hai.
                 </div>
               </li>
-              <li className="prayer-item">
-                <div className="prayer-name">Asr</div>
-                <div className="prayer-time">{times.Asr}</div>
-                <div className="prayer-quote">
+              <li className='prayer-item'>
+                <div className='prayer-name'>Asr</div>
+                <div className='prayer-time'>{times.Asr}</div>
+                <div className='prayer-quote'>
                   Asr ka waqt ghanimat hai, guzar jaane se pehle apne Rabb ko
                   yaad karo.
                 </div>
               </li>
-              <li className="prayer-item">
-                <div className="prayer-name">Maghrib</div>
-                <div className="prayer-time">{times.Maghrib}</div>
-                <div className="prayer-quote highlight">
+              <li className='prayer-item'>
+                <div className='prayer-name'>Maghrib</div>
+                <div className='prayer-time'>{times.Maghrib}</div>
+                <div className='prayer-quote highlight'>
                   Maghrib duaon ki qabooliyat ka waqt hai.
                 </div>
               </li>
-              <li className="prayer-item">
-                <div className="prayer-name">Isha</div>
-                <div className="prayer-time">{times.Isha}</div>
-                <div className="prayer-quote">
+              <li className='prayer-item'>
+                <div className='prayer-name'>Isha</div>
+                <div className='prayer-time'>{times.Isha}</div>
+                <div className='prayer-quote'>
                   Isha imaan ko mazboot karta hai, aur neend ko barkat deta hai.
                 </div>
               </li>
             </ul>
           </div>
 
-          <div className="actions">
-            <button type="button" className="ghost" onClick={onClose}>
+          <div className='actions'>
+            <button type='button' className='ghost' onClick={onClose}>
               Close
             </button>
-            <button type="button" className="ghost" onClick={handleResetClick}>
+            <button
+              type='button'
+              className='ghost'
+              onClick={() => setShowHistory(true)}
+            >
+              📜 History
+            </button>
+            <button type='button' className='ghost' onClick={handleResetClick}>
               Reset
             </button>
-            <button type="button" onClick={handleSaveClick}>
+            <button type='button' onClick={handleSaveClick}>
               Save
             </button>
           </div>
@@ -626,16 +686,21 @@ const Modal = ({
         const el = document.getElementById(idFor(col));
         return el ? !!el.checked : initial.has(col);
       });
-      onSave({ columns: cols.length ? cols : allCols, __target: type });
+      if (onSave) {
+        onSave({ columns: cols.length ? cols : allCols, __target: type });
+      } else {
+        console.warn('onSave function not provided to Modal component');
+        onClose();
+      }
     };
     return (
-      <div className="modal-backdrop">
-        <div className="modal" style={{ maxWidth: 720 }}>
+      <div className='modal-backdrop'>
+        <div className='modal' style={{ maxWidth: 720 }}>
           <h3 style={{ marginBottom: 6 }}>
             {type === 'export_pdf' ? 'Export PDF Columns' : 'Export Columns'}
           </h3>
           <div
-            className="form-row"
+            className='form-row'
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
@@ -657,18 +722,18 @@ const Modal = ({
               >
                 <input
                   id={idFor(col)}
-                  type="checkbox"
+                  type='checkbox'
                   defaultChecked={initial.has(col)}
                 />
                 <span>{col}</span>
               </label>
             ))}
           </div>
-          <div className="actions">
-            <button type="button" className="ghost" onClick={onClose}>
+          <div className='actions'>
+            <button type='button' className='ghost' onClick={onClose}>
               Cancel
             </button>
-            <button type="button" onClick={handleExport}>
+            <button type='button' onClick={handleExport}>
               Export
             </button>
           </div>
@@ -695,12 +760,12 @@ const Modal = ({
   if (type === 'about') {
     const VisionMission = require('./VisionMission.jsx').default;
     return (
-      <div className="modal-backdrop">
-        <div className="modal" style={{ maxWidth: 900 }}>
+      <div className='modal-backdrop'>
+        <div className='modal' style={{ maxWidth: 900 }}>
           <h3 style={{ marginBottom: 8 }}>About Us</h3>
           <VisionMission />
-          <div className="actions">
-            <button type="button" className="ghost" onClick={onClose}>
+          <div className='actions'>
+            <button type='button' className='ghost' onClick={onClose}>
               Close
             </button>
           </div>
@@ -728,7 +793,12 @@ const Modal = ({
         notify('Please enter your message', { type: 'error' });
         return;
       }
-      onSave({ type: 'contact_admin', payload: contactForm });
+      if (onSave) {
+        onSave({ type: 'contact_admin', payload: contactForm });
+      } else {
+        console.warn('onSave function not provided to Modal component');
+        onClose();
+      }
     };
 
     const getCategoryIcon = (category) => {
@@ -749,123 +819,128 @@ const Modal = ({
     };
 
     return (
-      <div className="modal-backdrop">
-        <div className="modal contact-admin-modal" style={{ maxWidth: 600 }}>
-          <div className="modal-header">
-            <div className="header-content">
+      <div className='modal-backdrop'>
+        <div className='modal contact-admin-modal' style={{ maxWidth: 500 }}>
+          <div className='modal-header'>
+            <div className='header-content'>
               <h3>📞 Contact Admin</h3>
-              <p className="modal-subtitle">Get in touch with the admin team</p>
+              <p className='modal-subtitle'>Get in touch with the admin team</p>
             </div>
             <button
-              className="modal-close-btn"
+              className='modal-close-btn'
               onClick={onClose}
-              aria-label="Close contact form"
+              aria-label='Close contact form'
             >
               ✕
             </button>
           </div>
 
-          <div className="contact-form">
-            <div className="form-section">
-              <label className="form-label">
-                <span className="label-icon">🎯</span>
-                Purpose
-              </label>
-              <select
-                name="category"
-                value={contactForm.category}
-                onChange={onChange}
-                className="contact-select"
-              >
-                <option value="Jamaat">🕌 Jamaat</option>
-                <option value="Taqaza">📢 Taqaza</option>
-                <option value="Suggestions">💡 Suggestions</option>
-                <option value="Facing Issues">⚠️ Facing Issues</option>
-                <option value="General">📝 General</option>
-              </select>
-            </div>
-
-            <div className="form-row">
-              <div className="form-section">
-                <label className="form-label">
-                  <span className="label-icon">👤</span>
-                  Your Name *
+          <div className='contact-form'>
+            <div className='form-grid'>
+              <div className='form-section category-section'>
+                <label className='form-label'>
+                  <span className='label-icon'>🎯</span>
+                  Purpose
                 </label>
-                <input
-                  name="name"
-                  value={contactForm.name}
+                <select
+                  name='category'
+                  value={contactForm.category}
                   onChange={onChange}
-                  placeholder="Enter your full name"
-                  className="contact-input"
-                />
+                  className='contact-select'
+                >
+                  <option value='Jamaat'>🕌 Jamaat</option>
+                  <option value='Taqaza'>📢 Taqaza</option>
+                  <option value='Suggestions'>💡 Suggestions</option>
+                  <option value='Facing Issues'>⚠️ Facing Issues</option>
+                  <option value='General'>📝 General</option>
+                </select>
               </div>
-              <div className="form-section">
-                <label className="form-label">
-                  <span className="label-icon">📱</span>
-                  Mobile (optional)
+
+              <div className='form-row'>
+                <div className='form-section'>
+                  <label className='form-label'>
+                    <span className='label-icon'>👤</span>
+                    Name *
+                  </label>
+                  <input
+                    name='name'
+                    value={contactForm.name}
+                    onChange={onChange}
+                    placeholder='Your full name'
+                    className='contact-input'
+                  />
+                </div>
+                <div className='form-section'>
+                  <label className='form-label'>
+                    <span className='label-icon'>📱</span>
+                    Mobile
+                  </label>
+                  <input
+                    name='mobile'
+                    value={contactForm.mobile}
+                    onChange={onChange}
+                    placeholder='+91 98765 43210'
+                    className='contact-input'
+                  />
+                </div>
+              </div>
+
+              <div className='form-section'>
+                <label className='form-label'>
+                  <span className='label-icon'>💬</span>
+                  Message *
                 </label>
-                <input
-                  name="mobile"
-                  value={contactForm.mobile}
+                <textarea
+                  name='message'
+                  rows={4}
+                  value={contactForm.message}
                   onChange={onChange}
-                  placeholder="+91 98765 43210"
-                  className="contact-input"
+                  placeholder={`Describe your ${contactForm.category.toLowerCase()} in detail...`}
+                  className='contact-textarea'
+                  maxLength={500}
                 />
+                <div className='message-counter'>
+                  {contactForm.message.length}/500 characters
+                </div>
               </div>
             </div>
 
-            <div className="form-section">
-              <label className="form-label">
-                <span className="label-icon">💬</span>
-                Message *
-              </label>
-              <textarea
-                name="message"
-                rows={5}
-                value={contactForm.message}
-                onChange={onChange}
-                placeholder={`Please describe your ${contactForm.category.toLowerCase()} in detail...`}
-                className="contact-textarea"
-              />
-              <div className="message-counter">
-                {contactForm.message.length}/500 characters
-              </div>
-            </div>
-
-            <div className="contact-summary">
-              <div className="summary-header">
-                <span className="summary-icon">
+            <div className='contact-summary'>
+              <div className='summary-header'>
+                <span className='summary-icon'>
                   {getCategoryIcon(contactForm.category)}
                 </span>
-                <span className="summary-title">{contactForm.category}</span>
+                <div className='summary-content'>
+                  <span className='summary-title'>{contactForm.category}</span>
+                  <p className='summary-text'>
+                    {contactForm.category === 'Suggestions' &&
+                      'Share your ideas to improve our services'}
+                    {contactForm.category === 'Facing Issues' &&
+                      "Report any problems you're experiencing"}
+                    {contactForm.category === 'Jamaat' &&
+                      'Contact regarding jamaat activities and events'}
+                    {contactForm.category === 'Taqaza' &&
+                      'Submit taqaza or special requests'}
+                    {contactForm.category === 'General' &&
+                      'General inquiries and information'}
+                  </p>
+                </div>
               </div>
-              <p className="summary-text">
-                {contactForm.category === 'Suggestions' &&
-                  'Share your ideas to improve our services'}
-                {contactForm.category === 'Facing Issues' &&
-                  "Report any problems you're experiencing"}
-                {contactForm.category === 'Jamaat' &&
-                  'Contact regarding jamaat activities and events'}
-                {contactForm.category === 'Taqaza' &&
-                  'Submit taqaza or special requests'}
-                {contactForm.category === 'General' &&
-                  'General inquiries and information'}
-              </p>
             </div>
           </div>
 
-          <div className="modal-actions">
+          <div className='modal-actions'>
             <button
-              type="button"
-              className="btn-secondary"
+              type='button'
+              className='btn-secondary'
               onClick={onClose}
               disabled={loading}
             >
               <span>❌</span> Cancel
             </button>
             <button
-              type="button"
-              className="btn-primary"
+              type='button'
+              className='btn-primary'
               onClick={handleSend}
               disabled={loading}
             >
@@ -897,14 +972,19 @@ const Modal = ({
         };
       });
     const handleSavePrefs = () => {
-      onSave({ type: 'notify_prefs', prefs: localPrefs });
+      if (onSave) {
+        onSave({ type: 'notify_prefs', prefs: localPrefs });
+      } else {
+        console.warn('onSave function not provided to Modal component');
+        onClose();
+      }
     };
 
     // Check if current user is guest
     const isGuest = data?.user?.isGuest || data?.user?.role === 'guest';
     return (
-      <div className="modal-backdrop">
-        <div className="modal" style={{ maxWidth: 520 }}>
+      <div className='modal-backdrop'>
+        <div className='modal' style={{ maxWidth: 520 }}>
           <h3 style={{ marginBottom: 6 }}>
             Notification Preferences
             {isGuest && (
@@ -939,7 +1019,7 @@ const Modal = ({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8 }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <input
-                type="checkbox"
+                type='checkbox'
                 checked={!!localPrefs.all}
                 onChange={onToggleAll}
               />
@@ -947,7 +1027,7 @@ const Modal = ({
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <input
-                type="checkbox"
+                type='checkbox'
                 checked={!!localPrefs.prayer}
                 onChange={() => onToggle('prayer')}
               />
@@ -964,7 +1044,7 @@ const Modal = ({
               >
                 <label>
                   <input
-                    type="checkbox"
+                    type='checkbox'
                     checked={!!localPrefs.prayerFajr}
                     onChange={() => onToggle('prayerFajr')}
                   />{' '}
@@ -972,7 +1052,7 @@ const Modal = ({
                 </label>
                 <label>
                   <input
-                    type="checkbox"
+                    type='checkbox'
                     checked={!!localPrefs.prayerDhuhr}
                     onChange={() => onToggle('prayerDhuhr')}
                   />{' '}
@@ -980,7 +1060,7 @@ const Modal = ({
                 </label>
                 <label>
                   <input
-                    type="checkbox"
+                    type='checkbox'
                     checked={!!localPrefs.prayerAsr}
                     onChange={() => onToggle('prayerAsr')}
                   />{' '}
@@ -988,7 +1068,7 @@ const Modal = ({
                 </label>
                 <label>
                   <input
-                    type="checkbox"
+                    type='checkbox'
                     checked={!!localPrefs.prayerMaghrib}
                     onChange={() => onToggle('prayerMaghrib')}
                   />{' '}
@@ -996,7 +1076,7 @@ const Modal = ({
                 </label>
                 <label>
                   <input
-                    type="checkbox"
+                    type='checkbox'
                     checked={!!localPrefs.prayerIsha}
                     onChange={() => onToggle('prayerIsha')}
                   />{' '}
@@ -1006,7 +1086,7 @@ const Modal = ({
             )}
             <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <input
-                type="checkbox"
+                type='checkbox'
                 checked={!!localPrefs.jamaat}
                 onChange={() => onToggle('jamaat')}
               />
@@ -1014,7 +1094,7 @@ const Modal = ({
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <input
-                type="checkbox"
+                type='checkbox'
                 checked={!!localPrefs.info}
                 onChange={() => onToggle('info')}
               />
@@ -1022,7 +1102,7 @@ const Modal = ({
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <input
-                type="checkbox"
+                type='checkbox'
                 checked={!!localPrefs.clear}
                 onChange={() => onToggle('clear')}
               />
@@ -1030,7 +1110,7 @@ const Modal = ({
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <input
-                type="checkbox"
+                type='checkbox'
                 checked={!!localPrefs.admin}
                 onChange={() => onToggle('admin')}
               />
@@ -1046,14 +1126,14 @@ const Modal = ({
             >
               <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <input
-                  type="checkbox"
+                  type='checkbox'
                   checked={!!localPrefs.quietEnabled}
                   onChange={() => onToggle('quietEnabled')}
                 />
                 Quiet hours
               </label>
               <input
-                type="time"
+                type='time'
                 value={localPrefs.quietStart || '22:00'}
                 onChange={(e) =>
                   setLocalPrefs((p) => ({ ...p, quietStart: e.target.value }))
@@ -1061,7 +1141,7 @@ const Modal = ({
               />
               <span>to</span>
               <input
-                type="time"
+                type='time'
                 value={localPrefs.quietEnd || '06:00'}
                 onChange={(e) =>
                   setLocalPrefs((p) => ({ ...p, quietEnd: e.target.value }))
@@ -1070,7 +1150,7 @@ const Modal = ({
             </div>
           </div>
           <div
-            className="actions"
+            className='actions'
             style={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -1079,8 +1159,8 @@ const Modal = ({
           >
             <div style={{ display: 'flex', gap: 8 }}>
               <button
-                type="button"
-                className="ghost"
+                type='button'
+                className='ghost'
                 onClick={() => {
                   // simple test for info notification respecting quiet hours
                   if (
@@ -1099,8 +1179,8 @@ const Modal = ({
                 Test
               </button>
               <button
-                type="button"
-                className="ghost"
+                type='button'
+                className='ghost'
                 onClick={() => {
                   // test scheduling in ~10s for current prayer (for quick check)
                   if (
@@ -1121,10 +1201,10 @@ const Modal = ({
                 Test schedule 10s
               </button>
             </div>
-            <button type="button" className="ghost" onClick={onClose}>
+            <button type='button' className='ghost' onClick={onClose}>
               Cancel
             </button>
-            <button type="button" onClick={handleSavePrefs}>
+            <button type='button' onClick={handleSavePrefs}>
               Save
             </button>
           </div>
@@ -1133,41 +1213,16 @@ const Modal = ({
     );
   }
 
-  if (type === 'analytics') {
-    return (
-      <div className="modal-backdrop">
-        <div className="modal" style={{ maxWidth: 900 }}>
-          <div className="modal-header">
-            <h3>📊 Analytics Dashboard</h3>
-            <button
-              className="modal-close-btn"
-              onClick={onClose}
-              onKeyDown={(e) => e.key === 'Escape' && onClose()}
-              aria-label="Close analytics"
-            >
-              ✕
-            </button>
-          </div>
-          <Analytics
-            houses={data?.houses || []}
-            members={data?.members || []}
-            isAdmin={data?.isAdmin || false}
-          />
-        </div>
-      </div>
-    );
-  }
-
   if (type === 'backup_restore') {
     return (
-      <div className="modal-backdrop">
-        <div className="modal" style={{ maxWidth: 600 }}>
-          <div className="modal-header">
+      <div className='modal-backdrop'>
+        <div className='modal' style={{ maxWidth: 600 }}>
+          <div className='modal-header'>
             <h3>💾 Data Backup & Restore</h3>
             <button
-              className="modal-close-btn"
+              className='modal-close-btn'
               onClick={onClose}
-              aria-label="Close backup"
+              aria-label='Close backup'
             >
               ✕
             </button>
@@ -1185,14 +1240,14 @@ const Modal = ({
 
   if (type === 'user_profile') {
     return (
-      <div className="modal-backdrop">
-        <div className="modal" style={{ maxWidth: 600 }}>
-          <div className="modal-header">
+      <div className='modal-backdrop'>
+        <div className='modal' style={{ maxWidth: 600 }}>
+          <div className='modal-header'>
             <h3>User Profile</h3>
             <button
-              className="modal-close-btn"
+              className='modal-close-btn'
               onClick={onClose}
-              aria-label="Close profile"
+              aria-label='Close profile'
             >
               ✕
             </button>
@@ -1202,51 +1257,6 @@ const Modal = ({
             onUpdatePreferences={onSave}
             onLogout={onLogout || onClose}
           />
-        </div>
-      </div>
-    );
-  }
-
-  if (type === 'demo') {
-    return (
-      <div className="modal-backdrop">
-        <div className="modal" style={{ maxWidth: 500 }}>
-          <div className="modal-header">
-            <h3>📊 Load Demo Data</h3>
-            <button
-              className="modal-close-btn"
-              onClick={onClose}
-              aria-label="Close demo"
-            >
-              ✕
-            </button>
-          </div>
-          <div className="modal-body">
-            <p>This will load sample data including:</p>
-            <ul>
-              <li>🏠 5 sample houses</li>
-              <li>👥 13 sample members</li>
-              <li>📚 5 sample resources</li>
-            </ul>
-            <p>
-              <strong>Note:</strong> This will replace any existing data.
-            </p>
-          </div>
-          <div className="modal-footer">
-            <button type="button" className="ghost" onClick={onClose}>
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                onSave('demo');
-                onClose();
-              }}
-              disabled={loading}
-            >
-              {loading ? 'Loading...' : 'Load Demo Data'}
-            </button>
-          </div>
         </div>
       </div>
     );

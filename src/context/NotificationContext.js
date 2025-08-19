@@ -60,7 +60,7 @@ export const NotificationProvider = ({ children }) => {
 
 const NotificationContainer = ({ notifications, removeNotification }) => {
   return (
-    <div className="notification-container">
+    <div className='notification-container'>
       {notifications.map((notification) => (
         <Notification
           key={notification.id}

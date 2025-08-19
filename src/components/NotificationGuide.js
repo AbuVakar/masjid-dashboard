@@ -45,12 +45,12 @@ const NotificationGuide = ({ onClose, onEnableNotifications }) => {
   };
 
   const getMobileGuide = () => (
-    <div className="guide-content">
+    <div className='guide-content'>
       <h4>📱 Mobile Device Setup</h4>
-      <div className="guide-steps">
-        <div className="guide-step">
-          <span className="step-number">1</span>
-          <div className="step-content">
+      <div className='guide-steps'>
+        <div className='guide-step'>
+          <span className='step-number'>1</span>
+          <div className='step-content'>
             <strong>Android Chrome:</strong>
             <ul>
               <li>Tap the three dots menu (⋮)</li>
@@ -60,9 +60,9 @@ const NotificationGuide = ({ onClose, onEnableNotifications }) => {
             </ul>
           </div>
         </div>
-        <div className="guide-step">
-          <span className="step-number">2</span>
-          <div className="step-content">
+        <div className='guide-step'>
+          <span className='step-number'>2</span>
+          <div className='step-content'>
             <strong>iOS Safari:</strong>
             <ul>
               <li>Go to Settings → Safari</li>
@@ -77,12 +77,12 @@ const NotificationGuide = ({ onClose, onEnableNotifications }) => {
   );
 
   const getBrowserGuide = () => (
-    <div className="guide-content">
+    <div className='guide-content'>
       <h4>⚙️ Browser Settings</h4>
-      <div className="guide-steps">
-        <div className="guide-step">
-          <span className="step-number">1</span>
-          <div className="step-content">
+      <div className='guide-steps'>
+        <div className='guide-step'>
+          <span className='step-number'>1</span>
+          <div className='step-content'>
             <strong>Chrome:</strong>
             <ul>
               <li>Click the lock icon in address bar</li>
@@ -91,9 +91,9 @@ const NotificationGuide = ({ onClose, onEnableNotifications }) => {
             </ul>
           </div>
         </div>
-        <div className="guide-step">
-          <span className="step-number">2</span>
-          <div className="step-content">
+        <div className='guide-step'>
+          <span className='step-number'>2</span>
+          <div className='step-content'>
             <strong>Firefox:</strong>
             <ul>
               <li>Click the shield icon in address bar</li>
@@ -102,9 +102,9 @@ const NotificationGuide = ({ onClose, onEnableNotifications }) => {
             </ul>
           </div>
         </div>
-        <div className="guide-step">
-          <span className="step-number">3</span>
-          <div className="step-content">
+        <div className='guide-step'>
+          <span className='step-number'>3</span>
+          <div className='step-content'>
             <strong>Safari:</strong>
             <ul>
               <li>Go to Safari → Preferences</li>
@@ -120,29 +120,29 @@ const NotificationGuide = ({ onClose, onEnableNotifications }) => {
   const currentStepData = steps[currentStep];
 
   return (
-    <div className="notification-guide-modal">
-      <div className="guide-header">
+    <div className='notification-guide-modal'>
+      <div className='guide-header'>
         <h3>
           {currentStepData.icon} {currentStepData.title}
         </h3>
-        <button className="guide-close" onClick={onClose}>
+        <button className='guide-close' onClick={onClose}>
           ✕
         </button>
       </div>
 
-      <div className="guide-body">
-        <p className="guide-description">{currentStepData.content}</p>
+      <div className='guide-body'>
+        <p className='guide-description'>{currentStepData.content}</p>
 
         {currentStep === 0 && (
-          <div className="guide-actions">
+          <div className='guide-actions'>
             <button
-              className="guide-btn primary"
+              className='guide-btn primary'
               onClick={handleEnableNotifications}
             >
               {currentStepData.action}
             </button>
             <button
-              className="guide-btn secondary"
+              className='guide-btn secondary'
               onClick={() => setCurrentStep(1)}
             >
               Skip for now
@@ -154,16 +154,16 @@ const NotificationGuide = ({ onClose, onEnableNotifications }) => {
         {currentStep === 2 && getBrowserGuide()}
 
         {currentStep > 0 && (
-          <div className="guide-navigation">
+          <div className='guide-navigation'>
             <button
-              className="guide-btn secondary"
+              className='guide-btn secondary'
               onClick={() => setCurrentStep(currentStep - 1)}
             >
               ← Back
             </button>
             {currentStep < steps.length - 1 && (
               <button
-                className="guide-btn primary"
+                className='guide-btn primary'
                 onClick={() => setCurrentStep(currentStep + 1)}
               >
                 Next →
@@ -173,8 +173,8 @@ const NotificationGuide = ({ onClose, onEnableNotifications }) => {
         )}
       </div>
 
-      <div className="guide-footer">
-        <div className="guide-progress">
+      <div className='guide-footer'>
+        <div className='guide-progress'>
           {steps.map((_, index) => (
             <div
               key={index}

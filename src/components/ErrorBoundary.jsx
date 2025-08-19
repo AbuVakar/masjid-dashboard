@@ -56,20 +56,20 @@ class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       // Custom fallback UI
       return (
-        <div className="error-boundary">
-          <div className="error-boundary-content">
-            <div className="error-icon">
+        <div className='error-boundary'>
+          <div className='error-boundary-content'>
+            <div className='error-icon'>
               <svg
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
+                width='48'
+                height='48'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
               >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="15" y1="9" x2="9" y2="15" />
-                <line x1="9" y1="9" x2="15" y2="15" />
+                <circle cx='12' cy='12' r='10' />
+                <line x1='15' y1='9' x2='9' y2='15' />
+                <line x1='9' y1='9' x2='15' y2='15' />
               </svg>
             </div>
 
@@ -79,21 +79,21 @@ class ErrorBoundary extends React.Component {
               again.
             </p>
 
-            <div className="error-actions">
+            <div className='error-actions'>
               <button
-                className="btn-retry"
+                className='btn-retry'
                 onClick={this.handleRetry}
                 disabled={this.state.retryCount >= 3}
               >
                 Try Again
               </button>
 
-              <button className="btn-reset" onClick={this.handleReset}>
+              <button className='btn-reset' onClick={this.handleReset}>
                 Reset
               </button>
 
               <button
-                className="btn-home"
+                className='btn-home'
                 onClick={() => (window.location.href = '/')}
               >
                 Go Home
@@ -101,7 +101,7 @@ class ErrorBoundary extends React.Component {
             </div>
 
             {this.state.retryCount >= 3 && (
-              <div className="error-warning">
+              <div className='error-warning'>
                 <p>
                   Multiple retries failed. Please refresh the page or contact
                   support.
@@ -110,9 +110,9 @@ class ErrorBoundary extends React.Component {
             )}
 
             {process.env.NODE_ENV === 'development' && this.state.error && (
-              <details className="error-details">
+              <details className='error-details'>
                 <summary>Error Details (Development)</summary>
-                <div className="error-stack">
+                <div className='error-stack'>
                   <h4>Error:</h4>
                   <pre>{this.state.error.toString()}</pre>
 

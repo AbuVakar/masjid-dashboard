@@ -1,6 +1,4 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
 
 import ErrorBoundary from '../components/ErrorBoundary';
 import ErrorFallback from '../components/ErrorFallback';
@@ -18,17 +16,22 @@ import {
   logError,
   ERROR_SEVERITY,
 } from '../utils/errorHandler';
+import { exportToExcel, exportToPDF } from '../utils/exportUtils';
 
 const HomePage = ({ openModal }) => {
   const [expandedHouse, setExpandedHouse] = useState(null);
   const [operationLoading, setOperationLoading] = useState(false);
 
-  const { houses, loading, deleteHouse, deleteMember, exportData } =
-    useHouses();
+  const { houses, loading, deleteHouse, deleteMember } = useHouses();
   const { isAdmin, isGuest, isAuthenticated } = useUser();
   const { filters, setFilters, filteredHouses, resetFilters, streets } =
     useFilters(houses);
   const { notify } = useNotify();
+
+  // Debug data flow
+  console.log('HomePage - houses data:', houses?.length || 0);
+  console.log('HomePage - filters:', filters);
+  console.log('HomePage - filteredHouses:', filteredHouses?.length || 0);
 
   const memoizedFilteredHouses = useMemo(() => {
     return filteredHouses || [];
@@ -65,18 +68,42 @@ const HomePage = ({ openModal }) => {
   );
 
   const handleExportExcel = useCallback(async () => {
-    // This logic will be moved to a utility function later
     setOperationLoading(true);
-    // ...
-    setOperationLoading(false);
-  }, []);
+    try {
+      await measurePerformance('Export Excel', async () => {
+        exportToExcel(memoizedFilteredHouses, 'masjid-houses');
+      });
+      notify('Excel file exported successfully!', { type: 'success' });
+    } catch (error) {
+      logError(error, 'Export Excel', ERROR_SEVERITY.MEDIUM);
+      notify('Failed to export Excel file. Please try again.', {
+        type: 'error',
+      });
+    } finally {
+      setOperationLoading(false);
+    }
+  }, [memoizedFilteredHouses, notify]);
 
   const handleExportPDF = useCallback(async () => {
-    // This logic will be moved to a utility function later
+    console.log('Export PDF button clicked');
+    console.log('Houses to export:', memoizedFilteredHouses.length);
+
     setOperationLoading(true);
-    // ...
-    setOperationLoading(false);
-  }, []);
+    try {
+      await measurePerformance('Export PDF', async () => {
+        exportToPDF(memoizedFilteredHouses, 'masjid-houses');
+      });
+      notify('PDF file exported successfully!', { type: 'success' });
+    } catch (error) {
+      console.error('Export PDF error in HomePage:', error);
+      logError(error, 'Export PDF', ERROR_SEVERITY.MEDIUM);
+      notify('Failed to export PDF file. Please try again.', {
+        type: 'error',
+      });
+    } finally {
+      setOperationLoading(false);
+    }
+  }, [memoizedFilteredHouses, notify]);
 
   const handleClearFilters = useCallback(() => {
     resetFilters();
@@ -92,8 +119,8 @@ const HomePage = ({ openModal }) => {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
+      <div className='loading-container'>
+        <div className='loading-spinner'></div>
         <p>Loading Houses...</p>
       </div>
     );
@@ -102,7 +129,7 @@ const HomePage = ({ openModal }) => {
   return (
     <>
       <HeroTypewriter />
-      <ErrorBoundary fallback={<ErrorFallback componentName="Filters" />}>
+      <ErrorBoundary fallback={<ErrorFallback componentName='Filters' />}>
         <Filters
           filters={filters}
           onFiltersChange={setFilters}
@@ -113,22 +140,45 @@ const HomePage = ({ openModal }) => {
           onExportPDF={handleExportPDF}
           onOpenNotifyPrefs={() => openModal('notifications')}
           onOpenAnalytics={() => openModal('analytics')}
-          onLoadDemoData={() => openModal('demo')}
           streets={streets}
           isAdmin={isAdmin}
           L={{}}
         />
       </ErrorBoundary>
 
-      <ErrorBoundary fallback={<ErrorFallback componentName="House Table" />}>
+      <ErrorBoundary fallback={<ErrorFallback componentName='House Table' />}>
         <HouseTable
           houses={memoizedFilteredHouses}
           expandedHouse={expandedHouse}
           setExpandedHouse={setExpandedHouse}
-          onEditHouse={openModal}
+          onEditHouse={(houseId) => {
+            const house = memoizedFilteredHouses.find(
+              (h) => h._id === houseId || h.id === houseId,
+            );
+            openModal('house', { mode: 'edit', house });
+          }}
           onDeleteHouse={handleDelete}
-          onAddMember={openModal}
-          onEditMember={openModal}
+          onAddMember={(houseId) => {
+            const house = memoizedFilteredHouses.find(
+              (h) => h._id === houseId || h.id === houseId,
+            );
+            openModal('member', { mode: 'add', houseId, house });
+          }}
+          onEditMember={(houseId, memberId) => {
+            const house = memoizedFilteredHouses.find(
+              (h) => h._id === houseId || h.id === houseId,
+            );
+            const member = house?.members?.find(
+              (m) => m._id === memberId || m.id === memberId,
+            );
+            openModal('member', {
+              mode: 'edit',
+              houseId,
+              memberId,
+              member,
+              house,
+            });
+          }}
           onDeleteMember={handleDelete}
           isAdmin={isAdmin}
           loading={operationLoading}
@@ -137,11 +187,11 @@ const HomePage = ({ openModal }) => {
       </ErrorBoundary>
 
       {memoizedFilteredHouses.length === 0 && !loading && (
-        <div className="empty-state">
+        <div className='empty-state'>
           <h3>No houses found</h3>
           <p>Try adjusting your filters or add some houses to get started.</p>
           {canEdit() && (
-            <button className="btn-primary" onClick={() => openModal('house')}>
+            <button className='btn-primary' onClick={() => openModal('house')}>
               Add First House
             </button>
           )}

@@ -9,81 +9,120 @@ import { useMemo } from 'react';
  */
 const useDashboardStats = (houses = [], members = [], resources = []) => {
   return useMemo(() => {
-    const allMembers = members.flatMap((houseMembers) => houseMembers || []);
+    try {
+      // Safely handle potentially undefined or malformed data
+      const safeHouses = Array.isArray(houses) ? houses : [];
+      const safeMembers = Array.isArray(members) ? members : [];
+      const safeResources = Array.isArray(resources) ? resources : [];
 
-    const totalHafiz = allMembers.filter(
-      (member) => member.hafiz === 'Yes',
-    ).length;
-    const totalUlma = allMembers.filter(
-      (member) => member.ulma === 'Yes',
-    ).length;
-    const totalAdults = allMembers.filter((member) => member.age >= 18).length;
-    const totalNil = allMembers.filter(
-      (member) => member.jamaat === 'Nil',
-    ).length;
-    const total3Days = allMembers.filter(
-      (member) => member.jamaat === '3 Days',
-    ).length;
-    const total10Days = allMembers.filter(
-      (member) => member.jamaat === '10 Days',
-    ).length;
-    const total40Days = allMembers.filter(
-      (member) => member.jamaat === '40 Days',
-    ).length;
-    const total4Months = allMembers.filter(
-      (member) => member.jamaat === '4 Months',
-    ).length;
-    const masturatWithWaqt = allMembers.filter(
-      (member) =>
-        member.gender === 'Female' &&
-        ['3 Days', '40 Days', '4 Months'].includes(member.jamaat),
-    ).length;
-    const totalMaktabChildYes = allMembers.filter(
-      (member) => member.maktab === 'Yes',
-    ).length;
-    const totalMaktabChildNil = allMembers.filter(
-      (member) => member.maktab === 'Nil',
-    ).length;
-    const totalQuranYes = allMembers.filter(
-      (member) => member.quran === 'Yes',
-    ).length;
-    const totalQuranNo = allMembers.filter(
-      (member) => member.quran === 'No',
-    ).length;
-    const totalGharWithTaleem = houses.filter(
-      (house) => house.taleem === 'Yes',
-    ).length;
-    const totalMashwaraMembers = allMembers.filter(
-      (member) => member.mashwara === 'Yes',
-    ).length;
-    const totalResources = resources.length;
-    const totalPdfs = resources.filter(
-      (resource) => resource.category === 'pdf',
-    ).length;
-    const totalGalleryItems = resources.filter((resource) =>
-      ['image', 'video'].includes(resource.category),
-    ).length;
+      const allMembers = safeMembers.flatMap((houseMembers) => {
+        if (Array.isArray(houseMembers)) {
+          return houseMembers.filter(
+            (member) => member && typeof member === 'object',
+          );
+        }
+        return [];
+      });
 
-    return {
-      totalHafiz,
-      totalUlma,
-      totalAdults,
-      totalNil,
-      total3Days,
-      total10Days,
-      total40Days,
-      total4Months,
-      masturatWithWaqt,
-      totalMaktabChildYes,
-      totalMaktabChildNil,
-      totalQuranYes,
-      totalQuranNo,
-      totalGharWithTaleem,
-      totalMashwaraMembers,
-      totalResources,
-      totalPdfs,
-      totalGalleryItems,
-    };
+      const totalHafiz = allMembers.filter(
+        (member) => member?.hafiz === 'Yes',
+      ).length;
+      const totalUlma = allMembers.filter(
+        (member) => member?.ulma === 'Yes',
+      ).length;
+      const totalAdults = allMembers.filter(
+        (member) => member?.age && Number(member.age) >= 18,
+      ).length;
+      const totalNil = allMembers.filter(
+        (member) => member?.jamaat === 'Nil',
+      ).length;
+      const total3Days = allMembers.filter(
+        (member) => member?.jamaat === '3 Days',
+      ).length;
+      const total10Days = allMembers.filter(
+        (member) => member?.jamaat === '10 Days',
+      ).length;
+      const total40Days = allMembers.filter(
+        (member) => member?.jamaat === '40 Days',
+      ).length;
+      const total4Months = allMembers.filter(
+        (member) => member?.jamaat === '4 Months',
+      ).length;
+      const masturatWithWaqt = allMembers.filter(
+        (member) =>
+          member?.gender === 'Female' &&
+          ['3 Days', '40 Days', '4 Months'].includes(member?.jamaat),
+      ).length;
+      const totalMaktabChildYes = allMembers.filter(
+        (member) => member?.maktab === 'Yes',
+      ).length;
+      const totalMaktabChildNil = allMembers.filter(
+        (member) => member?.maktab === 'Nil',
+      ).length;
+      const totalQuranYes = allMembers.filter(
+        (member) => member?.quran === 'Yes',
+      ).length;
+      const totalQuranNo = allMembers.filter(
+        (member) => member?.quran === 'No',
+      ).length;
+      const totalGharWithTaleem = safeHouses.filter(
+        (house) => house?.taleem === 'Yes',
+      ).length;
+      const totalMashwaraMembers = allMembers.filter(
+        (member) => member?.mashwara === 'Yes',
+      ).length;
+      const totalResources = safeResources.length;
+      const totalPdfs = safeResources.filter(
+        (resource) => resource?.category === 'pdf',
+      ).length;
+      const totalGalleryItems = safeResources.filter((resource) =>
+        ['image', 'video'].includes(resource?.category),
+      ).length;
+
+      return {
+        totalHafiz,
+        totalUlma,
+        totalAdults,
+        totalNil,
+        total3Days,
+        total10Days,
+        total40Days,
+        total4Months,
+        masturatWithWaqt,
+        totalMaktabChildYes,
+        totalMaktabChildNil,
+        totalQuranYes,
+        totalQuranNo,
+        totalGharWithTaleem,
+        totalMashwaraMembers,
+        totalResources,
+        totalPdfs,
+        totalGalleryItems,
+      };
+    } catch (error) {
+      console.error('Error calculating dashboard stats:', error);
+      // Return safe default values
+      return {
+        totalHafiz: 0,
+        totalUlma: 0,
+        totalAdults: 0,
+        totalNil: 0,
+        total3Days: 0,
+        total10Days: 0,
+        total40Days: 0,
+        total4Months: 0,
+        masturatWithWaqt: 0,
+        totalMaktabChildYes: 0,
+        totalMaktabChildNil: 0,
+        totalQuranYes: 0,
+        totalQuranNo: 0,
+        totalGharWithTaleem: 0,
+        totalMashwaraMembers: 0,
+        totalResources: 0,
+        totalPdfs: 0,
+        totalGalleryItems: 0,
+      };
+    }
   }, [houses, members, resources]);
 };
 

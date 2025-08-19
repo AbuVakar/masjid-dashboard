@@ -293,17 +293,17 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
   const renderItems = (items, sectionIndex = null) => {
     const safeItems = Array.isArray(items) ? items : [];
     return safeItems.map((item, index) => (
-      <div key={index} className="info-item">
+      <div key={index} className='info-item'>
         {isEditing ? (
-          <div className="editable-item">
+          <div className='editable-item'>
             <input
-              type="text"
+              type='text'
               value={item.name}
               onChange={(e) =>
                 handleItemChange(index, 'name', e.target.value, sectionIndex)
               }
-              placeholder="Name"
-              className="edit-input"
+              placeholder='Name'
+              className='edit-input'
             />
             <input
               type={data === 'contact' ? 'tel' : 'text'}
@@ -313,27 +313,27 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
                 handleItemChange(index, field, e.target.value, sectionIndex);
               }}
               placeholder={data === 'contact' ? 'Mobile Number' : 'Description'}
-              className="edit-input"
+              className='edit-input'
             />
             <button
               onClick={() => handleRemoveItem(index, sectionIndex)}
-              className="remove-btn"
-              title="Remove item"
-              aria-label="Remove item"
+              className='remove-btn'
+              title='Remove item'
+              aria-label='Remove item'
             >
               ×
             </button>
           </div>
         ) : (
-          <div className="info-row">
-            <span className="item-name">{item.name}</span>
-            <span className="item-note">
+          <div className='info-row'>
+            <span className='item-name'>{item.name}</span>
+            <span className='item-note'>
               {item.mobile ?? item.note ?? '-'}
               {item.mobile && (
                 <a
                   href={`tel:${item.mobile}`}
-                  className="phone-link"
-                  title="Call"
+                  className='phone-link'
+                  title='Call'
                 >
                   <FaPhoneAlt size={12} style={{ marginLeft: '8px' }} />
                 </a>
@@ -379,8 +379,8 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
   };
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal">
+    <div className='modal-backdrop'>
+      <div className='modal'>
         <div
           style={{
             display: 'flex',
@@ -400,7 +400,7 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
           )}
         </div>
 
-        <div className="form-row" style={{ marginBottom: 6, gap: '16px' }}>
+        <div className='form-row' style={{ marginBottom: 6, gap: '16px' }}>
           {Array.isArray(infoData?.sections) ? (
             // Render sections for Jama'at Activities
             <div style={{ width: '100%' }}>
@@ -435,7 +435,7 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
                     >
                       {isEditing ? (
                         <input
-                          type="text"
+                          type='text'
                           value={section.title}
                           onChange={(e) => {
                             const updatedSections = [...editableItems];
@@ -455,20 +455,20 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
                       {isEditing ? (
                         renderItems(section.items, sectionIndex)
                       ) : (
-                        <div className="section-grid">
+                        <div className='section-grid'>
                           {(Array.isArray(section.items)
                             ? section.items
                             : []
                           ).map((it, idx) => (
-                            <div key={idx} className="section-item">
-                              <div className="section-icon">
+                            <div key={idx} className='section-item'>
+                              <div className='section-icon'>
                                 {getJamaatIcon(section.title, it?.name)}
                               </div>
-                              <div className="section-body">
-                                <div className="section-item-title">
+                              <div className='section-body'>
+                                <div className='section-item-title'>
                                   {it?.name || '-'}
                                 </div>
-                                <div className="section-item-note">
+                                <div className='section-item-note'>
                                   {it?.note || '-'}
                                 </div>
                               </div>
@@ -545,38 +545,38 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
             // Render simple items list (for Aumoor, Outgoing, Contact, etc.)
             <div style={{ width: '100%' }}>
               {!isEditing && data === 'aumoor' ? (
-                <div className="aumoor-grid">
+                <div className='aumoor-grid'>
                   {(Array.isArray(editableItems) ? editableItems : []).map(
                     (item, index) => (
-                      <div key={index} className="aumoor-card">
-                        <div className="aumoor-icon">
+                      <div key={index} className='aumoor-card'>
+                        <div className='aumoor-icon'>
                           {getAumoorIcon(item?.name)}
                         </div>
-                        <div className="aumoor-body">
-                          <div className="aumoor-title">
+                        <div className='aumoor-body'>
+                          <div className='aumoor-title'>
                             {item?.name || '-'}
                           </div>
-                          <div className="aumoor-note">{item?.note || '-'}</div>
+                          <div className='aumoor-note'>{item?.note || '-'}</div>
                         </div>
                       </div>
                     ),
                   )}
                 </div>
               ) : !isEditing && data === 'contact' ? (
-                <div className="contact-grid">
+                <div className='contact-grid'>
                   {(Array.isArray(editableItems) ? editableItems : []).map(
                     (item, index) => (
-                      <div key={index} className="contact-card">
-                        <div className="contact-avatar">
+                      <div key={index} className='contact-card'>
+                        <div className='contact-avatar'>
                           <FaPhoneAlt size={14} />
                         </div>
-                        <div className="contact-body">
-                          <div className="contact-name">
+                        <div className='contact-body'>
+                          <div className='contact-name'>
                             {item?.name || '-'}
                           </div>
-                          <div className="contact-mobile">
+                          <div className='contact-mobile'>
                             {item?.mobile ? (
-                              <a href={`tel:${item.mobile}`} title="Call">
+                              <a href={`tel:${item.mobile}`} title='Call'>
                                 {item.mobile}
                               </a>
                             ) : (
@@ -586,9 +586,9 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
                         </div>
                         {item?.mobile && (
                           <a
-                            className="contact-call"
+                            className='contact-call'
                             href={`tel:${item.mobile}`}
-                            title="Call"
+                            title='Call'
                           >
                             Call
                           </a>
@@ -598,18 +598,18 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
                   )}
                 </div>
               ) : !isEditing && String(data || '').startsWith('resources_') ? (
-                <div className="resource-grid">
+                <div className='resource-grid'>
                   {(Array.isArray(editableItems) ? editableItems : []).map(
                     (item, index) => (
-                      <div key={index} className="resource-card">
-                        <div className="resource-icon">
+                      <div key={index} className='resource-card'>
+                        <div className='resource-icon'>
                           {getResourceIcon(data)}
                         </div>
-                        <div className="resource-body">
-                          <div className="resource-title">
+                        <div className='resource-body'>
+                          <div className='resource-title'>
                             {item?.name || '-'}
                           </div>
-                          <div className="resource-note">
+                          <div className='resource-note'>
                             {item?.note || '-'}
                           </div>
                         </div>
@@ -620,7 +620,7 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
               ) : (
                 <table
                   style={{ width: '100%', borderCollapse: 'collapse' }}
-                  role="table"
+                  role='table'
                 >
                   <tbody>
                     {(Array.isArray(editableItems) ? editableItems : []).map(
@@ -628,12 +628,12 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
                         <tr
                           key={index}
                           style={{ borderBottom: '1px solid #f0f0f0' }}
-                          role="row"
+                          role='row'
                         >
                           <td style={{ padding: '8px', width: '30%' }}>
                             {isEditing ? (
                               <input
-                                type="text"
+                                type='text'
                                 value={item.name || ''}
                                 onChange={(e) =>
                                   handleItemChange(
@@ -642,7 +642,7 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
                                     e.target.value,
                                   )
                                 }
-                                placeholder="Name"
+                                placeholder='Name'
                                 style={{ width: '100%', padding: '4px 8px' }}
                               />
                             ) : (
@@ -678,7 +678,7 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
                                   style={{ flex: 1, padding: '4px 8px' }}
                                 />
                                 <button
-                                  type="button"
+                                  type='button'
                                   onClick={() => handleRemoveItem(index)}
                                   style={{
                                     background: '#ff4444',
@@ -707,7 +707,7 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
                                       marginLeft: '8px',
                                       color: '#4CAF50',
                                     }}
-                                    title="Call"
+                                    title='Call'
                                   >
                                     <FaPhoneAlt size={14} />
                                   </a>
@@ -721,11 +721,11 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
                     {isEditing && (
                       <tr>
                         <td
-                          colSpan="2"
+                          colSpan='2'
                           style={{ textAlign: 'center', padding: '8px' }}
                         >
                           <button
-                            type="button"
+                            type='button'
                             onClick={() => handleAddItem()}
                             style={{
                               background: '#4CAF50',
@@ -749,23 +749,23 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
           )}
         </div>
 
-        <div className="muted-note">
+        <div className='muted-note'>
           Confidential — use only when necessary.
         </div>
 
-        <div className="actions">
+        <div className='actions'>
           {isEditing ? (
             <>
               <button
-                type="button"
-                className="ghost"
+                type='button'
+                className='ghost'
                 onClick={handleCancel}
                 style={{ marginRight: '10px' }}
               >
                 Cancel
               </button>
               <button
-                type="button"
+                type='button'
                 onClick={handleSave}
                 style={{ background: '#4caf50', color: 'white' }}
               >
@@ -773,7 +773,7 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
               </button>
             </>
           ) : (
-            <button type="button" className="ghost" onClick={onClose}>
+            <button type='button' className='ghost' onClick={onClose}>
               Close
             </button>
           )}

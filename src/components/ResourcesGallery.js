@@ -219,11 +219,11 @@ const ResourcesGallery = ({
   // Get sort icon
   const getSortIcon = useCallback(
     (field) => {
-      if (sortBy !== field) return <FaSort className="text-gray-400" />;
+      if (sortBy !== field) return <FaSort className='text-gray-400' />;
       return sortOrder === 'asc' ? (
-        <FaSortUp className="text-blue-500" />
+        <FaSortUp className='text-blue-500' />
       ) : (
-        <FaSortDown className="text-blue-500" />
+        <FaSortDown className='text-blue-500' />
       );
     },
     [sortBy, sortOrder],
@@ -231,31 +231,31 @@ const ResourcesGallery = ({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className='flex items-center justify-center py-12'>
+        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500'></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Header with search and filters */}
-      <div className="bg-white rounded-lg shadow-sm p-4">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+      <div className='bg-white rounded-lg shadow-sm p-4'>
+        <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0'>
           {/* Search */}
-          <div className="relative flex-1 max-w-md">
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <div className='relative flex-1 max-w-md'>
+            <FaSearch className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400' />
             <input
-              type="text"
-              placeholder="Search resources..."
+              type='text'
+              placeholder='Search resources...'
               value={searchTerm}
               onChange={handleSearch}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className='w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
             />
           </div>
 
           {/* View mode toggle */}
-          <div className="flex items-center space-x-2">
+          <div className='flex items-center space-x-2'>
             <button
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-md transition-colors ${
@@ -280,13 +280,13 @@ const ResourcesGallery = ({
         </div>
 
         {/* Filters */}
-        <div className="mt-4 space-y-4">
+        <div className='mt-4 space-y-4'>
           {/* Category filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
               Category Filter
             </label>
-            <div className="flex flex-wrap gap-2">
+            <div className='flex flex-wrap gap-2'>
               {categories.map((category) => (
                 <button
                   key={category}
@@ -308,10 +308,10 @@ const ResourcesGallery = ({
           {/* Tags filter */}
           {allTags.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
                 Tags Filter
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className='flex flex-wrap gap-2'>
                 {allTags.map((tag) => (
                   <button
                     key={tag}
@@ -332,15 +332,15 @@ const ResourcesGallery = ({
       </div>
 
       {/* Results count and sorting */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-        <p className="text-sm text-gray-600">
+      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0'>
+        <p className='text-sm text-gray-600'>
           Showing {filteredAndSortedResources.length} of {resources.length}{' '}
           resources
         </p>
 
-        <div className="flex items-center space-x-4">
-          <span className="text-sm text-gray-600">Sort by:</span>
-          <div className="flex space-x-2">
+        <div className='flex items-center space-x-4'>
+          <span className='text-sm text-gray-600'>Sort by:</span>
+          <div className='flex space-x-2'>
             {[
               { field: 'createdAt', label: 'Date' },
               { field: 'title', label: 'Title' },
@@ -350,7 +350,7 @@ const ResourcesGallery = ({
               <button
                 key={field}
                 onClick={() => handleSort(field)}
-                className="flex items-center space-x-1 px-2 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                className='flex items-center space-x-1 px-2 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors'
               >
                 <span>{label}</span>
                 {getSortIcon(field)}
@@ -362,14 +362,14 @@ const ResourcesGallery = ({
 
       {/* Resources Grid/List */}
       {filteredAndSortedResources.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-gray-400 mb-4">
-            <FaSearch size={48} className="mx-auto" />
+        <div className='text-center py-12'>
+          <div className='text-gray-400 mb-4'>
+            <FaSearch size={48} className='mx-auto' />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className='text-lg font-medium text-gray-900 mb-2'>
             No resources found
           </h3>
-          <p className="text-gray-600">
+          <p className='text-gray-600'>
             Try adjusting your search terms or filters to find what you're
             looking for.
           </p>
@@ -418,38 +418,38 @@ const ResourceCard = ({
 
   if (viewMode === 'list') {
     return (
-      <div className="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow">
-        <div className="flex items-center space-x-4">
+      <div className='bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow'>
+        <div className='flex items-center space-x-4'>
           {/* Icon */}
           <div className={`p-3 rounded-lg bg-gray-50 ${fileType.color}`}>
             <fileType.icon size={24} />
           </div>
 
           {/* Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between">
-              <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-medium text-gray-900 truncate">
+          <div className='flex-1 min-w-0'>
+            <div className='flex items-start justify-between'>
+              <div className='flex-1 min-w-0'>
+                <h3 className='text-lg font-medium text-gray-900 truncate'>
                   {resource.title}
                 </h3>
-                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                <p className='text-sm text-gray-600 mt-1 line-clamp-2'>
                   {resource.description}
                 </p>
 
                 {/* Tags */}
                 {resource.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
+                  <div className='flex flex-wrap gap-1 mt-2'>
                     {resource.tags.slice(0, 3).map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                        className='inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full'
                       >
-                        <FaTags size={10} className="mr-1" />
+                        <FaTags size={10} className='mr-1' />
                         {tag}
                       </span>
                     ))}
                     {resource.tags.length > 3 && (
-                      <span className="text-xs text-gray-500">
+                      <span className='text-xs text-gray-500'>
                         +{resource.tags.length - 3} more
                       </span>
                     )}
@@ -458,10 +458,10 @@ const ResourceCard = ({
               </div>
 
               {/* Actions */}
-              <div className="flex items-center space-x-2 ml-4">
+              <div className='flex items-center space-x-2 ml-4'>
                 <button
                   onClick={() => onDownload(resource)}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                  className='p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors'
                   title={resource.type === 'link' ? 'Open Link' : 'Download'}
                 >
                   {resource.type === 'link' ? (
@@ -475,15 +475,15 @@ const ResourceCard = ({
                   <>
                     <button
                       onClick={() => onEdit(resource)}
-                      className="p-2 text-gray-600 hover:bg-gray-50 rounded-md transition-colors"
-                      title="Edit"
+                      className='p-2 text-gray-600 hover:bg-gray-50 rounded-md transition-colors'
+                      title='Edit'
                     >
                       <FaEdit size={16} />
                     </button>
                     <button
                       onClick={() => onDelete(resource.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                      title="Delete"
+                      className='p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors'
+                      title='Delete'
                     >
                       <FaTrash size={16} />
                     </button>
@@ -493,20 +493,20 @@ const ResourceCard = ({
             </div>
 
             {/* Meta info */}
-            <div className="flex items-center space-x-4 mt-3 text-xs text-gray-500">
-              <span className="flex items-center">
-                <FaCalendarAlt className="mr-1" />
+            <div className='flex items-center space-x-4 mt-3 text-xs text-gray-500'>
+              <span className='flex items-center'>
+                <FaCalendarAlt className='mr-1' />
                 {formatDate(resource.createdAt)}
               </span>
-              <span className="flex items-center">
-                <FaUser className="mr-1" />
+              <span className='flex items-center'>
+                <FaUser className='mr-1' />
                 {resource.uploadedBy}
               </span>
               {resource.fileSize && (
                 <span>{formatFileSize(resource.fileSize)}</span>
               )}
-              <span className="flex items-center">
-                <FaDownload className="mr-1" />
+              <span className='flex items-center'>
+                <FaDownload className='mr-1' />
                 {resource.downloadCount || 0} downloads
               </span>
             </div>
@@ -518,27 +518,27 @@ const ResourceCard = ({
 
   // Grid view
   return (
-    <div className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow overflow-hidden">
+    <div className='bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow overflow-hidden'>
       {/* Header */}
-      <div className="p-4 border-b border-gray-100">
-        <div className="flex items-start justify-between">
+      <div className='p-4 border-b border-gray-100'>
+        <div className='flex items-start justify-between'>
           <div className={`p-2 rounded-lg bg-gray-50 ${fileType.color}`}>
             <fileType.icon size={20} />
           </div>
 
           {canEdit && (
-            <div className="flex items-center space-x-1">
+            <div className='flex items-center space-x-1'>
               <button
                 onClick={() => onEdit(resource)}
-                className="p-1 text-gray-600 hover:bg-gray-100 rounded transition-colors"
-                title="Edit"
+                className='p-1 text-gray-600 hover:bg-gray-100 rounded transition-colors'
+                title='Edit'
               >
                 <FaEdit size={14} />
               </button>
               <button
                 onClick={() => onDelete(resource.id)}
-                className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
-                title="Delete"
+                className='p-1 text-red-600 hover:bg-red-100 rounded transition-colors'
+                title='Delete'
               >
                 <FaTrash size={14} />
               </button>
@@ -548,28 +548,28 @@ const ResourceCard = ({
       </div>
 
       {/* Content */}
-      <div className="p-4">
-        <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
+      <div className='p-4'>
+        <h3 className='font-medium text-gray-900 mb-2 line-clamp-2'>
           {resource.title}
         </h3>
-        <p className="text-sm text-gray-600 mb-3 line-clamp-3">
+        <p className='text-sm text-gray-600 mb-3 line-clamp-3'>
           {resource.description}
         </p>
 
         {/* Tags */}
         {resource.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
+          <div className='flex flex-wrap gap-1 mb-3'>
             {resource.tags.slice(0, 2).map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                className='inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full'
               >
-                <FaTags size={10} className="mr-1" />
+                <FaTags size={10} className='mr-1' />
                 {tag}
               </span>
             ))}
             {resource.tags.length > 2 && (
-              <span className="text-xs text-gray-500">
+              <span className='text-xs text-gray-500'>
                 +{resource.tags.length - 2} more
               </span>
             )}
@@ -577,22 +577,22 @@ const ResourceCard = ({
         )}
 
         {/* Meta info */}
-        <div className="space-y-1 text-xs text-gray-500 mb-4">
-          <div className="flex items-center justify-between">
-            <span className="flex items-center">
-              <FaCalendarAlt className="mr-1" />
+        <div className='space-y-1 text-xs text-gray-500 mb-4'>
+          <div className='flex items-center justify-between'>
+            <span className='flex items-center'>
+              <FaCalendarAlt className='mr-1' />
               {formatDate(resource.createdAt)}
             </span>
-            <span className="flex items-center">
-              <FaDownload className="mr-1" />
+            <span className='flex items-center'>
+              <FaDownload className='mr-1' />
               {resource.downloadCount || 0}
             </span>
           </div>
           {resource.fileSize && (
-            <div className="flex items-center justify-between">
+            <div className='flex items-center justify-between'>
               <span>{formatFileSize(resource.fileSize)}</span>
-              <span className="flex items-center">
-                <FaUser className="mr-1" />
+              <span className='flex items-center'>
+                <FaUser className='mr-1' />
                 {resource.uploadedBy}
               </span>
             </div>
@@ -602,7 +602,7 @@ const ResourceCard = ({
         {/* Action button */}
         <button
           onClick={() => onDownload(resource)}
-          className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+          className='w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors'
         >
           {resource.type === 'link' ? (
             <FaEye size={14} />

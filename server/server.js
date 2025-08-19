@@ -87,8 +87,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // CSRF protection middleware
 // We will not apply CSRF to GET, HEAD, OPTIONS, TRACE requests.
-// And we will skip it in test environment
-if (process.env.NODE_ENV !== 'test') {
+// And we will skip it in test environment and development for easier testing
+if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'development') {
   app.use(csrfToken);
   app.use(validateCSRF);
 }
@@ -114,6 +114,7 @@ app.use('/api/houses', housesRoutes);
 app.use('/api/resources', resourcesRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/prayer-times', require('./routes/prayerTimes'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

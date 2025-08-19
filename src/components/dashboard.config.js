@@ -6,13 +6,7 @@ import {
   FaCalendarAlt,
   FaCalendarDay,
   FaCalendarWeek,
-  FaCalendarCheck,
-  FaFemale,
-  FaChild,
-  FaBook,
   FaHome,
-  FaHandshake,
-  FaImages,
   FaFilePdf,
 } from 'react-icons/fa';
 

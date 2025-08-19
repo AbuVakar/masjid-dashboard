@@ -30,7 +30,7 @@ const HouseTable = ({
 
   const computeDawatSummary = (members) => {
     const chips = [];
-    members.forEach((m) => {
+    members.forEach((m, index) => {
       const c = m.dawatCounts || {};
       const memberDawats = [];
 
@@ -48,6 +48,9 @@ const HouseTable = ({
         memberDawats.push(`4m ×${c['4-month']}`);
       }
 
+      // Create a unique key using member properties
+      const memberKey = m._id || m.id || `${m.name}-${m.fatherName}-${index}`;
+
       // Create a chip for every member (including those with Nil dawat)
       if (memberDawats.length > 0) {
         const chipText = memberDawats.join(', ');
@@ -56,7 +59,7 @@ const HouseTable = ({
         const colorIndex = chips.length % 4;
         chips.push(
           <span
-            key={`${m.id}-dawat`}
+            key={`${memberKey}-dawat-${index}`}
             className={`tag ${colorClasses[colorIndex]}`}
             style={{ fontWeight: 'normal' }}
           >
@@ -67,7 +70,7 @@ const HouseTable = ({
         // Member has Nil dawat - create a Nil chip
         chips.push(
           <span
-            key={`${m.id}-dawat`}
+            key={`${memberKey}-dawat-${index}`}
             className={`tag tag-nil`}
             style={{ fontWeight: 'normal' }}
           >
@@ -99,8 +102,8 @@ const HouseTable = ({
 
   if (loading) {
     return (
-      <div className="card">
-        <LoadingSpinner text="Loading houses..." />
+      <div className='card'>
+        <LoadingSpinner text='Loading houses...' />
       </div>
     );
   }
@@ -108,7 +111,7 @@ const HouseTable = ({
   if (!houses || houses.length === 0) {
     return (
       <div
-        className="card"
+        className='card'
         style={{ textAlign: 'center', padding: '40px 20px' }}
       >
         <h3>📊 No Houses Found</h3>
@@ -120,9 +123,9 @@ const HouseTable = ({
   }
 
   return (
-    <div className="card">
+    <div className='card'>
       <div
-        className="house-toolbar"
+        className='house-toolbar'
         style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -130,20 +133,16 @@ const HouseTable = ({
           marginBottom: '8px',
         }}
       >
-        <div className="counts-wrap">
-          <span className="count-chip">
+        <div className='counts-wrap'>
+          <span className='count-chip'>
             <strong>{houses.length}</strong> All Houses
           </span>
-          <span className="sep">|</span>
-          <span className="count-chip">
+          <span className='sep'>|</span>
+          <span className='count-chip'>
             <strong>
               {Array.isArray(houses)
                 ? houses.reduce(
-                    (acc, house) =>
-                      acc +
-                      (house.displayMembers?.length ||
-                        house.matchedMembers?.length ||
-                        0),
+                    (acc, house) => acc + (house.members?.length || 0),
                     0,
                   )
                 : 0}
@@ -152,37 +151,37 @@ const HouseTable = ({
           </span>
         </div>
         <div
-          className="house-toolbar-actions small"
+          className='house-toolbar-actions small'
           style={{ display: 'flex', alignItems: 'center', gap: 8 }}
         >
           <span>
-            Tip: click the <span className="tag">▾</span> to expand a house and
+            Tip: click the <span className='tag'>▾</span> to expand a house and
             manage members
           </span>
           <button
-            className="ghost"
-            type="button"
+            className='ghost'
+            type='button'
             onClick={() => setExpandedHouse('all')}
-            aria-label="Expand all houses"
-            title="Expand all houses"
+            aria-label='Expand all houses'
+            title='Expand all houses'
             style={{ marginLeft: 8 }}
           >
             Expand All
           </button>
           <button
-            className="ghost"
-            type="button"
+            className='ghost'
+            type='button'
             onClick={() => setExpandedHouse(null)}
-            aria-label="Collapse all houses"
-            title="Collapse all houses"
+            aria-label='Collapse all houses'
+            title='Collapse all houses'
           >
             Collapse All
           </button>
         </div>
       </div>
 
-      <div className="table-responsive">
-        <table id="houseTable" aria-live="polite">
+      <div className='table-responsive'>
+        <table id='houseTable' aria-live='polite'>
           <thead>
             <tr>
               <th style={{ width: '200px' }}>House (expand)</th>
@@ -193,7 +192,7 @@ const HouseTable = ({
               <th style={{ width: '120px' }}>Street</th>
             </tr>
           </thead>
-          <tbody id="houseBody">
+          <tbody id='houseBody'>
             {Array.isArray(houses)
               ? houses.map((house) => {
                   const members = Array.isArray(house.members)
@@ -205,10 +204,10 @@ const HouseTable = ({
 
                   return (
                     <React.Fragment key={house._id || house.id}>
-                      <tr className="house-row">
-                        <td data-label="House">
+                      <tr className='house-row'>
+                        <td data-label='House'>
                           <span
-                            className="expand-icon"
+                            className='expand-icon'
                             onClick={() => toggleExpand(house._id || house.id)}
                           >
                             {expandedHouse === (house._id || house.id)
@@ -217,21 +216,21 @@ const HouseTable = ({
                           </span>
                           <strong>House {house.number}</strong>
                         </td>
-                        <td data-label="Head">{head.name || '-'}</td>
+                        <td data-label='Head'>{head.name || '-'}</td>
                         <td data-label="Father's Name">
                           {head.fatherName || '-'}
                         </td>
-                        <td data-label="Adults">
-                          <div className="adults-chips-container">
-                            <span className="adults-count">
+                        <td data-label='Adults'>
+                          <div className='adults-chips-container'>
+                            <span className='adults-count'>
                               {adults} Adults
                             </span>
-                            <span className="child-count">
+                            <span className='child-count'>
                               {childCount} child
                             </span>
                           </div>
                         </td>
-                        <td data-label="Dawat Summary">
+                        <td data-label='Dawat Summary'>
                           {(() => {
                             // Always use the same data source for consistency
                             const membersToUse =
@@ -240,20 +239,20 @@ const HouseTable = ({
                               house.members;
                             const chips = computeDawatSummary(membersToUse);
                             return chips.length ? (
-                              <div className="dawat-chips">{chips}</div>
+                              <div className='dawat-chips'>{chips}</div>
                             ) : (
-                              <span className="tag tag-nil">Nil</span>
+                              <span className='tag tag-nil'>Nil</span>
                             );
                           })()}
                         </td>
-                        <td data-label="Street">{house.street}</td>
+                        <td data-label='Street'>{house.street}</td>
                       </tr>
 
                       {(expandedHouse === 'all' ||
                         expandedHouse === (house._id || house.id)) && (
-                        <tr className="member-row">
-                          <td colSpan="6">
-                            <div className="member-table">
+                        <tr className='member-row'>
+                          <td colSpan='6'>
+                            <div className='member-table'>
                               <div
                                 style={{
                                   padding: '8px',
@@ -266,7 +265,7 @@ const HouseTable = ({
                                   <strong>
                                     Members of House {house.number}
                                   </strong>
-                                  <span className="small">
+                                  <span className='small'>
                                     {' '}
                                     (
                                     {house.displayMembers?.length ||
@@ -278,7 +277,7 @@ const HouseTable = ({
                                 {isAdmin && (
                                   <div>
                                     <button
-                                      className="ghost"
+                                      className='ghost'
                                       onClick={() =>
                                         onAddMember &&
                                         onAddMember(house._id || house.id)
@@ -287,7 +286,7 @@ const HouseTable = ({
                                       ➕ Add Member
                                     </button>
                                     <button
-                                      className="ghost"
+                                      className='ghost'
                                       onClick={() =>
                                         onEditHouse &&
                                         onEditHouse(house._id || house.id)
@@ -296,7 +295,7 @@ const HouseTable = ({
                                       ✏️ Edit House
                                     </button>
                                     <button
-                                      className="ghost warn"
+                                      className='ghost warn'
                                       onClick={() =>
                                         onDeleteHouse &&
                                         onDeleteHouse(house._id || house.id)
@@ -349,37 +348,43 @@ const HouseTable = ({
                                       house.members ||
                                       [];
                                     return Array.isArray(membersToUse)
-                                      ? membersToUse.map((member) => (
-                                          <tr key={member.id || Math.random()}>
-                                            <td data-label="Name">
+                                      ? membersToUse.map((member, index) => (
+                                          <tr
+                                            key={
+                                              member._id ||
+                                              member.id ||
+                                              `${member.name}-${member.fatherName}-${index}`
+                                            }
+                                          >
+                                            <td data-label='Name'>
                                               {member.name}
                                             </td>
                                             <td data-label="Father's Name">
                                               {member.fatherName || '-'}
                                             </td>
-                                            <td data-label="Age">
+                                            <td data-label='Age'>
                                               {member.age}
                                             </td>
-                                            <td data-label="Gender">
+                                            <td data-label='Gender'>
                                               {member.gender}
                                             </td>
-                                            <td data-label="Occupation">
+                                            <td data-label='Occupation'>
                                               {member.occupation}
                                             </td>
-                                            <td data-label="Education">
+                                            <td data-label='Education'>
                                               {member.education}
                                             </td>
-                                            <td data-label="Quran">
+                                            <td data-label='Quran'>
                                               {member.quran || 'no'}
                                             </td>
-                                            <td data-label="Maktab">
+                                            <td data-label='Maktab'>
                                               {Number(member.age) < 14
                                                 ? member.maktab === 'yes'
                                                   ? 'Yes'
                                                   : 'No'
                                                 : '-'}
                                             </td>
-                                            <td data-label="Dawat">
+                                            <td data-label='Dawat'>
                                               <span
                                                 className={getDawatStatusClass(
                                                   member.dawat,
@@ -389,14 +394,14 @@ const HouseTable = ({
                                               </span>
                                               {member.dawatCounts && (
                                                 <div
-                                                  className="small"
+                                                  className='small'
                                                   style={{ marginTop: 2 }}
                                                 >
                                                   {(member.dawatCounts[
                                                     '3-day'
                                                   ] || 0) > 0 && (
                                                     <span
-                                                      className="tag"
+                                                      className='tag'
                                                       style={{ marginRight: 4 }}
                                                     >
                                                       3d ×
@@ -411,7 +416,7 @@ const HouseTable = ({
                                                     '10-day'
                                                   ] || 0) > 0 && (
                                                     <span
-                                                      className="tag"
+                                                      className='tag'
                                                       style={{ marginRight: 4 }}
                                                     >
                                                       10d ×
@@ -426,7 +431,7 @@ const HouseTable = ({
                                                     '40-day'
                                                   ] || 0) > 0 && (
                                                     <span
-                                                      className="tag"
+                                                      className='tag'
                                                       style={{ marginRight: 4 }}
                                                     >
                                                       40d ×
@@ -440,7 +445,7 @@ const HouseTable = ({
                                                   {(member.dawatCounts[
                                                     '4-month'
                                                   ] || 0) > 0 && (
-                                                    <span className="tag">
+                                                    <span className='tag'>
                                                       4m ×
                                                       {
                                                         member.dawatCounts[
@@ -452,12 +457,12 @@ const HouseTable = ({
                                                 </div>
                                               )}
                                             </td>
-                                            <td data-label="Mobile">
+                                            <td data-label='Mobile'>
                                               {isAdmin
                                                 ? member.mobile || ''
                                                 : 'Hidden'}
                                             </td>
-                                            <td data-label="Actions">
+                                            <td data-label='Actions'>
                                               {isAdmin && (
                                                 <div
                                                   style={{
@@ -478,7 +483,7 @@ const HouseTable = ({
                                                     ✏️
                                                   </button>
                                                   <button
-                                                    className="warn"
+                                                    className='warn'
                                                     onClick={() =>
                                                       onDeleteMember &&
                                                       onDeleteMember(

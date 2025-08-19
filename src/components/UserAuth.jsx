@@ -8,6 +8,7 @@ import {
   FaMobile,
   FaEnvelope,
 } from 'react-icons/fa';
+import ForgotPassword from './ForgotPassword';
 import {
   validateLoginCredentials,
   validateRegistrationData,
@@ -32,6 +33,7 @@ import {
 
 const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
   const [isLogin, setIsLogin] = useState(true);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
@@ -199,20 +201,18 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
 
     // Real backend login for all users including admin and demo
     try {
-      const success = await onLogin(sanitizedData);
-      if (success) {
-        authRateLimiter.reset(sanitizedData.username);
-        // Don't show success notify here as it will be handled by the parent component
-        return true;
-      } else {
-        notify('Invalid credentials. Please try again.', { type: 'error' });
-        return false;
-      }
+      await onLogin(sanitizedData);
+      authRateLimiter.reset(sanitizedData.username);
+      // Success notification is handled by the parent component (App.js)
+      return true;
     } catch (error) {
       console.error('Login error:', error);
-      notify(error.message || 'Login failed. Please try again.', {
-        type: 'error',
-      });
+      // Only show error notification if login actually failed
+      if (error.message && error.message !== 'Login failed') {
+        notify(error.message, { type: 'error' });
+      } else {
+        notify('Invalid credentials. Please try again.', { type: 'error' });
+      }
       return false;
     }
   }, [formData, onLogin, notify]);
@@ -229,9 +229,11 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
     try {
       await onRegister(sanitizedData);
       authRateLimiter.reset(sanitizedData.username);
-      notify('Registration successful!', { type: 'success' });
+      // Success notification is handled by the parent component (App.js)
     } catch (error) {
-      throw new Error('Registration failed. Please try again.');
+      console.error('Registration error:', error);
+      notify('Registration failed. Please try again.', { type: 'error' });
+      throw error;
     }
   }, [formData, onRegister, notify]);
 
@@ -259,59 +261,72 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
     [errors, formData],
   );
 
+  // Show forgot password component if needed
+  if (showForgotPassword) {
+    return (
+      <ForgotPassword
+        onBack={() => setShowForgotPassword(false)}
+        onResetPassword={() => {
+          setShowForgotPassword(false);
+          setIsLogin(true);
+        }}
+      />
+    );
+  }
+
   return (
-    <div className="auth-container">
-      <div className="auth-header">
+    <div className='auth-container'>
+      <div className='auth-header'>
         <h2>🕌 Silsila-ul-Ahwaal</h2>
-        <p className="auth-subtitle">
+        <p className='auth-subtitle'>
           {isLogin
             ? 'Welcome back! Please sign in to continue.'
             : 'Create your account to get started.'}
         </p>
       </div>
 
-      <form className="auth-form" onSubmit={handleSubmit}>
+      <form className='auth-form' onSubmit={handleSubmit}>
         {/* Username Field */}
-        <div className="input-group">
-          <label htmlFor="username">
+        <div className='input-group'>
+          <label htmlFor='username'>
             <FaUser /> Username
           </label>
           <input
-            type="text"
-            id="username"
+            type='text'
+            id='username'
             className={getInputClassName('username')}
             value={formData.username}
             onChange={(e) => handleInputChange('username', e.target.value)}
-            placeholder="Enter your username"
+            placeholder='Enter your username'
             disabled={isSubmitting || loading}
-            autoComplete="username"
+            autoComplete='username'
             required
           />
           {errors.username && (
-            <div className="error-message">{errors.username}</div>
+            <div className='error-message'>{errors.username}</div>
           )}
         </div>
 
         {/* Password Field */}
-        <div className="input-group">
-          <label htmlFor="password">
+        <div className='input-group'>
+          <label htmlFor='password'>
             <FaLock /> Password
           </label>
-          <div className="password-input-container">
+          <div className='password-input-container'>
             <input
               type={showPassword ? 'text' : 'password'}
-              id="password"
+              id='password'
               className={getInputClassName('password')}
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
-              placeholder="Enter your password"
+              placeholder='Enter your password'
               disabled={isSubmitting || loading}
               autoComplete={isLogin ? 'current-password' : 'new-password'}
               required
             />
             <button
-              type="button"
-              className="password-toggle"
+              type='button'
+              className='password-toggle'
               onClick={() => setShowPassword(!showPassword)}
               disabled={isSubmitting || loading}
             >
@@ -319,33 +334,33 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
             </button>
           </div>
           {errors.password && (
-            <div className="error-message">{errors.password}</div>
+            <div className='error-message'>{errors.password}</div>
           )}
         </div>
 
         {/* Confirm Password Field (Registration only) */}
         {!isLogin && (
-          <div className="input-group">
-            <label htmlFor="confirmPassword">
+          <div className='input-group'>
+            <label htmlFor='confirmPassword'>
               <FaLock /> Confirm Password
             </label>
-            <div className="password-input-container">
+            <div className='password-input-container'>
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
-                id="confirmPassword"
+                id='confirmPassword'
                 className={getInputClassName('confirmPassword')}
                 value={formData.confirmPassword}
                 onChange={(e) =>
                   handleInputChange('confirmPassword', e.target.value)
                 }
-                placeholder="Confirm your password"
+                placeholder='Confirm your password'
                 disabled={isSubmitting || loading}
-                autoComplete="new-password"
+                autoComplete='new-password'
                 required
               />
               <button
-                type="button"
-                className="password-toggle"
+                type='button'
+                className='password-toggle'
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 disabled={isSubmitting || loading}
               >
@@ -353,59 +368,59 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
               </button>
             </div>
             {errors.confirmPassword && (
-              <div className="error-message">{errors.confirmPassword}</div>
+              <div className='error-message'>{errors.confirmPassword}</div>
             )}
           </div>
         )}
 
         {/* Mobile Field (Registration only) */}
         {!isLogin && (
-          <div className="input-group">
-            <label htmlFor="mobile">
+          <div className='input-group'>
+            <label htmlFor='mobile'>
               <FaMobile /> Mobile Number
             </label>
             <input
-              type="tel"
-              id="mobile"
+              type='tel'
+              id='mobile'
               className={getInputClassName('mobile')}
               value={formData.mobile}
               onChange={(e) => handleInputChange('mobile', e.target.value)}
-              placeholder="Enter your mobile number"
+              placeholder='Enter your mobile number'
               disabled={isSubmitting || loading}
-              autoComplete="tel"
+              autoComplete='tel'
             />
             {errors.mobile && (
-              <div className="error-message">{errors.mobile}</div>
+              <div className='error-message'>{errors.mobile}</div>
             )}
           </div>
         )}
 
         {/* Email Field (Registration only) */}
         {!isLogin && (
-          <div className="input-group">
-            <label htmlFor="email">
+          <div className='input-group'>
+            <label htmlFor='email'>
               <FaEnvelope /> Email Address
             </label>
             <input
-              type="email"
-              id="email"
+              type='email'
+              id='email'
               className={getInputClassName('email')}
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
-              placeholder="Enter your email address"
+              placeholder='Enter your email address'
               disabled={isSubmitting || loading}
-              autoComplete="email"
+              autoComplete='email'
             />
             {errors.email && (
-              <div className="error-message">{errors.email}</div>
+              <div className='error-message'>{errors.email}</div>
             )}
           </div>
         )}
 
         {/* Submit Button */}
         <button
-          type="submit"
-          className="auth-submit-btn"
+          type='submit'
+          className='auth-submit-btn'
           disabled={isSubmitting || loading}
         >
           {isSubmitting ? (
@@ -417,16 +432,11 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
 
         {/* Forgot Password Link (Login mode only) */}
         {isLogin && (
-          <div className="auth-links">
+          <div className='auth-links'>
             <button
-              type="button"
-              className="forgot-password-link"
-              onClick={() => {
-                notify(
-                  'Forgot password feature coming soon! Please contact admin.',
-                  { type: 'info' },
-                );
-              }}
+              type='button'
+              className='forgot-password-link'
+              onClick={() => setShowForgotPassword(true)}
             >
               🔑 Forgot Password?
             </button>
@@ -435,10 +445,10 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
       </form>
 
       {/* Mode Toggle */}
-      <div className="auth-mode-toggle">
+      <div className='auth-mode-toggle'>
         <button
-          type="button"
-          className="mode-toggle-btn"
+          type='button'
+          className='mode-toggle-btn'
           onClick={() => setIsLogin(!isLogin)}
           disabled={isSubmitting || loading}
         >
@@ -449,10 +459,10 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
       </div>
 
       {/* Guest Mode */}
-      <div className="auth-guest-section">
+      <div className='auth-guest-section'>
         <button
-          type="button"
-          className="guest-mode-btn"
+          type='button'
+          className='guest-mode-btn'
           onClick={handleGuestMode}
           disabled={isSubmitting || loading}
         >

@@ -204,18 +204,18 @@ const Analytics = ({ houses, members, isAdmin }) => {
 
   if (!isAdmin) {
     return (
-      <div className="analytics-container">
-        <div className="analytics-header">
+      <div className='analytics-container'>
+        <div className='analytics-header'>
           <h3>📊 Community Overview</h3>
         </div>
-        <div className="analytics-summary">
-          <div className="stat-card">
-            <div className="stat-number">{analytics.totalHouses}</div>
-            <div className="stat-label">Total Houses</div>
+        <div className='analytics-summary'>
+          <div className='stat-card'>
+            <div className='stat-number'>{analytics.totalHouses}</div>
+            <div className='stat-label'>Total Houses</div>
           </div>
-          <div className="stat-card">
-            <div className="stat-number">{analytics.totalMembers}</div>
-            <div className="stat-label">Total Members</div>
+          <div className='stat-card'>
+            <div className='stat-number'>{analytics.totalMembers}</div>
+            <div className='stat-label'>Total Members</div>
           </div>
         </div>
       </div>
@@ -223,111 +223,111 @@ const Analytics = ({ houses, members, isAdmin }) => {
   }
 
   return (
-    <div className="analytics-container">
-      <div className="analytics-header">
+    <div className='analytics-container'>
+      <div className='analytics-header'>
         <h3>📊 Advanced Analytics Dashboard</h3>
-        <div className="analytics-controls">
+        <div className='analytics-controls'>
           <select
             value={selectedTimeRange}
             onChange={(e) => setSelectedTimeRange(e.target.value)}
-            className="time-range-select"
+            className='time-range-select'
           >
-            <option value="all">All Time</option>
-            <option value="month">This Month</option>
-            <option value="week">This Week</option>
+            <option value='all'>All Time</option>
+            <option value='month'>This Month</option>
+            <option value='week'>This Week</option>
           </select>
           <select
             value={selectedView}
             onChange={(e) => setSelectedView(e.target.value)}
-            className="view-select"
+            className='view-select'
           >
-            <option value="overview">Overview</option>
-            <option value="detailed">Detailed</option>
-            <option value="comparison">Comparison</option>
+            <option value='overview'>Overview</option>
+            <option value='detailed'>Detailed</option>
+            <option value='comparison'>Comparison</option>
           </select>
-          <button className="btn-export" onClick={exportAnalytics}>
+          <button className='btn-export' onClick={exportAnalytics}>
             <FaDownload /> JSON
           </button>
-          <button className="btn-export" onClick={exportCSV}>
+          <button className='btn-export' onClick={exportCSV}>
             <FaDownload /> CSV
           </button>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="analytics-summary">
-        <div className="stat-card">
-          <div className="stat-number">{analytics.totalHouses}</div>
-          <div className="stat-label">Total Houses</div>
+      <div className='analytics-summary'>
+        <div className='stat-card'>
+          <div className='stat-number'>{analytics.totalHouses}</div>
+          <div className='stat-label'>Total Houses</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-number">{analytics.totalMembers}</div>
-          <div className="stat-label">Total Members</div>
+        <div className='stat-card'>
+          <div className='stat-number'>{analytics.totalMembers}</div>
+          <div className='stat-label'>Total Members</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-number">
+        <div className='stat-card'>
+          <div className='stat-number'>
             {Object.values(analytics.dawatStats).reduce((a, b) => a + b, 0)}
           </div>
-          <div className="stat-label">Dawat Members</div>
+          <div className='stat-label'>Dawat Members</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-number">{analytics.maktabStats.yes || 0}</div>
-          <div className="stat-label">Maktab Students</div>
+        <div className='stat-card'>
+          <div className='stat-number'>{analytics.maktabStats.yes || 0}</div>
+          <div className='stat-label'>Maktab Students</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-number">
+        <div className='stat-card'>
+          <div className='stat-number'>
             {Object.keys(analytics.streetDistribution).length}
           </div>
-          <div className="stat-label">Streets Covered</div>
+          <div className='stat-label'>Streets Covered</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-number">
+        <div className='stat-card'>
+          <div className='stat-number'>
             {Object.keys(analytics.occupationStats).length}
           </div>
-          <div className="stat-label">Occupations</div>
+          <div className='stat-label'>Occupations</div>
         </div>
       </div>
 
       {/* Detailed Analytics */}
-      <div className="analytics-details">
+      <div className='analytics-details'>
         {/* Dawat Statistics */}
-        <div className="analytics-section">
+        <div className='analytics-section'>
           <h4>🕌 Dawat Statistics</h4>
-          <div className="chart-container">
+          <div className='chart-container'>
             {Object.entries(analytics.dawatStats).map(([dawat, count]) => (
-              <div key={dawat} className="chart-bar">
-                <div className="bar-label">{dawat}</div>
-                <div className="bar-container">
+              <div key={dawat} className='chart-bar'>
+                <div className='bar-label'>{dawat}</div>
+                <div className='bar-container'>
                   <div
-                    className="bar-fill"
+                    className='bar-fill'
                     style={{
                       width: `${(count / Math.max(...Object.values(analytics.dawatStats))) * 100}%`,
                     }}
                   />
                 </div>
-                <div className="bar-value">{count}</div>
+                <div className='bar-value'>{count}</div>
               </div>
             ))}
           </div>
         </div>
 
         {/* Age Distribution */}
-        <div className="analytics-section">
+        <div className='analytics-section'>
           <h4>👥 Age Distribution</h4>
-          <div className="chart-container">
+          <div className='chart-container'>
             {Object.entries(analytics.ageDistribution).map(
               ([ageGroup, count]) => (
-                <div key={ageGroup} className="chart-bar">
-                  <div className="bar-label">{ageGroup}</div>
-                  <div className="bar-container">
+                <div key={ageGroup} className='chart-bar'>
+                  <div className='bar-label'>{ageGroup}</div>
+                  <div className='bar-container'>
                     <div
-                      className="bar-fill age"
+                      className='bar-fill age'
                       style={{
                         width: `${(count / Math.max(...Object.values(analytics.ageDistribution))) * 100}%`,
                       }}
                     />
                   </div>
-                  <div className="bar-value">{count}</div>
+                  <div className='bar-value'>{count}</div>
                 </div>
               ),
             )}
@@ -335,14 +335,14 @@ const Analytics = ({ houses, members, isAdmin }) => {
         </div>
 
         {/* Gender Distribution */}
-        <div className="analytics-section">
+        <div className='analytics-section'>
           <h4>👨‍👩‍👧‍👦 Gender Distribution</h4>
-          <div className="pie-chart">
+          <div className='pie-chart'>
             {Object.entries(analytics.genderDistribution).map(
               ([gender, count]) => (
-                <div key={gender} className="pie-segment">
-                  <span className="gender-label">{gender}</span>
-                  <span className="gender-count">{count}</span>
+                <div key={gender} className='pie-segment'>
+                  <span className='gender-label'>{gender}</span>
+                  <span className='gender-count'>{count}</span>
                 </div>
               ),
             )}
@@ -350,41 +350,41 @@ const Analytics = ({ houses, members, isAdmin }) => {
         </div>
 
         {/* Maktab Statistics */}
-        <div className="analytics-section">
+        <div className='analytics-section'>
           <h4>📚 Maktab Statistics</h4>
-          <div className="maktab-stats">
-            <div className="maktab-card">
-              <div className="maktab-number">
+          <div className='maktab-stats'>
+            <div className='maktab-card'>
+              <div className='maktab-number'>
                 {analytics.maktabStats.yes || 0}
               </div>
-              <div className="maktab-label">Enrolled</div>
+              <div className='maktab-label'>Enrolled</div>
             </div>
-            <div className="maktab-card">
-              <div className="maktab-number">
+            <div className='maktab-card'>
+              <div className='maktab-number'>
                 {analytics.maktabStats.no || 0}
               </div>
-              <div className="maktab-label">Not Enrolled</div>
+              <div className='maktab-label'>Not Enrolled</div>
             </div>
           </div>
         </div>
 
         {/* Street Distribution */}
-        <div className="analytics-section">
+        <div className='analytics-section'>
           <h4>🏘️ Street Distribution</h4>
-          <div className="chart-container">
+          <div className='chart-container'>
             {Object.entries(analytics.streetDistribution).map(
               ([street, count]) => (
-                <div key={street} className="chart-bar">
-                  <div className="bar-label">{street}</div>
-                  <div className="bar-container">
+                <div key={street} className='chart-bar'>
+                  <div className='bar-label'>{street}</div>
+                  <div className='bar-container'>
                     <div
-                      className="bar-fill street"
+                      className='bar-fill street'
                       style={{
                         width: `${(count / Math.max(...Object.values(analytics.streetDistribution))) * 100}%`,
                       }}
                     />
                   </div>
-                  <div className="bar-value">{count}</div>
+                  <div className='bar-value'>{count}</div>
                 </div>
               ),
             )}
@@ -392,22 +392,22 @@ const Analytics = ({ houses, members, isAdmin }) => {
         </div>
 
         {/* Family Size Statistics */}
-        <div className="analytics-section">
+        <div className='analytics-section'>
           <h4>👨‍👩‍👧‍👦 Family Size Distribution</h4>
-          <div className="chart-container">
+          <div className='chart-container'>
             {Object.entries(analytics.familySizeStats).map(
               ([sizeGroup, count]) => (
-                <div key={sizeGroup} className="chart-bar">
-                  <div className="bar-label">{sizeGroup}</div>
-                  <div className="bar-container">
+                <div key={sizeGroup} className='chart-bar'>
+                  <div className='bar-label'>{sizeGroup}</div>
+                  <div className='bar-container'>
                     <div
-                      className="bar-fill family"
+                      className='bar-fill family'
                       style={{
                         width: `${(count / Math.max(...Object.values(analytics.familySizeStats))) * 100}%`,
                       }}
                     />
                   </div>
-                  <div className="bar-value">{count}</div>
+                  <div className='bar-value'>{count}</div>
                 </div>
               ),
             )}
@@ -415,23 +415,23 @@ const Analytics = ({ houses, members, isAdmin }) => {
         </div>
 
         {/* Occupation Statistics */}
-        <div className="analytics-section">
+        <div className='analytics-section'>
           <h4>💼 Occupation Statistics</h4>
-          <div className="chart-container">
+          <div className='chart-container'>
             {Object.entries(analytics.occupationStats)
               .slice(0, 10)
               .map(([occupation, count]) => (
-                <div key={occupation} className="chart-bar">
-                  <div className="bar-label">{occupation}</div>
-                  <div className="bar-container">
+                <div key={occupation} className='chart-bar'>
+                  <div className='bar-label'>{occupation}</div>
+                  <div className='bar-container'>
                     <div
-                      className="bar-fill occupation"
+                      className='bar-fill occupation'
                       style={{
                         width: `${(count / Math.max(...Object.values(analytics.occupationStats))) * 100}%`,
                       }}
                     />
                   </div>
-                  <div className="bar-value">{count}</div>
+                  <div className='bar-value'>{count}</div>
                 </div>
               ))}
           </div>

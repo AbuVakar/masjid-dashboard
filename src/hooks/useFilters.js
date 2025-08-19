@@ -44,8 +44,12 @@ export const useFilters = (houses = []) => {
 
   const filteredHouses = useMemo(() => {
     if (!houses || houses.length === 0) {
+      console.log('No houses data available for filtering');
       return [];
     }
+
+    console.log('Starting filtering with', houses.length, 'houses');
+    console.log('Current filters:', filters);
 
     return houses
       .filter((house) => {
@@ -81,9 +85,28 @@ export const useFilters = (houses = []) => {
           dawatCountTimes,
         } = filters;
 
+        // Debug gender filter
+        if (gender) {
+          console.log('Gender filter active:', gender);
+          console.log('Available genders in data:', [
+            ...new Set(
+              houses.flatMap((h) => h.members || []).map((m) => m.gender),
+            ),
+          ]);
+          console.log(
+            'Total members in all houses:',
+            houses.flatMap((h) => h.members || []).length,
+          );
+          console.log(
+            'Sample member data:',
+            houses.flatMap((h) => h.members || [])[0],
+          );
+        }
+
         const qLower = (q || '').toLowerCase();
         const qActive = !!(q && q.trim() !== '');
         const fieldFiltersActive = !!(
+          street ||
           occupation ||
           dawat ||
           education ||
@@ -96,6 +119,11 @@ export const useFilters = (houses = []) => {
           dawatCountKey ||
           dawatCountTimes
         );
+
+        // Street filter
+        if (street && house.street !== street) {
+          return false;
+        }
 
         const matchedMembers = (house.members || []).filter((m) => {
           // Text match (includes house-level fields for convenience)
@@ -150,7 +178,23 @@ export const useFilters = (houses = []) => {
             const mk = m.maktab === 'yes' ? 'yes' : 'no';
             if (mk !== maktab) return false;
           }
-          if (gender && m.gender !== gender) return false;
+
+          // Gender filter with detailed debugging
+          if (gender) {
+            console.log(
+              `Checking member "${m.name}": member gender = "${m.gender}", filter gender = "${gender}"`,
+            );
+            if (m.gender !== gender) {
+              console.log(
+                `Gender filter: member gender "${m.gender}" doesn't match filter "${gender}"`,
+              );
+              return false;
+            } else {
+              console.log(
+                `Gender filter: member "${m.name}" passed gender filter`,
+              );
+            }
+          }
           if (minAge !== '' && minAge !== undefined) {
             const minAgeNum = parseInt(minAge);
             const memberAge = Number(m.age);
@@ -194,6 +238,12 @@ export const useFilters = (houses = []) => {
           include = houseSearchMatch;
         }
 
+        if (gender && matchedMembers.length > 0) {
+          console.log(
+            `House ${house.number}: ${matchedMembers.length} members passed gender filter`,
+          );
+        }
+
         return include
           ? {
               ...house,
@@ -206,6 +256,9 @@ export const useFilters = (houses = []) => {
           : null;
       })
       .filter(Boolean);
+
+    console.log('Filtering complete. Result:', filteredHouses.length, 'houses');
+    return filteredHouses;
   }, [houses, filters]);
 
   // Apply filters automatically when houses or filters change

@@ -21,6 +21,54 @@ const validate = (schema) => (req, res, next) => {
   next();
 };
 
+/**
+ * Validate pagination parameters
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next function
+ */
+const validatePagination = (req, res, next) => {
+  const { page, limit } = req.query;
+
+  if (page && (isNaN(page) || parseInt(page) < 1)) {
+    throw new AppError(
+      'Invalid page number. Must be a positive integer.',
+      400,
+      'INVALID_PAGE',
+    );
+  }
+
+  if (limit && (isNaN(limit) || parseInt(limit) < 1 || parseInt(limit) > 100)) {
+    throw new AppError(
+      'Invalid limit. Must be between 1 and 100.',
+      400,
+      'INVALID_LIMIT',
+    );
+  }
+
+  next();
+};
+
+/**
+ * Validate search parameters
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next function
+ */
+const validateSearch = (req, res, next) => {
+  const { search } = req.query;
+
+  if (search && (typeof search !== 'string' || search.length > 100)) {
+    throw new AppError(
+      'Search query too long. Maximum 100 characters allowed.',
+      400,
+      'INVALID_SEARCH',
+    );
+  }
+
+  next();
+};
+
 const rules = {
   username: (value) => {
     if (!value || typeof value !== 'string' || value.trim().length < 3) {
@@ -131,11 +179,28 @@ const validateMember = validate({
     return true;
   },
   age: (value) => {
+    // Convert string to number if needed
+    const ageNum = typeof value === 'string' ? Number(value) : value;
     if (
-      value != null &&
-      (typeof value !== 'number' || value < 0 || value > 150)
+      ageNum != null &&
+      (typeof ageNum !== 'number' ||
+        isNaN(ageNum) ||
+        ageNum < 0 ||
+        ageNum > 150)
     ) {
       return 'Age must be a valid number between 0 and 150.';
+    }
+    return true;
+  },
+  gender: (value) => {
+    if (value && !['Male', 'Female'].includes(value)) {
+      return 'Gender must be Male or Female.';
+    }
+    return true;
+  },
+  role: (value) => {
+    if (value && !['Head', 'Member'].includes(value)) {
+      return 'Role must be Head or Member.';
     }
     return true;
   },
@@ -157,6 +222,30 @@ const validateResource = (req, res, next) => {
 
   if (!category || category.trim().length === 0) {
     errors.category = 'Category is required.';
+  }
+
+  // File validation
+  if (req.file) {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (req.file.size > maxSize) {
+      errors.file = 'File size too large. Maximum 10MB allowed.';
+    }
+
+    const allowedTypes = [
+      'pdf',
+      'doc',
+      'docx',
+      'jpg',
+      'jpeg',
+      'png',
+      'mp4',
+      'mp3',
+    ];
+    const fileExt = req.file.originalname.split('.').pop().toLowerCase();
+    if (!allowedTypes.includes(fileExt)) {
+      errors.file =
+        'Invalid file type. Allowed: PDF, DOC, DOCX, JPG, PNG, MP4, MP3';
+    }
   }
 
   if (!req.file && !req.body.fileUrl) {
@@ -183,4 +272,6 @@ module.exports = {
   validateHouse,
   validateMember,
   validateResource,
+  validatePagination,
+  validateSearch,
 };

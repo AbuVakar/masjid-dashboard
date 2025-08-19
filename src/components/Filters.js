@@ -9,14 +9,14 @@ const Filters = ({
   onExportExcel,
   onExportPDF,
   onOpenNotifyPrefs,
-  onOpenAnalytics,
-  onLoadDemoData,
   L,
   streets = [],
   isAdmin = false,
 }) => {
   const handleFilterChange = (name, value) => {
+    console.log(`Filter changed: ${name} = "${value}"`);
     const newFilters = { ...filters, [name]: value };
+    console.log('New filters object:', newFilters);
     onFiltersChange(newFilters);
   };
 
@@ -29,14 +29,14 @@ const Filters = ({
   };
 
   return (
-    <div className="card">
-      <div className="filters-container">
-        <div className="filter-actions">
+    <div className='card'>
+      <div className='filters-container'>
+        <div className='filter-actions'>
           {isAdmin && (
             <button
-              id="btnAddHouse"
+              id='btnAddHouse'
               onClick={() => onAddHouse && onAddHouse()}
-              title="Add new house"
+              title='Add new house'
             >
               ➕ <span>{(L && L.addHouse) || 'Add House'}</span>
             </button>
@@ -44,39 +44,29 @@ const Filters = ({
           {isAdmin && (
             <button
               onClick={handleClearAll}
-              className="ghost"
-              title="Clear all data"
+              className='ghost'
+              title='Clear all data'
             >
               🧹 <span>{(L && L.clear) || 'Clear All'}</span>
             </button>
           )}
-          {isAdmin && (
-            <button
-              className="ghost"
-              onClick={onLoadDemoData}
-              title="Load demo data"
-            >
-              📊 <span>Load Demo Data</span>
-            </button>
-          )}
         </div>
-
-        <div className="filter-controls">
+        <div className='filter-controls'>
           <input
-            id="qSearch"
-            name="q"
+            id='qSearch'
+            name='q'
             placeholder={L.searchPlaceholder || 'Search house # or name'}
             value={filters.q || ''}
             onChange={(e) => handleFilterChange('q', e.target.value)}
           />
 
           <select
-            name="street"
+            name='street'
             value={filters.street || ''}
             onChange={(e) => handleFilterChange('street', e.target.value)}
-            className="filter-select"
+            className='filter-select'
           >
-            <option value="">{L.streetAll || 'Street (All)'}</option>
+            <option value=''>{L.streetAll || 'Street (All)'}</option>
             {streets.map((street) => (
               <option key={street} value={street}>
                 {street}
@@ -85,58 +75,58 @@ const Filters = ({
           </select>
 
           <select
-            id="fOccupation"
-            name="occupation"
+            id='fOccupation'
+            name='occupation'
             value={filters.occupation || ''}
             onChange={(e) => handleFilterChange('occupation', e.target.value)}
           >
-            <option value="">{L.occupationAll || 'Occupation (All)'}</option>
-            <option value="Child">Child</option>
-            <option value="Student">Student</option>
-            <option value="Farmer">Farmer</option>
-            <option value="Businessman">Businessman</option>
-            <option value="Other">Other</option>
-            <option value="Free">Free</option>
-            <option value="Shopkeeper">Shopkeeper</option>
-            <option value="Worker">Worker</option>
-            <option value="Ulma">Ulma</option>
-            <option value="Hafiz">Hafiz</option>
+            <option value=''>{L.occupationAll || 'Occupation (All)'}</option>
+            <option value='Child'>Child</option>
+            <option value='Student'>Student</option>
+            <option value='Farmer'>Farmer</option>
+            <option value='Businessman'>Businessman</option>
+            <option value='Other'>Other</option>
+            <option value='Free'>Free</option>
+            <option value='Shopkeeper'>Shopkeeper</option>
+            <option value='Worker'>Worker</option>
+            <option value='Ulma'>Ulma</option>
+            <option value='Hafiz'>Hafiz</option>
           </select>
 
           <select
-            id="fDawat"
-            name="dawat"
+            id='fDawat'
+            name='dawat'
             value={filters.dawat || ''}
             onChange={(e) => handleFilterChange('dawat', e.target.value)}
           >
-            <option value="">{L.dawatAll || 'Dawat (All)'}</option>
-            <option value="Nil">Nil</option>
-            <option value="3-day">3 days</option>
-            <option value="10-day">10 days</option>
-            <option value="40-day">40 days</option>
-            <option value="4-month">4 months</option>
+            <option value=''>{L.dawatAll || 'Dawat (All)'}</option>
+            <option value='Nil'>Nil</option>
+            <option value='3-day'>3 days</option>
+            <option value='10-day'>10 days</option>
+            <option value='40-day'>40 days</option>
+            <option value='4-month'>4 months</option>
           </select>
 
           <select
-            id="fDawatCountKey"
-            name="dawatCountKey"
+            id='fDawatCountKey'
+            name='dawatCountKey'
             value={filters.dawatCountKey || ''}
             onChange={(e) =>
               handleFilterChange('dawatCountKey', e.target.value)
             }
           >
-            <option value="">{L.dawatCountType || 'Dawat count (type)'}</option>
-            <option value="3-day">3 days</option>
-            <option value="10-day">10 days</option>
-            <option value="40-day">40 days</option>
-            <option value="4-month">4 months</option>
+            <option value=''>{L.dawatCountType || 'Dawat count (type)'}</option>
+            <option value='3-day'>3 days</option>
+            <option value='10-day'>10 days</option>
+            <option value='40-day'>40 days</option>
+            <option value='4-month'>4 months</option>
           </select>
 
           <input
-            id="fDawatCountTimes"
-            name="dawatCountTimes"
-            type="number"
-            min="0"
+            id='fDawatCountTimes'
+            name='dawatCountTimes'
+            type='number'
+            min='0'
             placeholder={L.times || 'Times'}
             value={filters.dawatCountTimes || ''}
             onChange={(e) =>
@@ -145,65 +135,65 @@ const Filters = ({
           />
 
           <select
-            id="fEducation"
-            name="education"
+            id='fEducation'
+            name='education'
             value={filters.education || ''}
             onChange={(e) => handleFilterChange('education', e.target.value)}
           >
-            <option value="">{L.educationAll || 'Education (All)'}</option>
-            <option value="Below 8th">Below 8th</option>
-            <option value="10th">10th</option>
-            <option value="12th">12th</option>
-            <option value="Graduate">Graduate</option>
-            <option value="Above Graduate">Above Graduate</option>
+            <option value=''>{L.educationAll || 'Education (All)'}</option>
+            <option value='Below 8th'>Below 8th</option>
+            <option value='10th'>10th</option>
+            <option value='12th'>12th</option>
+            <option value='Graduate'>Graduate</option>
+            <option value='Above Graduate'>Above Graduate</option>
           </select>
 
           <select
-            id="fQuran"
-            name="quran"
+            id='fQuran'
+            name='quran'
             value={filters.quran || ''}
             onChange={(e) => handleFilterChange('quran', e.target.value)}
           >
-            <option value="">{L.quranAny || 'Quran (Any)'}</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
+            <option value=''>{L.quranAny || 'Quran (Any)'}</option>
+            <option value='yes'>Yes</option>
+            <option value='no'>No</option>
           </select>
 
           <select
-            id="fMaktab"
-            name="maktab"
+            id='fMaktab'
+            name='maktab'
             value={filters.maktab || ''}
             onChange={(e) => handleFilterChange('maktab', e.target.value)}
           >
-            <option value="">Maktab (Any)</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
+            <option value=''>Maktab (Any)</option>
+            <option value='yes'>Yes</option>
+            <option value='no'>No</option>
           </select>
 
           <select
-            id="fGender"
-            name="gender"
+            id='fGender'
+            name='gender'
             value={filters.gender || ''}
             onChange={(e) => handleFilterChange('gender', e.target.value)}
           >
-            <option value="">Gender (All)</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
+            <option value=''>Gender (All)</option>
+            <option value='Male'>Male</option>
+            <option value='Female'>Female</option>
           </select>
 
           <input
-            id="fMinAge"
-            name="minAge"
-            type="number"
+            id='fMinAge'
+            name='minAge'
+            type='number'
             placeholder={L.minAge || 'Min age'}
             value={filters.minAge || ''}
             onChange={(e) => handleFilterChange('minAge', e.target.value)}
           />
 
           <input
-            id="fMaxAge"
-            name="maxAge"
-            type="number"
+            id='fMaxAge'
+            name='maxAge'
+            type='number'
             placeholder={L.maxAge || 'Max age'}
             value={filters.maxAge || ''}
             onChange={(e) => handleFilterChange('maxAge', e.target.value)}
@@ -211,14 +201,14 @@ const Filters = ({
 
           {/* Auto-apply is enabled; removing inert Apply button to avoid confusion */}
 
-          <button onClick={handleReset} className="ghost">
+          <button onClick={handleReset} className='ghost'>
             {L.reset || 'Reset'}
           </button>
         </div>
 
         {/* Export and Admin Actions Section */}
         <div
-          className="admin-actions"
+          className='admin-actions'
           style={{
             marginTop: '15px',
             padding: '15px',
@@ -236,7 +226,7 @@ const Filters = ({
             {isAdmin ? (
               <>
                 <button
-                  id="btnExportX"
+                  id='btnExportX'
                   onClick={onExportExcel}
                   style={{
                     background: '#10b981',
@@ -255,8 +245,11 @@ const Filters = ({
                 </button>
 
                 <button
-                  id="btnExportPDF"
-                  onClick={onExportPDF}
+                  id='btnExportPDF'
+                  onClick={() => {
+                    console.log('Export PDF button clicked in Filters');
+                    onExportPDF();
+                  }}
                   style={{
                     background: '#ef4444',
                     color: 'white',
@@ -292,8 +285,8 @@ const Filters = ({
 
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <button
-              id="btnNotifyPrefs"
-              className="ghost"
+              id='btnNotifyPrefs'
+              className='ghost'
               onClick={onOpenNotifyPrefs}
               style={{
                 background: '#3b82f6',
@@ -306,23 +299,6 @@ const Filters = ({
               }}
             >
               🔔 Notification Preferences
-            </button>
-
-            <button
-              id="btnAnalytics"
-              className="ghost"
-              onClick={onOpenAnalytics}
-              style={{
-                background: '#8b5cf6',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: '500',
-              }}
-            >
-              📊 Analytics
             </button>
           </div>
         </div>

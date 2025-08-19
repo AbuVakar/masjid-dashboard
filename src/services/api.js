@@ -5,6 +5,46 @@ class ApiService {
     this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     this.token = localStorage.getItem('accessToken') || null;
     this.csrfToken = null;
+    this.isOnline = navigator.onLine;
+    this.failedRequests = [];
+
+    // Initialize CSRF token if not in development mode
+    if (process.env.NODE_ENV !== 'development') {
+      this.refreshCSRFToken();
+    }
+
+    // Setup network listeners
+    this.setupNetworkListeners();
+  }
+
+  setupNetworkListeners() {
+    window.addEventListener('online', () => {
+      this.isOnline = true;
+      this.retryFailedRequests();
+    });
+
+    window.addEventListener('offline', () => {
+      this.isOnline = false;
+    });
+  }
+
+  async retryFailedRequests() {
+    if (this.failedRequests.length === 0) return;
+
+    console.log(`🔄 Retrying ${this.failedRequests.length} failed requests...`);
+
+    const requestsToRetry = [...this.failedRequests];
+    this.failedRequests = [];
+
+    for (const request of requestsToRetry) {
+      try {
+        await this.request(request.endpoint, request.options);
+        console.log(`✅ Retry successful for: ${request.endpoint}`);
+      } catch (error) {
+        console.error(`❌ Retry failed for: ${request.endpoint}`, error);
+        // Don't add back to failed requests to prevent infinite loops
+      }
+    }
   }
 
   setToken(token) {
@@ -63,6 +103,16 @@ class ApiService {
     const retryDelay = options.retryDelay || 1000;
     const timeout = options.timeout || 10000; // 10 seconds
 
+    // Ensure CSRF token is available for non-GET requests in production
+    if (
+      process.env.NODE_ENV !== 'development' &&
+      options.method &&
+      options.method !== 'GET' &&
+      !this.csrfToken
+    ) {
+      await this.refreshCSRFToken();
+    }
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const url = `${this.baseURL}${endpoint}`;
@@ -109,6 +159,13 @@ class ApiService {
 
         if (attempt === maxRetries) {
           console.error('API request failed after all retries:', error);
+
+          // Store failed request for retry when online
+          if (!this.isOnline && options.method !== 'GET') {
+            this.failedRequests.push({ endpoint, options });
+            console.log(`📝 Stored failed request for retry: ${endpoint}`);
+          }
+
           throw error;
         }
 
@@ -190,12 +247,57 @@ class ApiService {
     return this.delete(`/houses/${id}`);
   }
 
+  // Member API methods
+  async addMember(houseId, memberData) {
+    console.log('API addMember called with:', { houseId, memberData });
+    return this.post(`/houses/${houseId}/members`, memberData);
+  }
+
+  async updateMember(houseId, memberId, memberData) {
+    console.log('API updateMember called with:', {
+      houseId,
+      memberId,
+      memberData,
+    });
+    return this.put(`/houses/${houseId}/members/${memberId}`, memberData);
+  }
+
+  async deleteMember(houseId, memberId) {
+    return this.delete(`/houses/${houseId}/members/${memberId}`);
+  }
+
   async loadDemoData() {
     return this.post('/houses/load-demo');
   }
 
   async getHouseAnalytics() {
     return this.get('/houses/analytics/summary');
+  }
+
+  // Resource API methods
+  async getResources(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.get(`/resources${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getResource(id) {
+    return this.get(`/resources/${id}`);
+  }
+
+  async createResource(resourceData) {
+    return this.post('/resources', resourceData);
+  }
+
+  async updateResource(id, resourceData) {
+    return this.put(`/resources/${id}`, resourceData);
+  }
+
+  async deleteResource(id) {
+    return this.delete(`/resources/${id}`);
+  }
+
+  async incrementResourceDownload(id) {
+    return this.post(`/resources/${id}/download`);
   }
 
   // User API methods
@@ -253,6 +355,19 @@ class ApiService {
 
   async updateUserRole(userId, role) {
     return this.put(`/users/admin/users/${userId}/role`, { role });
+  }
+
+  // Prayer Times API methods
+  async getPrayerTimes() {
+    return this.get('/prayer-times');
+  }
+
+  async updatePrayerTimes(times) {
+    return this.put('/prayer-times', times);
+  }
+
+  async getPrayerTimesHistory() {
+    return this.get('/prayer-times/history');
   }
 
   // Health check

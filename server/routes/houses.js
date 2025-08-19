@@ -2,9 +2,14 @@ const express = require('express');
 const router = express.Router();
 const House = require('../models/House');
 const { asyncHandler, AppError } = require('../middleware/errorHandler');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, optionalAuth } = require('../middleware/auth');
 const { checkResourceExists } = require('../middleware/resource');
-const { validateHouse, validateMember } = require('../middleware/validator');
+const {
+  validateHouse,
+  validateMember,
+  validatePagination,
+  validateSearch,
+} = require('../middleware/validator');
 
 // @desc    Get all houses
 // @route   GET /api/houses
@@ -13,7 +18,7 @@ const QueryBuilder = require('../utils/queryBuilder');
 
 router.get(
   '/',
-  authenticateToken,
+  optionalAuth,
   asyncHandler(async (req, res) => {
     const { page = 1, limit = 50 } = req.query;
 
@@ -44,7 +49,7 @@ router.get(
 // @access  Private
 router.get(
   '/:id',
-  authenticateToken,
+  optionalAuth,
   checkResourceExists(House, 'House'),
   asyncHandler(async (req, res) => {
     res.json(req.resource);
@@ -127,7 +132,11 @@ router.delete(
   checkResourceExists(House, 'House'),
   asyncHandler(async (req, res) => {
     await House.findByIdAndDelete(req.params.id);
-    res.json({ message: 'House deleted successfully' });
+    res.json({
+      success: true,
+      message: 'House deleted successfully',
+      data: null,
+    });
   }),
 );
 
@@ -168,9 +177,19 @@ router.post(
   checkResourceExists(House, 'House'),
   validateMember,
   asyncHandler(async (req, res) => {
-    req.resource.members.push(req.body);
+    // Ensure age is a number
+    const memberData = {
+      ...req.body,
+      age: Number(req.body.age),
+    };
+
+    req.resource.members.push(memberData);
     const savedHouse = await req.resource.save();
-    res.status(201).json(savedHouse);
+    res.status(201).json({
+      success: true,
+      message: 'Member added successfully',
+      data: savedHouse,
+    });
   }),
 );
 
@@ -183,18 +202,37 @@ router.put(
   checkResourceExists(House, 'House'),
   validateMember,
   asyncHandler(async (req, res) => {
-    const { name, age, gender, occupation, contact, isResponsible } = req.body;
+    const {
+      name,
+      fatherName,
+      age,
+      gender,
+      role,
+      occupation,
+      education,
+      quran,
+      dawat,
+      mobile,
+      maktab,
+      dawatCounts,
+    } = req.body;
 
     const result = await House.updateOne(
       { _id: req.params.id, 'members._id': req.params.memberId },
       {
         $set: {
           'members.$.name': name,
-          'members.$.age': age,
+          'members.$.fatherName': fatherName,
+          'members.$.age': Number(age), // Ensure age is a number
           'members.$.gender': gender,
+          'members.$.role': role,
           'members.$.occupation': occupation,
-          'members.$.contact': contact,
-          'members.$.isResponsible': isResponsible,
+          'members.$.education': education,
+          'members.$.quran': quran,
+          'members.$.dawat': dawat,
+          'members.$.mobile': mobile,
+          'members.$.maktab': maktab,
+          'members.$.dawatCounts': dawatCounts,
         },
       },
     );
@@ -208,7 +246,11 @@ router.put(
     }
 
     const updatedHouse = await House.findById(req.params.id);
-    res.json(updatedHouse);
+    res.json({
+      success: true,
+      message: 'Member updated successfully',
+      data: updatedHouse,
+    });
   }),
 );
 
@@ -230,7 +272,11 @@ router.delete(
     }
 
     const updatedHouse = await House.findById(req.params.id);
-    res.json(updatedHouse);
+    res.json({
+      success: true,
+      message: 'Member deleted successfully',
+      data: updatedHouse,
+    });
   }),
 );
 

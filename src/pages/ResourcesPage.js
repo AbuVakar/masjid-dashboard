@@ -9,20 +9,20 @@ import { useResources } from '../context/ResourceContext';
 
 const ResourcesPage = () => {
   const { isAdmin } = useUser();
-  const { resources, loading, error } = useResources();
+  const { loading } = useResources();
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
+      <div className='loading-container'>
+        <div className='loading-spinner'></div>
         <p>Loading Resources...</p>
       </div>
     );
   }
 
   return (
-    <ErrorBoundary fallback={<ErrorFallback componentName="Resources" />}>
-      <Resources isAdmin={isAdmin} resources={resources} />
+    <ErrorBoundary fallback={<ErrorFallback componentName='Resources' />}>
+      <Resources isAdmin={isAdmin} />
     </ErrorBoundary>
   );
 };

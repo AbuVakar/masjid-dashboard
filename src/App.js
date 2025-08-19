@@ -7,6 +7,7 @@ import './App.css';
 import Header from './components/Header';
 import Modal from './components/Modal';
 import UserAuth from './components/UserAuth';
+import Footer from './components/Footer';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -16,6 +17,7 @@ import ResourcesPage from './pages/ResourcesPage';
 // Hooks
 import { useUser } from './context/UserContext';
 import { useNotify } from './context/NotificationContext';
+import { useHouses } from './context/HouseContext';
 
 // Utilities
 import {
@@ -24,6 +26,7 @@ import {
   logError,
   ERROR_SEVERITY,
 } from './utils/errorHandler';
+import { apiService } from './services/api';
 
 // Initialize error handling on app start
 initializeErrorHandling();
@@ -33,6 +36,13 @@ function App() {
   const [modalType, setModalType] = useState('');
   const [modalData, setModalData] = useState(null);
   const [currentView, setCurrentView] = useState('main');
+  const [prayerTimes, setPrayerTimes] = useState({
+    Fajr: '05:15',
+    Dhuhr: '14:15',
+    Asr: '17:30',
+    Maghrib: '19:10',
+    Isha: '20:45',
+  });
 
   const {
     user,
@@ -47,6 +57,7 @@ function App() {
   } = useUser();
 
   const { notify } = useNotify();
+  const { saveHouse, saveMember } = useHouses();
 
   const handleUserLogin = useCallback(
     async (userData) => {
@@ -55,9 +66,7 @@ function App() {
         notify(`Welcome back, ${userData.username}!`, { type: 'success' });
       } catch (error) {
         logError(error, 'User Login', ERROR_SEVERITY.HIGH);
-        notify('Login failed. Please check your credentials.', {
-          type: 'error',
-        });
+        // Don't show duplicate error message - let UserAuth handle it
         throw error;
       }
     },
@@ -71,7 +80,7 @@ function App() {
         notify(`Welcome, ${userData.username}!`, { type: 'success' });
       } catch (error) {
         logError(error, 'User Registration', ERROR_SEVERITY.HIGH);
-        notify('Registration failed. Please try again.', { type: 'error' });
+        // Don't show duplicate error message - let UserAuth handle it
         throw error;
       }
     },
@@ -101,6 +110,62 @@ function App() {
     notify('Logged out successfully.', { type: 'success' });
   }, [logoutUser, closeModal, notify]);
 
+  const handleModalSave = useCallback(
+    async (payload, type) => {
+      try {
+        // Handle different modal types
+        switch (type) {
+          case 'house':
+            // Handle house save
+            await saveHouse(payload);
+            closeModal();
+            break;
+          case 'member':
+            // Handle member save
+            await saveMember(payload.houseId, payload);
+            closeModal();
+            break;
+          case 'timetable':
+            // Handle timetable save
+            try {
+              const result = await apiService.updatePrayerTimes(payload.times);
+              if (result.success) {
+                // Update local prayer times state
+                setPrayerTimes(result.data);
+                notify('Timetable updated successfully!', { type: 'success' });
+                closeModal();
+              } else {
+                throw new Error('Failed to update timetable');
+              }
+            } catch (error) {
+              console.error('Timetable update error:', error);
+              notify('Failed to update timetable. Please try again.', {
+                type: 'error',
+              });
+              // Don't close modal on error so user can retry
+            }
+            break;
+          case 'notify_prefs':
+            // Handle notification preferences save
+            notify('Notification preferences saved!', { type: 'success' });
+            closeModal();
+            break;
+          case 'contact_admin':
+            // Handle contact admin form
+            notify('Message sent to admin!', { type: 'success' });
+            closeModal();
+            break;
+          default:
+            closeModal();
+        }
+      } catch (error) {
+        console.error('Error in handleModalSave:', error);
+        notify(`Failed to save: ${error.message}`, { type: 'error' });
+      }
+    },
+    [closeModal, notify, saveHouse, saveMember],
+  );
+
   const handleNavigation = useCallback(
     (view, data = {}) => {
       if (['main', 'dashboard', 'resources'].includes(view)) {
@@ -116,10 +181,28 @@ function App() {
     measurePerformance('App Component Mount', () => {});
   }, []);
 
+  // Load prayer times
+  useEffect(() => {
+    const loadPrayerTimes = async () => {
+      try {
+        const result = await apiService.getPrayerTimes();
+        if (result.success && result.data) {
+          setPrayerTimes(result.data);
+        }
+      } catch (error) {
+        console.error('Failed to load prayer times:', error);
+      }
+    };
+
+    if (isAuthenticated || isGuest) {
+      loadPrayerTimes();
+    }
+  }, [isAuthenticated, isGuest]);
+
   if (userLoading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
+      <div className='loading-container'>
+        <div className='loading-spinner'></div>
         <p>Loading Masjid Dashboard...</p>
       </div>
     );
@@ -127,7 +210,7 @@ function App() {
 
   if (!isAuthenticated && !isGuest) {
     return (
-      <div className="app">
+      <div className='app'>
         <UserAuth
           onLogin={handleUserLogin}
           onRegister={handleUserRegister}
@@ -151,25 +234,38 @@ function App() {
 
   return (
     <ErrorBoundary fallback={<ErrorFallback />}>
-      <div className="app">
-        <Header
-          user={user}
-          onLogout={handleLogout}
-          isAdmin={isAdmin}
-          isGuest={isGuest}
-          onNavClick={handleNavigation}
-          onShowProfile={() => openModal('user_profile', { user })}
-        />
+      <div className='app'>
+        <ErrorBoundary>
+          <Header
+            user={user}
+            onLogout={handleLogout}
+            isAdmin={isAdmin}
+            isGuest={isGuest}
+            onNavClick={handleNavigation}
+            onShowProfile={() => openModal('user_profile', { user })}
+            prayerTimes={prayerTimes}
+          />
+        </ErrorBoundary>
 
-        <main className="main-content">{renderContent()}</main>
+        <ErrorBoundary>
+          <main className='main-content'>{renderContent()}</main>
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+          <Footer />
+        </ErrorBoundary>
 
         {showModal && (
-          <Modal
-            type={modalType}
-            data={modalData}
-            onClose={closeModal}
-            // The modal will now get its save/delete logic from context
-          />
+          <ErrorBoundary>
+            <Modal
+              type={modalType}
+              data={modalData}
+              onClose={closeModal}
+              onSave={handleModalSave}
+              onLogout={handleLogout}
+              L={{}}
+            />
+          </ErrorBoundary>
         )}
       </div>
     </ErrorBoundary>

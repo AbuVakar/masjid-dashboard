@@ -7,9 +7,9 @@ const ErrorFallback = ({
   componentName = 'Component',
 }) => {
   return (
-    <div className="error-fallback">
-      <div className="error-fallback-content">
-        <div className="error-icon">
+    <div className='error-fallback'>
+      <div className='error-fallback-content'>
+        <div className='error-icon'>
           <FaExclamationTriangle />
         </div>
 
@@ -19,13 +19,13 @@ const ErrorFallback = ({
           again.
         </p>
 
-        <div className="error-actions">
-          <button className="btn-retry" onClick={resetErrorBoundary}>
+        <div className='error-actions'>
+          <button className='btn-retry' onClick={resetErrorBoundary}>
             <FaRedo /> Try Again
           </button>
 
           <button
-            className="btn-home"
+            className='btn-home'
             onClick={() => (window.location.href = '/')}
           >
             <FaHome /> Go Home
@@ -33,7 +33,7 @@ const ErrorFallback = ({
         </div>
 
         {process.env.NODE_ENV === 'development' && (
-          <details className="error-details">
+          <details className='error-details'>
             <summary>Error Details (Development)</summary>
             <pre>{error?.toString()}</pre>
           </details>

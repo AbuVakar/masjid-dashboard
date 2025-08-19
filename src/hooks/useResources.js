@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-
-// Example: Replace with your actual API endpoints later
-const API_BASE = '/api/resources';
+import { apiService } from '../services/api';
+import {
+  handleAsyncError,
+  logError,
+  ERROR_SEVERITY,
+} from '../utils/errorHandler';
 
 export function useResources() {
   const [resources, setResources] = useState([]);
@@ -13,12 +16,24 @@ export function useResources() {
     const fetchResources = async () => {
       try {
         setLoading(true);
-        const res = await fetch(API_BASE);
-        if (!res.ok) throw new Error('Failed to fetch resources');
-        const data = await res.json();
-        setResources(data);
+        setError(null);
+
+        const result = await handleAsyncError(
+          async () => {
+            return await apiService.getResources();
+          },
+          {
+            maxRetries: 3,
+            context: 'Fetch Resources',
+            severity: ERROR_SEVERITY.MEDIUM,
+          },
+        );
+
+        setResources(result.resources || []);
       } catch (err) {
-        setError(err.message);
+        const errorMessage = err.message || 'Failed to fetch resources';
+        setError(errorMessage);
+        logError(err, 'useResources:fetchResources', ERROR_SEVERITY.MEDIUM);
       } finally {
         setLoading(false);
       }
@@ -29,99 +44,145 @@ export function useResources() {
   // Save (add or update) resource
   const saveResource = useCallback(async (resourceData) => {
     try {
-      const method = resourceData._id ? 'PUT' : 'POST';
-      const url = resourceData._id
-        ? `${API_BASE}/${resourceData._id}`
-        : API_BASE;
+      const saved = await handleAsyncError(
+        async () => {
+          if (resourceData._id) {
+            return await apiService.updateResource(
+              resourceData._id,
+              resourceData,
+            );
+          } else {
+            return await apiService.createResource(resourceData);
+          }
+        },
+        {
+          maxRetries: 2,
+          context: 'Save Resource',
+          severity: ERROR_SEVERITY.MEDIUM,
+        },
+      );
 
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(resourceData),
-      });
-
-      if (!res.ok) throw new Error('Failed to save resource');
-
-      const saved = await res.json();
       setResources((prev) =>
         resourceData._id
           ? prev.map((r) => (r._id === saved._id ? saved : r))
           : [...prev, saved],
       );
+
+      return saved;
     } catch (err) {
-      setError(err.message);
+      const errorMessage = err.message || 'Failed to save resource';
+      setError(errorMessage);
+      logError(err, 'useResources:saveResource', ERROR_SEVERITY.MEDIUM);
+      throw err;
     }
   }, []);
 
   // Delete resource
   const deleteResource = useCallback(async (id) => {
     try {
-      const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete resource');
+      await handleAsyncError(
+        async () => {
+          return await apiService.deleteResource(id);
+        },
+        {
+          maxRetries: 2,
+          context: 'Delete Resource',
+          severity: ERROR_SEVERITY.MEDIUM,
+        },
+      );
 
       setResources((prev) => prev.filter((r) => r._id !== id));
     } catch (err) {
-      setError(err.message);
+      const errorMessage = err.message || 'Failed to delete resource';
+      setError(errorMessage);
+      logError(err, 'useResources:deleteResource', ERROR_SEVERITY.MEDIUM);
+      throw err;
     }
   }, []);
 
   // Increment download count
   const incrementDownloadCount = useCallback(async (id) => {
     try {
-      const res = await fetch(`${API_BASE}/${id}/download`, { method: 'POST' });
-      if (!res.ok) throw new Error('Failed to increment download');
+      const updated = await handleAsyncError(
+        async () => {
+          return await apiService.incrementResourceDownload(id);
+        },
+        {
+          maxRetries: 1,
+          context: 'Increment Download Count',
+          severity: ERROR_SEVERITY.LOW,
+        },
+      );
 
-      const updated = await res.json();
       setResources((prev) =>
         prev.map((r) => (r._id === updated._id ? updated : r)),
       );
     } catch (err) {
-      console.error('Download count error:', err.message);
+      // Don't show user notification for download count failures
+      logError(err, 'useResources:incrementDownloadCount', ERROR_SEVERITY.LOW);
     }
   }, []);
 
   // Stats calculation
   const getStats = (() => {
-    const totalResources = resources.length;
-    const totalDownloads = resources.reduce(
-      (sum, r) => sum + (r.downloads || 0),
-      0,
-    );
-    const averageDownloads =
-      totalResources > 0 ? (totalDownloads / totalResources).toFixed(2) : 0;
+    try {
+      const safeResources = Array.isArray(resources) ? resources : [];
+      const totalResources = safeResources.length;
+      const totalDownloads = safeResources.reduce(
+        (sum, r) => sum + (Number(r?.downloads) || 0),
+        0,
+      );
+      const averageDownloads =
+        totalResources > 0 ? (totalDownloads / totalResources).toFixed(2) : 0;
 
-    const categories = resources.reduce((acc, r) => {
-      const cat = r.category || 'uncategorized';
-      acc[cat] = (acc[cat] || 0) + 1;
-      return acc;
-    }, {});
+      const categories = safeResources.reduce((acc, r) => {
+        const cat = r?.category || 'uncategorized';
+        acc[cat] = (acc[cat] || 0) + 1;
+        return acc;
+      }, {});
 
-    const fileTypes = resources.reduce((acc, r) => {
-      const type = r.type || 'unknown';
-      acc[type] = (acc[type] || 0) + 1;
-      return acc;
-    }, {});
+      const fileTypes = safeResources.reduce((acc, r) => {
+        const type = r?.type || 'unknown';
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      }, {});
 
-    return {
-      totalResources,
-      totalDownloads,
-      averageDownloads,
-      categories,
-      fileTypes,
-    };
+      return {
+        totalResources,
+        totalDownloads,
+        averageDownloads,
+        categories,
+        fileTypes,
+      };
+    } catch (err) {
+      logError(err, 'useResources:getStats', ERROR_SEVERITY.LOW);
+      return {
+        totalResources: 0,
+        totalDownloads: 0,
+        averageDownloads: 0,
+        categories: {},
+        fileTypes: {},
+      };
+    }
   })();
 
   // Export resources (download JSON)
   const exportResources = useCallback(() => {
-    const blob = new Blob([JSON.stringify(resources, null, 2)], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'resources.json';
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      const safeResources = Array.isArray(resources) ? resources : [];
+      const blob = new Blob([JSON.stringify(safeResources, null, 2)], {
+        type: 'application/json',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `resources-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      logError(err, 'useResources:exportResources', ERROR_SEVERITY.MEDIUM);
+      throw new Error('Failed to export resources');
+    }
   }, [resources]);
 
   return {

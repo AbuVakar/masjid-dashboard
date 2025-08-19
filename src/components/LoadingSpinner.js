@@ -9,7 +9,7 @@ const LoadingSpinner = ({ size = 'medium', text = 'Loading...' }) => {
 
   return (
     <div
-      className="loading-container"
+      className='loading-container'
       style={{
         display: 'flex',
         flexDirection: 'column',

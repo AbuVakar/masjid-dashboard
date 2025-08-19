@@ -14,7 +14,7 @@ const DashboardPage = ({ onNavigate }) => {
   const { isAdmin } = useUser();
 
   return (
-    <ErrorBoundary fallback={<ErrorFallback componentName="Dashboard" />}>
+    <ErrorBoundary fallback={<ErrorFallback componentName='Dashboard' />}>
       <Dashboard
         houses={houses}
         members={members}

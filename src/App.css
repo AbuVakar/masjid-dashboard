@@ -758,6 +758,14 @@ nav {
   overflow: visible; /* Allow dropdown to extend beyond container */
 }
 
+.dropdown-trigger {
+  position: relative;
+}
+
+.dropdown-trigger[aria-expanded='true'] {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
 .dropdown-menu {
   position: absolute;
   top: 100%;
@@ -4811,15 +4819,15 @@ select:focus-visible {
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
   border-radius: 16px;
   overflow: hidden;
-  max-width: 600px;
+  max-width: 500px;
   width: 100%;
 }
 
 .contact-admin-modal .modal-header {
   background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
   color: white;
-  padding: 24px 32px 20px;
-  margin: -32px -32px 24px -32px;
+  padding: 20px 24px 16px;
+  margin: -24px -24px 20px -24px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -4833,19 +4841,19 @@ select:focus-visible {
 
 .contact-admin-modal .modal-close-btn {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 12px;
+  right: 12px;
   background: rgba(255, 255, 255, 0.2);
   color: white;
   border: none;
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   transition: all 0.2s ease;
   backdrop-filter: blur(10px);
@@ -4861,48 +4869,58 @@ select:focus-visible {
 }
 
 .contact-admin-modal .modal-header h3 {
-  margin: 0 0 8px 0;
-  font-size: 24px;
+  margin: 0 0 6px 0;
+  font-size: 20px;
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .contact-admin-modal .modal-subtitle {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
   opacity: 0.9;
   font-weight: 400;
 }
 
 .contact-form {
-  padding: 0 8px;
+  padding: 0 6px;
+}
+
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .form-section {
-  margin-bottom: 20px;
+  margin-bottom: 0;
+}
+
+.category-section {
+  margin-bottom: 8px;
 }
 
 .form-label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-weight: 600;
   color: #374151;
-  margin-bottom: 8px;
-  font-size: 14px;
+  margin-bottom: 6px;
+  font-size: 13px;
 }
 
 .label-icon {
-  font-size: 16px;
+  font-size: 14px;
   opacity: 0.8;
 }
 
 .contact-select {
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 14px;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   background: white;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -4915,16 +4933,22 @@ select:focus-visible {
 }
 
 .contact-select option {
-  padding: 8px;
-  font-size: 14px;
+  padding: 6px;
+  font-size: 13px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .contact-input {
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 14px;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   background: white;
   transition: all 0.2s ease;
 }
@@ -4942,14 +4966,14 @@ select:focus-visible {
 
 .contact-textarea {
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 14px;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   background: white;
   transition: all 0.2s ease;
   resize: vertical;
-  min-height: 120px;
+  min-height: 100px;
   font-family: inherit;
 }
 
@@ -4966,7 +4990,7 @@ select:focus-visible {
 
 .message-counter {
   text-align: right;
-  font-size: 12px;
+  font-size: 11px;
   color: #6b7280;
   margin-top: 4px;
   font-style: italic;
@@ -4975,58 +4999,65 @@ select:focus-visible {
 .contact-summary {
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
   border: 1px solid #bae6fd;
-  border-radius: 12px;
-  padding: 16px;
-  margin-top: 20px;
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 16px;
 }
 
 .summary-header {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .summary-icon {
-  font-size: 24px;
+  font-size: 20px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.summary-content {
+  flex: 1;
 }
 
 .summary-title {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   color: #0369a1;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin: 0 0 4px 0;
+  display: block;
 }
 
 .summary-text {
   margin: 0;
-  font-size: 14px;
+  font-size: 12px;
   color: #0c4a6e;
-  line-height: 1.5;
+  line-height: 1.4;
   font-style: italic;
 }
 
 .modal-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: flex-end;
-  margin-top: 24px;
-  padding-top: 20px;
+  margin-top: 20px;
+  padding-top: 16px;
   border-top: 1px solid #e5e7eb;
 }
 
 .btn-secondary {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
+  gap: 6px;
+  padding: 10px 16px;
   background: #f3f4f6;
   color: #374151;
   border: 2px solid #d1d5db;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -5041,13 +5072,13 @@ select:focus-visible {
 .btn-primary {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
+  gap: 6px;
+  padding: 10px 20px;
   background: linear-gradient(135deg, #059669 0%, #10b981 100%);
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -5062,106 +5093,6 @@ select:focus-visible {
 
 .btn-primary:active {
   transform: translateY(0);
-}
-
-/* Mobile Responsive for Contact Admin */
-@media (max-width: 768px) {
-  .contact-admin-modal {
-    margin: 0;
-    max-width: 100%;
-    width: 100%;
-  }
-
-  .contact-admin-modal .modal-header {
-    padding: 20px 24px 16px;
-    margin: -24px -24px 20px -24px;
-  }
-
-  .contact-admin-modal .modal-close-btn {
-    top: 12px;
-    right: 12px;
-    width: 28px;
-    height: 28px;
-    font-size: 14px;
-  }
-
-  .contact-admin-modal .modal-header h3 {
-    font-size: 20px;
-  }
-
-  .contact-form {
-    padding: 0 4px;
-  }
-
-  .form-row {
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .modal-actions {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .btn-secondary,
-  .btn-primary {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .contact-summary {
-    padding: 12px;
-  }
-
-  .summary-header {
-    flex-direction: column;
-    text-align: center;
-    gap: 8px;
-  }
-
-  .summary-icon {
-    font-size: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .contact-admin-modal {
-    margin: 0;
-    max-width: 100%;
-    width: 100%;
-  }
-
-  .contact-admin-modal .modal-header {
-    padding: 16px 20px 12px;
-    margin: -20px -20px 16px -20px;
-  }
-
-  .contact-admin-modal .modal-close-btn {
-    top: 8px;
-    right: 8px;
-    width: 24px;
-    height: 24px;
-    font-size: 12px;
-  }
-
-  .contact-admin-modal .modal-header h3 {
-    font-size: 18px;
-  }
-
-  .contact-input,
-  .contact-select,
-  .contact-textarea {
-    padding: 10px 12px;
-    font-size: 13px;
-  }
-
-  .form-label {
-    font-size: 13px;
-  }
-
-  .label-icon {
-    font-size: 14px;
-  }
 }
 
 /* Tableeg Map Styling */
@@ -7160,4 +7091,433 @@ select:focus-visible {
   margin: 0 0 1rem 0;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* Footer styles */
+.footer {
+  background: linear-gradient(135deg, #0f5132 0%, #166534 50%, #15803d 100%);
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
+  padding: 12px 0;
+  margin-top: auto;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 -8px 32px rgba(15, 81, 50, 0.25),
+    0 -2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.03) 50%,
+    transparent 70%
+  );
+  animation: shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1;
+}
+
+/* Mobile Responsive for Contact Admin */
+@media (max-width: 768px) {
+  .contact-admin-modal {
+    margin: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .contact-admin-modal .modal-header {
+    padding: 16px 20px 12px;
+    margin: -20px -20px 16px -20px;
+  }
+
+  .contact-admin-modal .modal-close-btn {
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .contact-admin-modal .modal-header h3 {
+    font-size: 18px;
+  }
+
+  .contact-form {
+    padding: 0 4px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-secondary,
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .contact-summary {
+    padding: 10px;
+  }
+
+  .summary-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .summary-icon {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-admin-modal {
+    margin: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .contact-admin-modal .modal-header {
+    padding: 14px 16px 10px;
+    margin: -16px -16px 12px -16px;
+  }
+
+  .contact-admin-modal .modal-close-btn {
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+  }
+
+  .contact-admin-modal .modal-header h3 {
+    font-size: 16px;
+  }
+
+  .contact-input,
+  .contact-select,
+  .contact-textarea {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .form-label {
+    font-size: 12px;
+  }
+
+  .label-icon {
+    font-size: 12px;
+  }
+}
+
+/* Prayer Time History Component Styles */
+.history-container {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.history-header {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  color: white;
+  padding: 24px 32px;
+  text-align: center;
+}
+
+.history-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.history-header p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.history-content {
+  padding: 24px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px 0;
+  color: #374151;
+  font-size: 18px;
+}
+
+.empty-state p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.history-item {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.history-item-header {
+  margin-bottom: 16px;
+}
+
+.history-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.history-date,
+.history-user {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.inactive {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.prayer-times-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.prayer-time-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.prayer-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.prayer-time {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e40af;
+  font-family: 'Courier New', monospace;
+}
+
+.history-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
+  margin: 20px 0;
+}
+
+.history-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  padding: 20px 24px;
+  border-top: 1px solid #e5e7eb;
+  background: #f8fafc;
+}
+
+.refresh-btn,
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refresh-btn {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: white;
+}
+
+.refresh-btn:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  transform: translateY(-1px);
+}
+
+.back-btn {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.back-btn:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.error-message {
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.retry-btn {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 16px 8px;
+}
+
+.retry-btn:hover {
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile Responsive for Prayer Time History */
+@media (max-width: 768px) {
+  .history-container {
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .history-header {
+    padding: 20px 24px;
+  }
+
+  .history-header h2 {
+    font-size: 20px;
+  }
+
+  .history-content {
+    padding: 16px;
+  }
+
+  .prayer-times-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .prayer-time-item {
+    padding: 8px;
+  }
+
+  .prayer-time {
+    font-size: 14px;
+  }
+
+  .history-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .history-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .refresh-btn,
+  .back-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }

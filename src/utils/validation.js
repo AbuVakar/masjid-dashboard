@@ -18,7 +18,7 @@ export const VALIDATION_RULES = {
     MIN_LENGTH: 8,
     MAX_LENGTH: 128,
     PATTERN:
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[a-zA-Z\d@$!%*?&]{8,}$/,
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_+\-=\[\]{};':"\\|,.<>\/])[a-zA-Z\d@$!%*?&#^()_+\-=\[\]{};':"\\|,.<>\/]{8,}$/,
     MESSAGE:
       'Password must be at least 8 characters with uppercase, lowercase, number, and special character',
   },
@@ -436,14 +436,12 @@ export const validateRegistrationData = (userData) => {
     }
   }
 
-  // Validate email
-  if (userData.email) {
-    const emailValidation = validateEmail(userData.email);
-    if (!emailValidation.isValid) {
-      errors.push(...emailValidation.errors);
-    } else {
-      sanitized.email = emailValidation.sanitized;
-    }
+  // Validate email (required)
+  const emailValidation = validateEmail(userData.email);
+  if (!emailValidation.isValid) {
+    errors.push(...emailValidation.errors);
+  } else {
+    sanitized.email = emailValidation.sanitized;
   }
 
   return {

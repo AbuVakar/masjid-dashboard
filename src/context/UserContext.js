@@ -11,17 +11,21 @@ export const UserProvider = ({ children }) => {
   const [isGuest, setIsGuest] = useState(false);
 
   const verifyUser = useCallback(async () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     if (token) {
       try {
-        apiService.setAuthToken(token);
-        const userData = await apiService.getProfile();
-        setUser(userData);
-        setIsAuthenticated(true);
-        setIsAdmin(userData.role === 'admin');
+        apiService.setToken(token);
+        const response = await apiService.getProfile();
+        if (response.success && response.data) {
+          setUser(response.data);
+          setIsAuthenticated(true);
+          setIsAdmin(response.data.role === 'admin');
+        } else {
+          throw new Error('Profile fetch failed');
+        }
       } catch (error) {
-        localStorage.removeItem('token');
-        apiService.setAuthToken(null);
+        localStorage.removeItem('accessToken');
+        apiService.setToken(null);
         setUser(null);
         setIsAuthenticated(false);
         setIsAdmin(false);
@@ -35,26 +39,58 @@ export const UserProvider = ({ children }) => {
   }, [verifyUser]);
 
   const login = async (credentials) => {
-    const { token, user: userData } = await apiService.login(credentials);
-    localStorage.setItem('token', token);
-    apiService.setAuthToken(token);
-    setUser(userData);
-    setIsAuthenticated(true);
-    setIsAdmin(userData.role === 'admin');
+    try {
+      const response = await apiService.login(credentials);
+      if (response.success && response.data) {
+        const { token, user: userData } = response.data;
+        localStorage.setItem('accessToken', token);
+        apiService.setToken(token);
+        setUser(userData);
+        setIsAuthenticated(true);
+        setIsAdmin(userData.role === 'admin');
+      } else {
+        throw new Error('Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      // Clear any partial state
+      localStorage.removeItem('accessToken');
+      apiService.setToken(null);
+      setUser(null);
+      setIsAuthenticated(false);
+      setIsAdmin(false);
+      throw error; // Re-throw for parent component to handle
+    }
   };
 
   const register = async (userData) => {
-    const { token, user: newUser } = await apiService.register(userData);
-    localStorage.setItem('token', token);
-    apiService.setAuthToken(token);
-    setUser(newUser);
-    setIsAuthenticated(true);
-    setIsAdmin(newUser.role === 'admin');
+    try {
+      const response = await apiService.register(userData);
+      if (response.success && response.data) {
+        const { token, user: newUser } = response.data;
+        localStorage.setItem('accessToken', token);
+        apiService.setToken(token);
+        setUser(newUser);
+        setIsAuthenticated(true);
+        setIsAdmin(newUser.role === 'admin');
+      } else {
+        throw new Error('Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      // Clear any partial state
+      localStorage.removeItem('accessToken');
+      apiService.setToken(null);
+      setUser(null);
+      setIsAuthenticated(false);
+      setIsAdmin(false);
+      throw error; // Re-throw for parent component to handle
+    }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    apiService.setAuthToken(null);
+    localStorage.removeItem('accessToken');
+    apiService.setToken(null);
     setUser(null);
     setIsAuthenticated(false);
     setIsAdmin(false);

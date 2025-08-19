@@ -286,43 +286,43 @@ const ResourcesUpload = ({
   const currentFileType = fileTypes[formData.category];
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">
+    <div className='bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto'>
+      <div className='flex items-center justify-between mb-6'>
+        <h2 className='text-2xl font-bold text-gray-800'>
           {initialData ? 'Edit Resource' : 'Upload New Resource'}
         </h2>
         <button
           onClick={onCancel}
-          className="text-gray-500 hover:text-gray-700 transition-colors"
+          className='text-gray-500 hover:text-gray-700 transition-colors'
         >
           <FaTimes size={20} />
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className='space-y-6'>
         {/* Title */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className='block text-sm font-medium text-gray-700 mb-2'>
             Title *
           </label>
           <input
-            type="text"
+            type='text'
             value={formData.title}
             onChange={(e) => handleInputChange('title', e.target.value)}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.title ? 'border-red-500' : 'border-gray-300'
             }`}
-            placeholder="Enter resource title"
+            placeholder='Enter resource title'
             maxLength={100}
           />
           {errors.title && (
-            <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+            <p className='text-red-500 text-sm mt-1'>{errors.title}</p>
           )}
         </div>
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className='block text-sm font-medium text-gray-700 mb-2'>
             Description *
           </label>
           <textarea
@@ -331,25 +331,25 @@ const ResourcesUpload = ({
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.description ? 'border-red-500' : 'border-gray-300'
             }`}
-            placeholder="Enter resource description"
+            placeholder='Enter resource description'
             rows={3}
             maxLength={500}
           />
           {errors.description && (
-            <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+            <p className='text-red-500 text-sm mt-1'>{errors.description}</p>
           )}
         </div>
 
         {/* Category Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className='block text-sm font-medium text-gray-700 mb-2'>
             Category *
           </label>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className='grid grid-cols-2 md:grid-cols-5 gap-3'>
             {Object.entries(fileTypes).map(([key, config]) => (
               <button
                 key={key}
-                type="button"
+                type='button'
                 onClick={() => handleCategoryChange(key)}
                 className={`flex flex-col items-center p-3 border rounded-lg transition-all ${
                   formData.category === key
@@ -357,8 +357,8 @@ const ResourcesUpload = ({
                     : 'border-gray-300 hover:border-gray-400 text-gray-700'
                 }`}
               >
-                <config.icon size={20} className="mb-1" />
-                <span className="text-xs text-center">{config.label}</span>
+                <config.icon size={20} className='mb-1' />
+                <span className='text-xs text-center'>{config.label}</span>
               </button>
             ))}
           </div>
@@ -366,46 +366,46 @@ const ResourcesUpload = ({
 
         {/* File Upload or Link Input */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className='block text-sm font-medium text-gray-700 mb-2'>
             {formData.type === 'file' ? 'File Upload' : 'Link URL'} *
           </label>
 
           {formData.type === 'file' ? (
-            <div className="space-y-3">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+            <div className='space-y-3'>
+              <div className='border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors'>
                 <input
-                  type="file"
+                  type='file'
                   onChange={handleFileChange}
                   accept={currentFileType?.accept}
-                  className="hidden"
-                  id="file-upload"
+                  className='hidden'
+                  id='file-upload'
                 />
-                <label htmlFor="file-upload" className="cursor-pointer">
-                  <FaUpload size={24} className="mx-auto mb-2 text-gray-400" />
-                  <p className="text-sm text-gray-600">
+                <label htmlFor='file-upload' className='cursor-pointer'>
+                  <FaUpload size={24} className='mx-auto mb-2 text-gray-400' />
+                  <p className='text-sm text-gray-600'>
                     Click to upload or drag and drop
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className='text-xs text-gray-500 mt-1'>
                     {currentFileType?.accept} (Max 10MB)
                   </p>
                 </label>
               </div>
 
               {file && (
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <currentFileType.icon size={20} className="text-blue-500" />
+                <div className='flex items-center justify-between p-3 bg-gray-50 rounded-lg'>
+                  <div className='flex items-center space-x-3'>
+                    <currentFileType.icon size={20} className='text-blue-500' />
                     <div>
-                      <p className="text-sm font-medium">{file.name}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className='text-sm font-medium'>{file.name}</p>
+                      <p className='text-xs text-gray-500'>
                         {(file.size / 1024 / 1024).toFixed(2)} MB
                       </p>
                     </div>
                   </div>
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => setFile(null)}
-                    className="text-red-500 hover:text-red-700"
+                    className='text-red-500 hover:text-red-700'
                   >
                     <FaTimes size={16} />
                   </button>
@@ -413,33 +413,33 @@ const ResourcesUpload = ({
               )}
 
               {/* Alternative: Direct URL input */}
-              <div className="mt-3">
-                <p className="text-sm text-gray-600 mb-2">
+              <div className='mt-3'>
+                <p className='text-sm text-gray-600 mb-2'>
                   Or provide a direct file URL:
                 </p>
                 <input
-                  type="url"
+                  type='url'
                   value={formData.fileUrl}
                   onChange={(e) => handleInputChange('fileUrl', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://example.com/file.pdf"
+                  className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  placeholder='https://example.com/file.pdf'
                 />
               </div>
             </div>
           ) : (
             <input
-              type="url"
+              type='url'
               value={formData.fileUrl}
               onChange={(e) => handleInputChange('fileUrl', e.target.value)}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 errors.fileUrl ? 'border-red-500' : 'border-gray-300'
               }`}
-              placeholder="https://example.com/resource"
+              placeholder='https://example.com/resource'
             />
           )}
 
           {(errors.file || errors.fileUrl) && (
-            <p className="text-red-500 text-sm mt-1">
+            <p className='text-red-500 text-sm mt-1'>
               {errors.file || errors.fileUrl}
             </p>
           )}
@@ -447,41 +447,41 @@ const ResourcesUpload = ({
 
         {/* Tags */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className='block text-sm font-medium text-gray-700 mb-2'>
             Tags *
           </label>
-          <div className="space-y-3">
-            <div className="flex space-x-2">
+          <div className='space-y-3'>
+            <div className='flex space-x-2'>
               <input
-                type="text"
+                type='text'
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
                 onKeyPress={handleTagKeyPress}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Add a tag and press Enter"
+                className='flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                placeholder='Add a tag and press Enter'
               />
               <button
-                type="button"
+                type='button'
                 onClick={addTag}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors'
               >
                 Add
               </button>
             </div>
 
             {formData.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div className='flex flex-wrap gap-2'>
                 {formData.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                    className='inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full'
                   >
-                    <FaTags size={12} className="mr-1" />
+                    <FaTags size={12} className='mr-1' />
                     {tag}
                     <button
-                      type="button"
+                      type='button'
                       onClick={() => removeTag(tag)}
-                      className="ml-2 text-blue-600 hover:text-blue-800"
+                      className='ml-2 text-blue-600 hover:text-blue-800'
                     >
                       <FaTimes size={10} />
                     </button>
@@ -491,21 +491,21 @@ const ResourcesUpload = ({
             )}
 
             {errors.tags && (
-              <p className="text-red-500 text-sm">{errors.tags}</p>
+              <p className='text-red-500 text-sm'>{errors.tags}</p>
             )}
           </div>
         </div>
 
         {/* Upload Progress */}
         {isUploading && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-gray-600">
+          <div className='space-y-2'>
+            <div className='flex justify-between text-sm text-gray-600'>
               <span>Uploading...</span>
               <span>{Math.round(uploadProgress)}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className='w-full bg-gray-200 rounded-full h-2'>
               <div
-                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                className='bg-blue-500 h-2 rounded-full transition-all duration-300'
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
@@ -513,18 +513,18 @@ const ResourcesUpload = ({
         )}
 
         {/* Action Buttons */}
-        <div className="flex justify-end space-x-3 pt-4">
+        <div className='flex justify-end space-x-3 pt-4'>
           <button
-            type="button"
+            type='button'
             onClick={onCancel}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+            className='px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors'
             disabled={isUploading}
           >
             Cancel
           </button>
           <button
-            type="submit"
-            className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            type='submit'
+            className='px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             disabled={isUploading}
           >
             {isUploading

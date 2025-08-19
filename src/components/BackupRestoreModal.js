@@ -104,27 +104,27 @@ const BackupRestoreModal = ({ currentData, onBackup, onRestore, onClose }) => {
   const backupInfo = getBackupInfo();
 
   return (
-    <div className="backup-restore-modal">
-      <div className="backup-section">
+    <div className='backup-restore-modal'>
+      <div className='backup-section'>
         <h4>📤 Create Backup</h4>
-        <div className="backup-info">
+        <div className='backup-info'>
           {backupInfo && (
-            <div className="info-grid">
-              <div className="info-item">
-                <span className="info-label">Houses:</span>
-                <span className="info-value">{backupInfo.houses}</span>
+            <div className='info-grid'>
+              <div className='info-item'>
+                <span className='info-label'>Houses:</span>
+                <span className='info-value'>{backupInfo.houses}</span>
               </div>
-              <div className="info-item">
-                <span className="info-label">Members:</span>
-                <span className="info-value">{backupInfo.members}</span>
+              <div className='info-item'>
+                <span className='info-label'>Members:</span>
+                <span className='info-value'>{backupInfo.members}</span>
               </div>
-              <div className="info-item">
-                <span className="info-label">Last Modified:</span>
-                <span className="info-value">{backupInfo.lastModified}</span>
+              <div className='info-item'>
+                <span className='info-label'>Last Modified:</span>
+                <span className='info-value'>{backupInfo.lastModified}</span>
               </div>
-              <div className="info-item">
-                <span className="info-label">Size:</span>
-                <span className="info-value">
+              <div className='info-item'>
+                <span className='info-label'>Size:</span>
+                <span className='info-value'>
                   {(backupInfo.size / 1024).toFixed(1)} KB
                 </span>
               </div>
@@ -132,7 +132,7 @@ const BackupRestoreModal = ({ currentData, onBackup, onRestore, onClose }) => {
           )}
         </div>
         <button
-          className="btn-export"
+          className='btn-export'
           onClick={handleExport}
           disabled={isProcessing || !backupInfo}
         >
@@ -140,49 +140,49 @@ const BackupRestoreModal = ({ currentData, onBackup, onRestore, onClose }) => {
         </button>
       </div>
 
-      <div className="restore-section">
+      <div className='restore-section'>
         <h4>📥 Restore Data</h4>
-        <div className="restore-options">
-          <div className="file-input-container">
+        <div className='restore-options'>
+          <div className='file-input-container'>
             <input
-              type="file"
-              accept=".json"
+              type='file'
+              accept='.json'
               onChange={handleFileSelect}
-              className="file-input"
-              id="backup-file"
+              className='file-input'
+              id='backup-file'
             />
-            <label htmlFor="backup-file" className="file-input-label">
+            <label htmlFor='backup-file' className='file-input-label'>
               <FaUpload /> Choose Backup File
             </label>
             {selectedFile && (
-              <div className="selected-file">
+              <div className='selected-file'>
                 <FaCheckCircle /> {selectedFile.name}
               </div>
             )}
           </div>
 
-          <div className="restore-mode">
+          <div className='restore-mode'>
             <h5>Restore Mode:</h5>
-            <div className="radio-group">
-              <label className="radio-label">
+            <div className='radio-group'>
+              <label className='radio-label'>
                 <input
-                  type="radio"
-                  value="merge"
+                  type='radio'
+                  value='merge'
                   checked={restoreMode === 'merge'}
                   onChange={(e) => setRestoreMode(e.target.value)}
                 />
-                <span className="radio-text">
+                <span className='radio-text'>
                   <FaInfoCircle /> Merge (Add new data, keep existing)
                 </span>
               </label>
-              <label className="radio-label">
+              <label className='radio-label'>
                 <input
-                  type="radio"
-                  value="overwrite"
+                  type='radio'
+                  value='overwrite'
                   checked={restoreMode === 'overwrite'}
                   onChange={(e) => setRestoreMode(e.target.value)}
                 />
-                <span className="radio-text">
+                <span className='radio-text'>
                   <FaExclamationTriangle /> Overwrite (Replace all data)
                 </span>
               </label>
@@ -191,7 +191,7 @@ const BackupRestoreModal = ({ currentData, onBackup, onRestore, onClose }) => {
         </div>
 
         <button
-          className="btn-import"
+          className='btn-import'
           onClick={handleImport}
           disabled={isProcessing || !selectedFile}
         >
@@ -199,7 +199,7 @@ const BackupRestoreModal = ({ currentData, onBackup, onRestore, onClose }) => {
         </button>
       </div>
 
-      <div className="backup-tips">
+      <div className='backup-tips'>
         <h5>💡 Tips:</h5>
         <ul>
           <li>Create regular backups to protect your data</li>
@@ -212,8 +212,8 @@ const BackupRestoreModal = ({ currentData, onBackup, onRestore, onClose }) => {
       </div>
 
       {isProcessing && (
-        <div className="processing-overlay">
-          <div className="processing-spinner"></div>
+        <div className='processing-overlay'>
+          <div className='processing-spinner'></div>
           <p>Processing...</p>
         </div>
       )}
