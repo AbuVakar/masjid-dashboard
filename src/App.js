@@ -138,8 +138,12 @@ function App() {
                 throw new Error('Failed to update timetable');
               }
             } catch (error) {
-              console.error('Timetable update error:', error);
-              notify('Failed to update timetable. Please try again.', {
+              const message =
+                error.response?.data?.message ||
+                error.message ||
+                'Failed to update timetable. Please try again.';
+              logError(error, 'Timetable Update', ERROR_SEVERITY.HIGH);
+              notify(message, {
                 type: 'error',
               });
               // Don't close modal on error so user can retry
@@ -159,8 +163,12 @@ function App() {
             closeModal();
         }
       } catch (error) {
-        console.error('Error in handleModalSave:', error);
-        notify(`Failed to save: ${error.message}`, { type: 'error' });
+        const message =
+          error.response?.data?.message ||
+          error.message ||
+          'An unexpected error occurred during save.';
+        logError(error, 'Modal Save', ERROR_SEVERITY.HIGH, { payload, type });
+        notify(message, { type: 'error' });
       }
     },
     [closeModal, notify, saveHouse, saveMember],

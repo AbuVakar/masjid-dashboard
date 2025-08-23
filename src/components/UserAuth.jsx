@@ -77,13 +77,6 @@ const UserAuth = ({ onLogin, onRegister, onGuestMode, loading = false }) => {
     setShowConfirmPassword(false);
   }, []);
 
-  // Force password visibility to false on every render
-  useEffect(() => {
-    if (showPassword) {
-      setShowPassword(false);
-    }
-  });
-
   // Clear errors when switching modes
   useEffect(() => {
     setErrors({});

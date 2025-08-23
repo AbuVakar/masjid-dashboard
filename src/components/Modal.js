@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNotify } from '../context/NotificationContext';
-import { sanitizeString } from '../utils/validation';
+import {
+  sanitizeString,
+  validateTime,
+  VALIDATION_RULES,
+} from '../utils/validation';
 import InfoModal from './InfoModal';
 import UserProfile from './UserProfile';
 import BackupRestoreModal from './BackupRestoreModal';
 import PrayerTimeHistory from './PrayerTimeHistory';
+import ErrorBoundary from './ErrorBoundary';
 
 const Modal = ({
   type,
@@ -41,6 +46,13 @@ const Modal = ({
 
   // Prayer time history view state
   const [showHistory, setShowHistory] = useState(false);
+  const [timeValidity, setTimeValidity] = useState({
+    Fajr: true,
+    Dhuhr: true,
+    Asr: true,
+    Maghrib: true,
+    Isha: true,
+  });
 
   // Update times when data prop changes
   useEffect(() => {
@@ -490,15 +502,34 @@ const Modal = ({
   if (type === 'timetable') {
     // Show history view if requested
     if (showHistory) {
-      return <PrayerTimeHistory onBack={() => setShowHistory(false)} />;
+      return (
+        <ErrorBoundary>
+          <PrayerTimeHistory onBack={() => setShowHistory(false)} />
+        </ErrorBoundary>
+      );
     }
 
     const onChange = (e) => {
       const { name, value } = e.target;
       setTimes((t) => ({ ...t, [name]: value }));
+      setTimeValidity((v) => ({ ...v, [name]: validateTime(value) }));
     };
 
     const handleSaveClick = () => {
+      // Validate all times before saving
+      for (const prayer in times) {
+        if (
+          Object.prototype.hasOwnProperty.call(times, prayer) &&
+          !validateTime(times[prayer])
+        ) {
+          notify(
+            `Invalid time format for ${prayer}. ${VALIDATION_RULES.TIME_HHMM.MESSAGE}`,
+            { type: 'error' },
+          );
+          return; // Prevent saving
+        }
+      }
+
       if (onSave) {
         onSave({ times }, type);
       } else {
@@ -560,6 +591,7 @@ const Modal = ({
                 name='Fajr'
                 value={times.Fajr}
                 onChange={onChange}
+                className={!timeValidity.Fajr ? 'invalid-time' : ''}
               />
             </div>
             <div className='time-field'>
@@ -570,6 +602,7 @@ const Modal = ({
                 name='Dhuhr'
                 value={times.Dhuhr}
                 onChange={onChange}
+                className={!timeValidity.Dhuhr ? 'invalid-time' : ''}
               />
             </div>
             <div className='time-field'>
@@ -580,6 +613,7 @@ const Modal = ({
                 name='Asr'
                 value={times.Asr}
                 onChange={onChange}
+                className={!timeValidity.Asr ? 'invalid-time' : ''}
               />
             </div>
             <div className='time-field'>
@@ -603,6 +637,7 @@ const Modal = ({
                 name='Isha'
                 value={times.Isha}
                 onChange={onChange}
+                className={!timeValidity.Isha ? 'invalid-time' : ''}
               />
             </div>
           </div>

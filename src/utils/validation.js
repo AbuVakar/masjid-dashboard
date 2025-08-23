@@ -46,6 +46,20 @@ export const VALIDATION_RULES = {
     MESSAGE:
       'Street name can contain letters, numbers, spaces, dots, and hyphens only',
   },
+  TIME_HHMM: {
+    PATTERN: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+    MESSAGE: 'Please use a valid HH:MM time format.',
+  },
+};
+
+/**
+ * Validate time in HH:MM format
+ * @param {string} time - Time string to validate
+ * @returns {boolean} True if valid, false otherwise
+ */
+export const validateTime = (time) => {
+  if (typeof time !== 'string') return false;
+  return VALIDATION_RULES.TIME_HHMM.PATTERN.test(time);
 };
 
 /**

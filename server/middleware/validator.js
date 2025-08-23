@@ -1,7 +1,27 @@
+const { body, validationResult } = require('express-validator');
 const { AppError } = require('./errorHandler');
 
-// Basic email validation regex
+// Basic email validation regex (kept for reference, but express-validator's is better)
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// A new middleware to handle the validation results
+const handleValidationErrors = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    // Format errors to be consistent with the old error format
+    const formattedErrors = errors.array().reduce((acc, error) => {
+      acc[error.path] = error.msg;
+      return acc;
+    }, {});
+    throw new AppError(
+      'Invalid input data',
+      400,
+      'VALIDATION_ERROR',
+      formattedErrors,
+    );
+  }
+  next();
+};
 
 const validate = (schema) => (req, res, next) => {
   const errors = {};
@@ -69,6 +89,61 @@ const validateSearch = (req, res, next) => {
   next();
 };
 
+// --- New express-validator chains ---
+
+const validateRegistration = [
+  body('username')
+    .trim()
+    .isLength({ min: 3 })
+    .withMessage('Username must be at least 3 characters long.')
+    .isAlphanumeric()
+    .withMessage('Username must contain only letters and numbers.')
+    .escape(),
+  body('email')
+    .isEmail()
+    .withMessage('Please provide a valid email address.')
+    .normalizeEmail(),
+  body('password')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long.')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/)
+    .withMessage(
+      'Password must contain at least one uppercase letter, one lowercase letter, and one number.',
+    ),
+  body('name').optional().trim().escape(),
+  body('mobile')
+    .optional()
+    .trim()
+    .isMobilePhone('any', { strictMode: false })
+    .withMessage('Please provide a valid mobile number.'),
+  handleValidationErrors,
+];
+
+const validateUpdateProfile = [
+  body('name')
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('Name must be between 1 and 50 characters.')
+    .escape(),
+  body('email')
+    .optional()
+    .isEmail()
+    .withMessage('Please provide a valid email address.')
+    .normalizeEmail(),
+  body('mobile')
+    .optional()
+    .trim()
+    .isMobilePhone('any', { strictMode: false })
+    .withMessage('Please provide a valid mobile number.'),
+  // Assuming preferences is an object, we can't easily validate it here without more info.
+  // If it's a JSON string, we could use .isJSON()
+  body('preferences').optional(),
+  handleValidationErrors,
+];
+
+// --- Keeping old validation logic for things not yet refactored ---
+
 const rules = {
   username: (value) => {
     if (!value || typeof value !== 'string' || value.trim().length < 3) {
@@ -91,27 +166,6 @@ const rules = {
     }
     return true;
   },
-  email: (value) => {
-    if (value && (typeof value !== 'string' || !emailRegex.test(value))) {
-      return 'Please provide a valid email address.';
-    }
-    return true;
-  },
-  name: (value) => {
-    if (value && (typeof value !== 'string' || value.trim().length === 0)) {
-      return 'Name cannot be empty.';
-    }
-    return true;
-  },
-  mobile: (value) => {
-    if (
-      value &&
-      (typeof value !== 'string' || !/^\+?[0-9\s-()]*$/.test(value))
-    ) {
-      return 'Please provide a valid mobile number.';
-    }
-    return true;
-  },
   token: (value) => {
     if (!value || typeof value !== 'string') {
       return 'Token is required.';
@@ -120,21 +174,9 @@ const rules = {
   },
 };
 
-const validateRegistration = validate({
-  username: rules.username,
-  password: rules.passwordComplex,
-  email: rules.email,
-});
-
 const validateLogin = validate({
   username: rules.username,
   password: rules.password,
-});
-
-const validateUpdateProfile = validate({
-  name: rules.name,
-  email: rules.email,
-  mobile: rules.mobile,
 });
 
 const validateChangePassword = validate({
@@ -179,7 +221,6 @@ const validateMember = validate({
     return true;
   },
   age: (value) => {
-    // Convert string to number if needed
     const ageNum = typeof value === 'string' ? Number(value) : value;
     if (
       ageNum != null &&
@@ -263,9 +304,9 @@ const validateResource = (req, res, next) => {
 };
 
 module.exports = {
-  validateRegistration,
+  validateRegistration, // New
+  validateUpdateProfile, // New
   validateLogin,
-  validateUpdateProfile,
   validateChangePassword,
   validateForgotPassword,
   validateResetPassword,

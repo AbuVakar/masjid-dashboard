@@ -5,6 +5,48 @@
 
 import { notify } from './notification';
 
+// --- Sanitization Logic ---
+const SENSITIVE_KEYS = [
+  'password',
+  'token',
+  'secret',
+  'key',
+  'authorization',
+  'auth',
+  'cookie',
+];
+
+/**
+ * Recursively sanitizes an object by redacting sensitive keys.
+ * @param {*} data - The data to sanitize (object, array, or primitive).
+ * @returns {*} The sanitized data.
+ */
+function sanitizeObject(data) {
+  if (data === null || typeof data !== 'object') {
+    return data;
+  }
+
+  if (Array.isArray(data)) {
+    return data.map(sanitizeObject);
+  }
+
+  const sanitized = {};
+  for (const key in data) {
+    if (Object.prototype.hasOwnProperty.call(data, key)) {
+      if (
+        SENSITIVE_KEYS.some((sensitiveKey) =>
+          key.toLowerCase().includes(sensitiveKey),
+        )
+      ) {
+        sanitized[key] = '[REDACTED]';
+      } else {
+        sanitized[key] = sanitizeObject(data[key]);
+      }
+    }
+  }
+  return sanitized;
+}
+
 // Error severity levels
 export const ERROR_SEVERITY = {
   LOW: 'low',
@@ -35,14 +77,16 @@ export const logError = (
 ) => {
   const errorLog = {
     timestamp: new Date().toISOString(),
-    error: {
+    error: sanitizeObject({
       message: error?.message || 'Unknown error',
       stack: error?.stack,
       name: error?.name,
-    },
+      // Include other potential error properties
+      ...error,
+    }),
     context,
     severity,
-    additionalData,
+    additionalData: sanitizeObject(additionalData),
     userAgent: navigator.userAgent,
     url: window.location.href,
     sessionId: getSessionId(),
