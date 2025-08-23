@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fa';
 import { apiService } from '../services/api';
 import { useNotify } from '../context/NotificationContext';
+import { sanitizeInput } from '../utils/sanitization';
 
 const PrayerTimeHistory = ({ onBack }) => {
   const [history, setHistory] = useState([]);
@@ -109,7 +110,7 @@ const PrayerTimeHistory = ({ onBack }) => {
                       <FaCalendar /> {formatDate(entry.updatedAt)}
                     </span>
                     <span className='history-user'>
-                      <FaUser /> {entry.updatedBy}
+                      <FaUser /> {sanitizeInput(entry.updatedBy)}
                     </span>
                     {getStatusBadge(entry.isActive)}
                   </div>

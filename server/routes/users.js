@@ -21,7 +21,7 @@ const crypto = require('crypto'); // Added for forgot password
 // @access  Public
 router.post(
   '/register',
-  validateRegistration,
+  ...validateRegistration,
   asyncHandler(async (req, res) => {
     const { username, password, email, mobile, name } = req.body;
 
@@ -187,7 +187,7 @@ router.get(
 router.put(
   '/profile',
   authenticateToken,
-  validateUpdateProfile,
+  ...validateUpdateProfile,
   asyncHandler(async (req, res) => {
     const { name, email, mobile, preferences } = req.body;
 
