@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
@@ -137,6 +138,16 @@ userSchema.methods.isGuest = function () {
 
 // Pre-save middleware to ensure unique username
 userSchema.pre('save', async function (next) {
+  // Only hash the password if it has been modified (or is new)
+  if (this.isModified('password')) {
+    try {
+      const salt = await bcrypt.genSalt(12);
+      this.password = await bcrypt.hash(this.password, salt);
+    } catch (err) {
+      return next(err);
+    }
+  }
+
   if (this.isModified('username')) {
     try {
       const existingUser = await this.constructor.findOne({

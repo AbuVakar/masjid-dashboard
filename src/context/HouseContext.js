@@ -45,10 +45,12 @@ export const HouseProvider = ({ children }) => {
     try {
       setLoading(true);
       let result;
-      if (houseData.mode === 'edit') {
-        console.log('🔍 Updating house with ID:', houseData.id);
-        result = await apiService.updateHouse(houseData.id, houseData);
+      if (houseData.mode === 'edit' && houseData.house?._id) {
+        console.log('🔍 Updating house with ID:', houseData.house._id);
+        // Pass only the house data, not the wrapper object
+        result = await apiService.updateHouse(houseData.house._id, houseData.house);
       } else {
+        // Pass the raw payload for creation
         console.log('🔍 Creating new house');
         result = await apiService.createHouse(houseData);
       }
@@ -105,13 +107,15 @@ export const HouseProvider = ({ children }) => {
       });
       setLoading(true);
       let result;
-      if (memberData.mode === 'edit') {
+      if (memberData.mode === 'edit' && memberData.member?._id) {
+        // Pass only the member data, not the wrapper object
         result = await apiService.updateMember(
           houseId,
-          memberData.id,
-          memberData,
+          memberData.member._id,
+          memberData.member,
         );
       } else {
+        // Pass the raw payload for creation
         result = await apiService.addMember(houseId, memberData);
       }
       console.log('API result:', result);

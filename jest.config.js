@@ -2,6 +2,9 @@ module.exports = {
   // Test environment - use node for backend tests, jsdom for frontend
   testEnvironment: 'node',
 
+  // Add the server's node_modules to the search path
+  moduleDirectories: ['node_modules', '<rootDir>/server/node_modules'],
+
   // Test file patterns for backend
   testMatch: ['**/server/__tests__/**/*.test.js'],
 
@@ -29,6 +32,9 @@ module.exports = {
 
   // Setup files for backend
   setupFilesAfterEnv: ['<rootDir>/server/test-setup.js'],
+
+  // Tell Jest where to look for modules, especially for the server tests
+  modulePaths: ['<rootDir>', '<rootDir>/server'],
 
   // Module name mapping
   moduleNameMapper: {

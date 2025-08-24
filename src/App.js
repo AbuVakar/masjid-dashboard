@@ -1,4 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from 'react-router-dom';
 import ErrorBoundary from './components/ErrorBoundary';
 import ErrorFallback from './components/ErrorFallback.js';
 import './App.css';
@@ -31,18 +38,13 @@ import { apiService } from './services/api';
 // Initialize error handling on app start
 initializeErrorHandling();
 
-function App() {
+const AppContent = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
   const [modalData, setModalData] = useState(null);
-  const [currentView, setCurrentView] = useState('main');
-  const [prayerTimes, setPrayerTimes] = useState({
-    Fajr: '05:15',
-    Dhuhr: '14:15',
-    Asr: '17:30',
-    Maghrib: '19:10',
-    Isha: '20:45',
-  });
+  const [prayerTimes, setPrayerTimes] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const {
     user,
@@ -63,34 +65,39 @@ function App() {
     async (userData) => {
       try {
         await login(userData);
-        notify(`Welcome back, ${userData.username}!`, { type: 'success' });
+        notify(`Welcome back, ${user?.username || userData.username}!`, {
+          type: 'success',
+        });
+        navigate('/dashboard');
       } catch (error) {
         logError(error, 'User Login', ERROR_SEVERITY.HIGH);
-        // Don't show duplicate error message - let UserAuth handle it
         throw error;
       }
     },
-    [login, notify],
+    [login, notify, navigate, user],
   );
 
   const handleUserRegister = useCallback(
     async (userData) => {
       try {
         await register(userData);
-        notify(`Welcome, ${userData.username}!`, { type: 'success' });
+        notify(`Welcome, ${userData.username}! Please log in.`, {
+          type: 'success',
+        });
+        navigate('/login'); // Redirect to login after registration
       } catch (error) {
         logError(error, 'User Registration', ERROR_SEVERITY.HIGH);
-        // Don't show duplicate error message - let UserAuth handle it
         throw error;
       }
     },
-    [register, notify],
+    [register, notify, navigate],
   );
 
   const handleGuestMode = useCallback(() => {
     enableGuestMode();
     notify('Entering guest mode with limited access.', { type: 'info' });
-  }, [enableGuestMode, notify]);
+    navigate('/dashboard');
+  }, [enableGuestMode, notify, navigate]);
 
   const openModal = useCallback((type, data = null) => {
     setModalType(type);
@@ -108,7 +115,8 @@ function App() {
     logoutUser();
     closeModal();
     notify('Logged out successfully.', { type: 'success' });
-  }, [logoutUser, closeModal, notify]);
+    navigate('/login');
+  }, [logoutUser, closeModal, notify, navigate]);
 
   const handleModalSave = useCallback(
     async (payload, type) => {
@@ -122,21 +130,17 @@ function App() {
         // Handle different modal types
         switch (type) {
           case 'house':
-            // Handle house save
             await saveHouse(payload);
             closeModal();
             break;
           case 'member':
-            // Handle member save
             await saveMember(payload.houseId, payload);
             closeModal();
             break;
           case 'timetable':
-            // Handle timetable save
             try {
               const result = await apiService.updatePrayerTimes(payload.times);
               if (result.success) {
-                // Update local prayer times state
                 setPrayerTimes(result.data);
                 notify('Timetable updated successfully!', { type: 'success' });
                 closeModal();
@@ -149,28 +153,21 @@ function App() {
                 error.message ||
                 'Failed to update timetable. Please try again.';
               logError(error, 'Timetable Update', ERROR_SEVERITY.HIGH);
-              notify(message, {
-                type: 'error',
-              });
-              // Don't close modal on error so user can retry
+              notify(message, { type: 'error' });
             }
             break;
           case 'notify_prefs':
-            // Handle notification preferences save
             notify('Notification preferences saved!', { type: 'success' });
             closeModal();
             break;
           case 'contact_admin':
-            // Handle contact admin form
             try {
               const result = await apiService.submitContactForm(payload);
               if (result.success) {
                 notify(
                   result.message ||
                     'Message sent successfully! We will get back to you soon.',
-                  {
-                    type: 'success',
-                  },
+                  { type: 'success' },
                 );
                 closeModal();
               } else {
@@ -183,14 +180,11 @@ function App() {
                 'Failed to send message. Please try again.';
               logError(error, 'Contact Form Submission', ERROR_SEVERITY.HIGH);
               notify(message, { type: 'error' });
-              // Don't close modal on error so user can retry
             }
             break;
           case 'info':
             console.log('📝 Info case reached - saving data...');
-            // Handle info modal saves (Aumoor, Jama'at Activities, etc.)
             try {
-              // Save to localStorage for persistence
               const currentData = JSON.parse(
                 localStorage.getItem('infoData_v1') || '{}',
               );
@@ -230,22 +224,10 @@ function App() {
     [closeModal, notify, saveHouse, saveMember],
   );
 
-  const handleNavigation = useCallback(
-    (view, data = {}) => {
-      if (['main', 'dashboard', 'resources'].includes(view)) {
-        setCurrentView(view);
-      } else {
-        openModal(view, data);
-      }
-    },
-    [openModal],
-  );
-
   useEffect(() => {
     measurePerformance('App Component Mount', () => {});
   }, []);
 
-  // Load prayer times
   useEffect(() => {
     const loadPrayerTimes = async () => {
       try {
@@ -272,68 +254,78 @@ function App() {
     );
   }
 
-  if (!isAuthenticated && !isGuest) {
-    return (
-      <div className='app'>
-        <UserAuth
-          onLogin={handleUserLogin}
-          onRegister={handleUserRegister}
-          onGuestMode={handleGuestMode}
-        />
-      </div>
-    );
-  }
-
-  const renderContent = () => {
-    switch (currentView) {
-      case 'dashboard':
-        return <DashboardPage onNavigate={handleNavigation} />;
-      case 'resources':
-        return <ResourcesPage />;
-      case 'main':
-      default:
-        return <HomePage openModal={openModal} />;
+  // Protected Route Component
+  const ProtectedRoute = ({ children }) => {
+    if (!isAuthenticated && !isGuest) {
+      return <Navigate to='/login' state={{ from: location }} replace />;
     }
+    return children;
   };
 
   return (
     <ErrorBoundary fallback={<ErrorFallback />}>
-      <div className='app'>
-        <ErrorBoundary>
-          <Header
-            user={user}
-            onLogout={handleLogout}
-            isAdmin={isAdmin}
-            isGuest={isGuest}
-            onNavClick={handleNavigation}
-            onShowProfile={() => openModal('user_profile', { user })}
-            prayerTimes={prayerTimes}
-          />
-        </ErrorBoundary>
-
-        <ErrorBoundary>
-          <main className='main-content'>{renderContent()}</main>
-        </ErrorBoundary>
-
-        <ErrorBoundary>
-          <Footer />
-        </ErrorBoundary>
-
-        {showModal && (
-          <ErrorBoundary>
-            <Modal
-              type={modalType}
-              data={modalData}
-              onClose={closeModal}
-              onSave={handleModalSave}
-              onLogout={handleLogout}
-              L={{}}
+      <Routes>
+        <Route
+          path='/login'
+          element={
+            <UserAuth
+              onLogin={handleUserLogin}
+              onRegister={handleUserRegister}
+              onGuestMode={handleGuestMode}
             />
-          </ErrorBoundary>
-        )}
-      </div>
+          }
+        />
+        <Route
+          path='/*'
+          element={
+            <ProtectedRoute>
+              <div className='app'>
+                <Header
+                  user={user}
+                  onLogout={handleLogout}
+                  isAdmin={isAdmin}
+                  isGuest={isGuest}
+                  onShowProfile={() => openModal('user_profile', { user })}
+                  prayerTimes={prayerTimes}
+                />
+                <main className='main-content'>
+                  <Routes>
+                    <Route
+                      path='/dashboard'
+                      element={<DashboardPage onNavigate={openModal} />}
+                    />
+                    <Route path='/resources' element={<ResourcesPage />} />
+                    <Route
+                      path='/'
+                      element={<HomePage openModal={openModal} />}
+                    />
+                    <Route path='*' element={<Navigate to='/dashboard' />} />
+                  </Routes>
+                </main>
+                <Footer />
+                {showModal && (
+                  <Modal
+                    type={modalType}
+                    data={modalData}
+                    onClose={closeModal}
+                    onSave={handleModalSave}
+                    onLogout={handleLogout}
+                    L={{}}
+                  />
+                )}
+              </div>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
     </ErrorBoundary>
   );
+};
+
+function App() {
+  // Hooks like useNavigate must be used within a Router context.
+  // So we create a wrapper component.
+  return <AppContent />;
 }
 
 export default App;

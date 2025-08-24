@@ -290,12 +290,56 @@ class ApiService {
     return this.get(`/resources/${id}`);
   }
 
+  // Specialized method for creating a resource with a file upload
   async createResource(resourceData) {
-    return this.post('/resources', resourceData);
+    const formData = new FormData();
+    Object.keys(resourceData).forEach(key => {
+      // The 'file' key should be the actual File object
+      formData.append(key, resourceData[key]);
+    });
+
+    // We cannot use the generic `post` method because it forces JSON.
+    // We must call `fetch` directly and let the browser set the Content-Type header.
+    const url = `${this.baseURL}/resources`;
+    const headers = this.getHeaders();
+    delete headers['Content-Type']; // Let the browser set this for FormData
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+    }
+    return response.json();
   }
 
+  // Specialized method for updating a resource, potentially with a new file
   async updateResource(id, resourceData) {
-    return this.put(`/resources/${id}`, resourceData);
+    const formData = new FormData();
+    Object.keys(resourceData).forEach(key => {
+      // The 'file' key should be the actual File object if it exists
+      formData.append(key, resourceData[key]);
+    });
+
+    const url = `${this.baseURL}/resources/${id}`;
+    const headers = this.getHeaders();
+    delete headers['Content-Type']; // Let the browser set this for FormData
+
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers,
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+    }
+    return response.json();
   }
 
   async deleteResource(id) {

@@ -204,24 +204,6 @@ const ResourcesUpload = ({
     [addTag],
   );
 
-  // Simulate file upload (in real app, this would upload to cloud storage)
-  const simulateFileUpload = useCallback(async (file) => {
-    return new Promise((resolve) => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += Math.random() * 20;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(interval);
-          // Simulate file URL generation
-          const fileName = file.name.replace(/\s+/g, '-').toLowerCase();
-          resolve(`/uploads/${Date.now()}-${fileName}`);
-        }
-        setUploadProgress(progress);
-      }, 200);
-    });
-  }, []);
-
   // Handle form submission
   const handleSubmit = useCallback(
     async (e) => {
@@ -233,53 +215,32 @@ const ResourcesUpload = ({
       }
 
       setIsUploading(true);
-      setUploadProgress(0);
 
       try {
         await measurePerformance('Resource Upload', async () => {
-          let finalFileUrl = formData.fileUrl;
-
-          // Handle file upload if file is selected
-          if (file && formData.type === 'file') {
-            finalFileUrl = await simulateFileUpload(file);
-          }
-
+          // Construct the data payload.
+          // The 'file' object itself will be included if it exists.
           const resourceData = {
             ...formData,
-            fileUrl: finalFileUrl,
-            originalFileName: file ? file.name : null,
-            fileSize: file ? file.size : null,
-            mimeType: file ? file.type : null,
-            uploadedBy: 'admin', // In real app, get from user context
-            isPublic: true,
+            file: file, // Pass the actual file object
           };
 
+          // If editing, pass the ID
           if (initialData?.id) {
             resourceData.id = initialData.id;
-            resourceData.createdAt = initialData.createdAt;
-            resourceData.downloadCount = initialData.downloadCount;
           }
 
           await onSave(resourceData);
-          onCancel();
+          onCancel(); // Close form on success
         });
       } catch (error) {
         logError(error, 'ResourcesUpload:handleSubmit', ERROR_SEVERITY.MEDIUM);
         notify('Failed to save resource. Please try again.', { type: 'error' });
       } finally {
         setIsUploading(false);
-        setUploadProgress(0);
       }
     },
-    [
-      formData,
-      file,
-      validateForm,
-      simulateFileUpload,
-      onSave,
-      onCancel,
-      initialData,
-    ],
+    [formData, file, validateForm, onSave, onCancel, initialData, notify],
   );
 
   // Get current file type configuration

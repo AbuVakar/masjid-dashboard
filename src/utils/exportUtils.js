@@ -1,189 +1,90 @@
-/**
- * Export Utilities
- * Provides Excel and PDF export functionality for houses and members data
- */
-
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { logError, ERROR_SEVERITY } from './errorHandler';
 
 /**
- * Export houses data to Excel
- * @param {Array} houses - Houses data to export
- * @param {string} filename - Optional filename
+ * A generic function to handle file exports using a web worker.
+ * @param {Array} houses - The data to be exported.
+ * @param {'excel' | 'pdf'} format - The desired output format.
+ * @param {string} baseFilename - The base name for the downloaded file.
+ * @returns {Promise<void>} A promise that resolves when the download is initiated, or rejects on error.
  */
-export const exportToExcel = (houses, filename = 'houses-data') => {
-  try {
-    // Validate input
-    if (!Array.isArray(houses)) {
-      throw new Error('Houses data must be an array');
+const exportWithWorker = (houses, format, baseFilename) => {
+  return new Promise((resolve, reject) => {
+    // Ensure browser supports web workers
+    if (!window.Worker) {
+      const errorMsg = 'Your browser does not support Web Workers, which are required for exports.';
+      logError(new Error(errorMsg), 'Export Worker', ERROR_SEVERITY.HIGH);
+      return reject(new Error(errorMsg));
     }
 
-    if (houses.length === 0) {
-      throw new Error('No houses data to export');
-    }
+    // Create a new worker instance.
+    // Note: In Create React App, the worker file needs to be in the `public` folder
+    // or you need a tool like `craco` to configure it. For this context, we assume it's correctly handled.
+    const worker = new Worker(new URL('../workers/export.worker.js', import.meta.url));
 
-    // Prepare data for export
-    const exportData = [];
+    // Listen for messages from the worker
+    worker.onmessage = (event) => {
+      const { success, blob, error } = event.data;
 
-    houses.forEach((house) => {
-      // Add house information
-      const houseRow = {
-        'House Number': house.number,
-        Street: house.street,
-        Taleem: house.taleem ? 'Yes' : 'No',
-        Mashwara: house.mashwara ? 'Yes' : 'No',
-        Notes: house.notes || '',
-        'Total Members': house.members?.length || 0,
-        Adults: house.members?.filter((m) => m.age >= 14).length || 0,
-        Children: house.members?.filter((m) => m.age < 14).length || 0,
-      };
-      exportData.push(houseRow);
+      if (success && blob) {
+        // Create a URL for the blob
+        const url = URL.createObjectURL(blob);
 
-      // Add member information
-      if (house.members && house.members.length > 0) {
-        house.members.forEach((member) => {
-          const memberRow = {
-            'House Number': house.number,
-            Street: house.street,
-            'Member Name': member.name,
-            "Father's Name": member.fatherName || '',
-            Age: member.age,
-            Gender: member.gender,
-            Occupation: member.occupation,
-            Education: member.education,
-            Quran: member.quran,
-            Maktab: member.maktab,
-            Dawat: member.dawat,
-            Mobile: member.mobile || '',
-            Role: member.role,
-          };
-          exportData.push(memberRow);
-        });
+        // Create a temporary link to trigger the download
+        const a = document.createElement('a');
+        a.href = url;
+        const timestamp = new Date().toISOString().split('T')[0];
+        a.download = `${baseFilename}-${timestamp}.${format === 'excel' ? 'xlsx' : 'pdf'}`;
+
+        // Trigger the download and clean up
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        resolve();
+      } else {
+        const errorMsg = error || 'An unknown error occurred in the export worker.';
+        logError(new Error(errorMsg), `Export Worker (${format})`, ERROR_SEVERITY.HIGH);
+        reject(new Error(errorMsg));
       }
-    });
 
-    // Create workbook and worksheet
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
+      // Terminate the worker to free up resources
+      worker.terminate();
+    };
 
-    // Auto-size columns
-    const columnWidths = [
-      { wch: 12 }, // House Number
-      { wch: 20 }, // Street
-      { wch: 25 }, // Member Name
-      { wch: 20 }, // Father's Name
-      { wch: 8 }, // Age
-      { wch: 10 }, // Gender
-      { wch: 15 }, // Occupation
-      { wch: 15 }, // Education
-      { wch: 8 }, // Quran
-      { wch: 10 }, // Maktab
-      { wch: 12 }, // Dawat
-      { wch: 15 }, // Mobile
-      { wch: 10 }, // Role
-    ];
-    worksheet['!cols'] = columnWidths;
+    // Handle errors in the worker
+    worker.onerror = (error) => {
+      const errorMsg = `An error occurred in the export worker: ${error.message}`;
+      logError(error, `Export Worker (${format})`, ERROR_SEVERITY.HIGH);
+      reject(new Error(errorMsg));
+      worker.terminate();
+    };
 
-    // Add worksheet to workbook
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Houses Data');
-
-    // Generate filename with timestamp
-    const timestamp = new Date().toISOString().split('T')[0];
-    const finalFilename = `${filename}-${timestamp}.xlsx`;
-
-    // Save file
-    XLSX.writeFile(workbook, finalFilename);
-
-    return true;
-  } catch (error) {
-    logError(error, 'Export Excel', ERROR_SEVERITY.MEDIUM);
-    throw new Error(`Failed to export Excel file: ${error.message}`);
-  }
+    // Send data to the worker to start the process
+    worker.postMessage({ houses, format });
+  });
 };
 
 /**
- * Export houses data to PDF
- * @param {Array} houses - Houses data to export
- * @param {string} filename - Optional filename
+ * Export houses data to Excel using a Web Worker.
+ * @param {Array} houses - Houses data to export.
+ * @param {string} filename - Optional filename.
+ */
+export const exportToExcel = (houses, filename = 'houses-data') => {
+  if (!Array.isArray(houses) || houses.length === 0) {
+    return Promise.reject(new Error('No houses data to export.'));
+  }
+  return exportWithWorker(houses, 'excel', filename);
+};
+
+/**
+ * Export houses data to PDF using a Web Worker.
+ * @param {Array} houses - Houses data to export.
+ * @param {string} filename - Optional filename.
  */
 export const exportToPDF = (houses, filename = 'houses-data') => {
-  try {
-    // Validate input
-    if (!Array.isArray(houses)) {
-      throw new Error('Houses data must be an array');
-    }
-
-    if (houses.length === 0) {
-      throw new Error('No houses data to export');
-    }
-
-    console.log('Exporting PDF with houses:', houses.length);
-    console.log('jsPDF available:', typeof jsPDF);
-    console.log('Sample house data:', houses[0]);
-
-    // Check if jsPDF is available
-    if (typeof jsPDF !== 'function') {
-      throw new Error('jsPDF library is not available');
-    }
-
-    // Create a simple PDF
-    const doc = new jsPDF();
-    console.log('PDF document created successfully');
-
-    // Add simple content
-    doc.setFontSize(20);
-    doc.text('Silsila-ul-Ahwaal - Houses Report', 14, 22);
-    console.log('Title added to PDF');
-
-    doc.setFontSize(12);
-    doc.text(`Total Houses: ${houses.length}`, 14, 40);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 50);
-
-    // Add house information
-    let y = 70;
-    houses.forEach((house, index) => {
-      if (y > 250) {
-        doc.addPage();
-        y = 20;
-      }
-
-      doc.setFontSize(14);
-      doc.text(`House ${house.number} - ${house.street}`, 14, y);
-      y += 10;
-
-      doc.setFontSize(10);
-      doc.text(`Members: ${house.members?.length || 0}`, 14, y);
-      y += 8;
-
-      if (house.notes) {
-        doc.text(`Notes: ${house.notes}`, 14, y);
-        y += 8;
-      }
-
-      y += 10; // Add space between houses
-    });
-
-    // Generate filename with timestamp
-    const timestampStr = new Date().toISOString().split('T')[0];
-    const finalFilename = `${filename}-${timestampStr}.pdf`;
-
-    console.log('Saving PDF as:', finalFilename);
-
-    // Save file
-    try {
-      doc.save(finalFilename);
-      console.log('PDF saved successfully');
-    } catch (saveError) {
-      console.error('Error saving PDF:', saveError);
-      throw saveError;
-    }
-
-    return true;
-  } catch (error) {
-    console.error('PDF Export Error:', error);
-    logError(error, 'Export PDF', ERROR_SEVERITY.MEDIUM);
-    throw new Error(`Failed to export PDF file: ${error.message}`);
+  if (!Array.isArray(houses) || houses.length === 0) {
+    return Promise.reject(new Error('No houses data to export.'));
   }
+  return exportWithWorker(houses, 'pdf', filename);
 };

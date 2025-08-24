@@ -40,8 +40,10 @@ const contactRoutes = require('./routes/contact');
 // Initialize express app
 const app = express();
 
-// Validate environment variables
-validateEnvironment();
+// Validate environment variables, but not in test mode as setup is handled by Jest
+if (process.env.NODE_ENV !== 'test') {
+  validateEnvironment();
+}
 
 // Security middleware
 app.use(helmet());
@@ -83,8 +85,8 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 // Body parser middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
 // CSRF protection middleware
 // We will not apply CSRF to GET, HEAD, OPTIONS, TRACE requests.
@@ -154,16 +156,30 @@ setupProcessErrorHandlers();
 const PORT = process.env.PORT || 5000;
 
 let server;
-if (process.env.NODE_ENV !== 'test') {
-  server = app.listen(PORT, async () => {
+
+const startServer = async () => {
+  try {
     await connectDB();
-    enhancedLogger.info('Server started', {
-      port: PORT,
-      environment: process.env.NODE_ENV || 'development',
-      apiUrl: `http://localhost:${PORT}`,
-      corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    server = app.listen(PORT, () => {
+      enhancedLogger.info('Server started successfully', {
+        port: PORT,
+        environment: process.env.NODE_ENV || 'development',
+        apiUrl: `http://localhost:${PORT}`,
+        corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+      });
     });
-  });
+  } catch (error) {
+    enhancedLogger.error('Failed to start server', {
+      message: error.message,
+      stack: error.stack,
+    });
+    process.exit(1);
+  }
+};
+
+// Start server only if this file is run directly
+if (require.main === module) {
+  startServer();
 }
 
 // Graceful shutdown

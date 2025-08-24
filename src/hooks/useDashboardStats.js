@@ -25,34 +25,40 @@ const useDashboardStats = (houses = [], members = [], resources = []) => {
       });
 
       const totalHafiz = allMembers.filter(
-        (member) => member?.hafiz === 'Yes',
+        (member) => member?.quran === 'yes', // Assuming hafiz is marked by quran status
       ).length;
       const totalUlma = allMembers.filter(
-        (member) => member?.ulma === 'Yes',
+        (member) => member?.occupation === 'Ulma',
       ).length;
       const totalAdults = allMembers.filter(
-        (member) => member?.age && Number(member.age) >= 18,
+        (member) => member?.age && Number(member.age) >= 14,
       ).length;
-      const totalNil = allMembers.filter(
-        (member) => member?.jamaat === 'Nil',
-      ).length;
+
+      // Correctly count members who have been in Jamaat at least once
+      const totalNil = allMembers.filter((member) => {
+        const counts = member?.dawatCounts || {};
+        const total = Object.values(counts).reduce((sum, count) => sum + (count || 0), 0);
+        return total === 0;
+      }).length;
+
       const total3Days = allMembers.filter(
-        (member) => member?.jamaat === '3 Days',
+        (member) => (member?.dawatCounts?.['3-day'] || 0) > 0,
       ).length;
       const total10Days = allMembers.filter(
-        (member) => member?.jamaat === '10 Days',
+        (member) => (member?.dawatCounts?.['10-day'] || 0) > 0,
       ).length;
       const total40Days = allMembers.filter(
-        (member) => member?.jamaat === '40 Days',
+        (member) => (member?.dawatCounts?.['40-day'] || 0) > 0,
       ).length;
       const total4Months = allMembers.filter(
-        (member) => member?.jamaat === '4 Months',
+        (member) => (member?.dawatCounts?.['4-month'] || 0) > 0,
       ).length;
-      const masturatWithWaqt = allMembers.filter(
-        (member) =>
-          member?.gender === 'Female' &&
-          ['3 Days', '40 Days', '4 Months'].includes(member?.jamaat),
-      ).length;
+
+      const masturatWithWaqt = allMembers.filter((member) => {
+        if (member?.gender !== 'Female') return false;
+        const counts = member?.dawatCounts || {};
+        return (counts['3-day'] || 0) > 0 || (counts['40-day'] || 0) > 0 || (counts['4-month'] || 0) > 0;
+      }).length;
       const totalMaktabChildYes = allMembers.filter(
         (member) => member?.maktab === 'Yes',
       ).length;

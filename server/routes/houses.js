@@ -262,6 +262,8 @@ router.put(
   }),
 );
 
+const mongoose = require('mongoose');
+
 // @desc    Delete member from house
 // @route   DELETE /api/houses/:id/members/:memberId
 // @access  Private
@@ -270,21 +272,24 @@ router.delete(
   authenticateToken,
   checkResourceExists(House, 'House'),
   asyncHandler(async (req, res) => {
-    console.log('🔍 DELETE member route called with:', {
-      houseId: req.params.id,
-      memberId: req.params.memberId,
-    });
+    const { id, memberId } = req.params;
+
+    // Ensure memberId is a valid ObjectId before querying
+    if (!mongoose.Types.ObjectId.isValid(memberId)) {
+      throw new AppError('Invalid member ID', 400, 'INVALID_ID');
+    }
 
     const result = await House.updateOne(
-      { _id: req.params.id },
-      { $pull: { members: { _id: req.params.memberId } } },
+      { _id: id },
+      { $pull: { members: { _id: new mongoose.Types.ObjectId(memberId) } } },
     );
 
-    console.log('🔍 Update result:', result);
-
     if (result.modifiedCount === 0) {
-      console.log('❌ Member not found or no changes made');
-      throw new AppError('Member not found', 404, 'MEMBER_NOT_FOUND');
+      // This can happen if the member doesn't exist, which is a valid state.
+      // We can choose to send a success response or a 404.
+      // Sending success is often better to prevent clients from needing to know if the resource existed before.
+      // However, for strictness, we'll throw an error as before.
+      throw new AppError('Member not found or already deleted', 404, 'MEMBER_NOT_FOUND');
     }
 
     const updatedHouse = await House.findById(req.params.id);

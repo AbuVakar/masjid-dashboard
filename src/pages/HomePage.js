@@ -34,7 +34,12 @@ const HomePage = ({ openModal }) => {
   console.log('HomePage - filteredHouses:', filteredHouses?.length || 0);
 
   const memoizedFilteredHouses = useMemo(() => {
-    return filteredHouses || [];
+    if (!filteredHouses) return [];
+
+    // Sort by house number (alphanumeric safe)
+    return [...filteredHouses].sort((a, b) => {
+      return String(a.number).localeCompare(String(b.number), undefined, { numeric: true, sensitivity: 'base' });
+    });
   }, [filteredHouses]);
 
   const handleDelete = useCallback(

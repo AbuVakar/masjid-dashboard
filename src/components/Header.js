@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
   FaMosque,
   FaUserAlt,
@@ -19,7 +20,7 @@ import Clock from './Clock';
 import logo from '../assets/logo.png';
 
 const Header = ({
-  onNavClick,
+  onNavClick, // Note: This will now primarily be for opening modals
   L,
   children,
   time,
@@ -163,12 +164,9 @@ const Header = ({
           </button>
         </div>
         <nav className={`nav-links ${isMobileMenuOpen ? 'open' : ''}`}>
-          <button
-            className='navlink'
-            onClick={() => onNavClick('dashboard', {})}
-          >
+          <Link to='/dashboard' className='navlink'>
             <FaChartBar /> <span>Dashboard</span>
-          </button>
+          </Link>
           <button
             className='navlink'
             onClick={() => onNavClick('timetable', { times: prayerTimes })}
@@ -261,7 +259,8 @@ const Header = ({
             onMouseEnter={handleResourcesDropdownMouseEnter}
             onMouseLeave={handleResourcesDropdownMouseLeave}
           >
-            <button
+            <Link
+              to='/resources'
               className='navlink dropdown-trigger'
               onClick={handleResourcesDropdownToggle}
               aria-expanded={showResourcesDropdown}
@@ -278,23 +277,23 @@ const Header = ({
                   transition: 'transform 0.2s ease',
                 }}
               />
-            </button>
+            </Link>
             {showResourcesDropdown && (
               <div
                 className='dropdown-menu'
                 onMouseEnter={handleResourcesDropdownMouseEnter}
                 onMouseLeave={handleResourcesDropdownMouseLeave}
               >
-                <button
+                <Link
+                  to='/resources'
                   className='dropdown-item'
                   onClick={() => {
-                    onNavClick('resources', {});
                     setShowResourcesDropdown(false);
                     setIsMobileMenuOpen(false);
                   }}
                 >
                   <FaImages size={14} /> <span>Learning Resources</span>
-                </button>
+                </Link>
                 <button
                   className='dropdown-item'
                   onClick={() => {

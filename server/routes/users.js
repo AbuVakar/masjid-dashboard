@@ -31,14 +31,10 @@ router.post(
       throw new AppError('Username already exists', 409, 'USERNAME_EXISTS');
     }
 
-    // Hash password
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Create user
+    // Create user - password will be hashed by the pre-save middleware in the model
     const user = new User({
       username,
-      password: hashedPassword,
+      password: password,
       email,
       mobile,
       name: name || username,

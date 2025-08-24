@@ -38,7 +38,6 @@ const memberSchema = new mongoose.Schema(
         'Teacher',
         'Engineer',
         'Doctor',
-        'Teacher',
       ],
       default: 'Other',
     },
@@ -141,10 +140,8 @@ houseSchema.virtual('childrenCount').get(function () {
 });
 
 // Index for better query performance
-houseSchema.index({ number: 1, street: 1 });
-houseSchema.index({ 'members.name': 1 });
-houseSchema.index({ 'members.occupation': 1 });
-houseSchema.index({ taleem: 1 });
-houseSchema.index({ mashwara: 1 });
+houseSchema.index({ street: 1 }); // For filtering by street
+houseSchema.index({ 'members.name': 1 }); // For searching by member name
+houseSchema.index({ 'members.occupation': 1 }); // For filtering by occupation
 
 module.exports = mongoose.model('House', houseSchema);
