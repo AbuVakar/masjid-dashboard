@@ -41,20 +41,28 @@ export const HouseProvider = ({ children }) => {
   }, [isAuthenticated, isGuest, fetchData]);
 
   const saveHouse = async (houseData) => {
+    console.log('🔍 HouseContext saveHouse called with:', houseData);
     try {
       setLoading(true);
       let result;
       if (houseData.mode === 'edit') {
+        console.log('🔍 Updating house with ID:', houseData.id);
         result = await apiService.updateHouse(houseData.id, houseData);
       } else {
+        console.log('🔍 Creating new house');
         result = await apiService.createHouse(houseData);
       }
+      console.log('🔍 API result:', result);
       if (result.success) {
+        console.log('✅ House saved successfully, refreshing data...');
         await fetchData(); // Refresh the data
         notify('House saved successfully!', { type: 'success' });
+      } else {
+        console.error('❌ API returned success: false');
       }
       return result;
     } catch (err) {
+      console.error('❌ Error in saveHouse:', err);
       setError(err.message);
       notify(`Failed to save house: ${err.message}`, { type: 'error' });
       throw err;
@@ -64,15 +72,23 @@ export const HouseProvider = ({ children }) => {
   };
 
   const deleteHouse = async (houseId) => {
+    console.log('🔍 HouseContext deleteHouse called with ID:', houseId);
     try {
       setLoading(true);
+      console.log('📡 Making API call to delete house...');
       const result = await apiService.deleteHouse(houseId);
+      console.log('📡 API response:', result);
+
       if (result.success) {
+        console.log('✅ House deleted successfully, refreshing data...');
         await fetchData(); // Refresh the data
         notify('House deleted successfully!', { type: 'success' });
+      } else {
+        console.error('❌ API returned success: false');
       }
       return result;
     } catch (err) {
+      console.error('❌ Error in deleteHouse:', err);
       setError(err.message);
       notify(`Failed to delete house: ${err.message}`, { type: 'error' });
       throw err;
@@ -115,15 +131,26 @@ export const HouseProvider = ({ children }) => {
   };
 
   const deleteMember = async (houseId, memberId) => {
+    console.log('🔍 HouseContext deleteMember called with:', {
+      houseId,
+      memberId,
+    });
     try {
       setLoading(true);
+      console.log('📡 Making API call to delete member...');
       const result = await apiService.deleteMember(houseId, memberId);
+      console.log('📡 API response:', result);
+
       if (result.success) {
+        console.log('✅ Member deleted successfully, refreshing data...');
         await fetchData(); // Refresh the data
         notify('Member deleted successfully!', { type: 'success' });
+      } else {
+        console.error('❌ API returned success: false');
       }
       return result;
     } catch (err) {
+      console.error('❌ Error in deleteMember:', err);
       setError(err.message);
       notify(`Failed to delete member: ${err.message}`, { type: 'error' });
       throw err;

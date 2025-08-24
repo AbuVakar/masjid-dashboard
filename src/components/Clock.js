@@ -1,47 +1,66 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { FaClock, FaPray } from 'react-icons/fa';
 
-// Function to calculate sunset time for given coordinates
-const calculateSunset = (date) => {
-  // Convert coordinates to decimal degrees (hardcoded for Delhi area)
-  // const latitude = 28 + 58 / 60 + 24 / 3600; // 28°58'24"N
-  // const longitude = 77 + 41 / 60 + 22 / 3600; // 77°41'22"E
+// Function to fetch sunset time from API
+const fetchSunsetTime = async (
+  date,
+  latitude = 28.7774,
+  longitude = 78.0603,
+) => {
+  try {
+    // Format date as YYYY-MM-DD
+    const dateStr = date.toISOString().split('T')[0];
 
-  // Get day of year
+    // Use Sunrise-Sunset API
+    const url = `https://api.sunrise-sunset.org/json?lat=${latitude}&lng=${longitude}&date=${dateStr}&formatted=0`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.status === 'OK' && data.results.sunset) {
+      // Convert UTC time to IST (UTC+5:30)
+      const sunsetUTC = new Date(data.results.sunset);
+      const sunsetIST = new Date(sunsetUTC.getTime() + 5.5 * 60 * 60 * 1000); // Add 5.5 hours
+
+      const hours = sunsetIST.getUTCHours();
+      const minutes = sunsetIST.getUTCMinutes();
+
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    } else {
+      throw new Error('Failed to fetch sunset data');
+    }
+  } catch (error) {
+    console.error('Error fetching sunset time:', error);
+    // Fallback to approximate calculation if API fails
+    return calculateSunsetFallback(date, latitude, longitude);
+  }
+};
+
+// Fallback calculation function (simplified version)
+const calculateSunsetFallback = (
+  date,
+  latitude = 28.7774,
+  longitude = 78.0603,
+) => {
   const dayOfYear = Math.floor(
     (date - new Date(date.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24),
   );
 
-  // Simplified sunset calculation for Delhi area (28.9733°N, 77.6894°E)
-  // This is based on approximate sunset times for this latitude
-  // Sunset times vary from ~17:30 in winter to ~19:30 in summer
-
-  // Base sunset time (around 18:30)
+  // Base sunset time for the latitude
   let baseHour = 18;
   let baseMinute = 30;
 
-  // Adjust for seasonal variation
-  // Day 172 is around June 21 (summer solstice) - latest sunset
-  // Day 355 is around December 21 (winter solstice) - earliest sunset
+  // Seasonal adjustment
   const daysFromSolstice = Math.abs(dayOfYear - 172);
   const seasonalAdjustment =
-    Math.cos((daysFromSolstice / 365) * 2 * Math.PI) * 60; // ±60 minutes
+    Math.cos((daysFromSolstice / 365) * 2 * Math.PI) * 60;
 
-  // Calculate final time
   let totalMinutes = baseHour * 60 + baseMinute + seasonalAdjustment;
-
-  // Convert back to hours and minutes
   let finalHour = Math.floor(totalMinutes / 60);
   let finalMinute = Math.floor(totalMinutes % 60);
 
-  // Ensure valid time
-  if (finalHour >= 24) {
-    finalHour = finalHour % 24;
-  }
-
-  if (finalHour < 0) {
-    finalHour = 24 + finalHour;
-  }
+  if (finalHour >= 24) finalHour = finalHour % 24;
+  if (finalHour < 0) finalHour = 24 + finalHour;
 
   return `${finalHour.toString().padStart(2, '0')}:${finalMinute.toString().padStart(2, '0')}`;
 };
@@ -62,19 +81,40 @@ const Clock = ({ time, nextPrayer, prayerTimes: propPrayerTimes }) => {
   const [displayTime, setDisplayTime] = useState('--:--:--');
   const [displayNextPrayer, setDisplayNextPrayer] = useState('Next: --');
   const [dayName, setDayName] = useState('');
+  const [sunsetTime, setSunsetTime] = useState('18:30'); // Default sunset time
+  const [isLoadingSunset, setIsLoadingSunset] = useState(false);
 
   const pad = useCallback((n) => (n < 10 ? `0${n}` : `${n}`), []);
 
+  // Fetch sunset time from API
+  const fetchSunsetForDate = useCallback(async (date) => {
+    try {
+      setIsLoadingSunset(true);
+      const sunset = await fetchSunsetTime(date, 28.7774, 78.0603);
+      setSunsetTime(sunset);
+      console.log(
+        `🌅 API sunset for ${date.toDateString()}: ${sunset} (Location: 28.7774°N, 78.0603°E)`,
+      );
+    } catch (error) {
+      console.error('Failed to fetch sunset time:', error);
+      // Use fallback calculation
+      const fallbackSunset = calculateSunsetFallback(date, 28.7774, 78.0603);
+      setSunsetTime(fallbackSunset);
+      console.log(
+        `🌅 Fallback sunset for ${date.toDateString()}: ${fallbackSunset} (Location: 28.7774°N, 78.0603°E)`,
+      );
+    } finally {
+      setIsLoadingSunset(false);
+    }
+  }, []);
+
   // Calculate current prayer times including dynamic Maghrib
   const getCurrentPrayerTimes = useCallback(() => {
-    const now = new Date();
-    const sunsetTime = calculateSunset(now, 28.9733, 77.6894); // Your coordinates
-
     return {
       ...(propPrayerTimes || defaultPrayerTimes),
       Maghrib: sunsetTime,
     };
-  }, [propPrayerTimes, defaultPrayerTimes]);
+  }, [propPrayerTimes, defaultPrayerTimes, sunsetTime]);
 
   // Memoize the update function with all its dependencies
   const updateClock = useCallback(() => {
@@ -135,6 +175,13 @@ const Clock = ({ time, nextPrayer, prayerTimes: propPrayerTimes }) => {
       );
     }
   }, [getCurrentPrayerTimes, pad]);
+
+  // Fetch sunset time when component mounts and date changes
+  useEffect(() => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    fetchSunsetForDate(today);
+  }, [fetchSunsetForDate]);
 
   // Set up the interval for the clock
   useEffect(() => {

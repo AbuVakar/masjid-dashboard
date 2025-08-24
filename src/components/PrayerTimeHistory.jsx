@@ -1,11 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import {
-  FaHistory,
-  FaClock,
-  FaUser,
-  FaCalendar,
-  FaArrowLeft,
-} from 'react-icons/fa';
+import React, { useState, useEffect, useCallback } from 'react';
+import { FaUser, FaCalendar, FaArrowLeft } from 'react-icons/fa';
 import { apiService } from '../services/api';
 import { useNotify } from '../context/NotificationContext';
 import { sanitizeInput } from '../utils/sanitization';
@@ -17,26 +11,31 @@ const PrayerTimeHistory = ({ onBack }) => {
   const { notify } = useNotify();
 
   useEffect(() => {
+    console.log('🔄 PrayerTimeHistory component mounted, loading history...');
     loadHistory();
-  }, []);
+  }, [loadHistory]);
 
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
     try {
+      console.log('📡 Fetching prayer time history from API...');
       setLoading(true);
       const response = await apiService.getPrayerTimesHistory();
+      console.log('📡 API Response:', response);
       if (response.success) {
         setHistory(response.data);
+        console.log('✅ History loaded successfully:', response.data);
       } else {
+        console.error('❌ API returned error:', response);
         setError('Failed to load prayer time history');
       }
     } catch (error) {
-      console.error('Error loading prayer time history:', error);
+      console.error('❌ Error loading prayer time history:', error);
       setError('Failed to load prayer time history');
       notify('Failed to load prayer time history', { type: 'error' });
     } finally {
       setLoading(false);
     }
-  };
+  }, [notify]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);

@@ -35,6 +35,7 @@ const housesRoutes = require('./routes/houses');
 const resourcesRoutes = require('./routes/resources');
 const usersRoutes = require('./routes/users');
 const adminRoutes = require('./routes/admin');
+const contactRoutes = require('./routes/contact');
 
 // Initialize express app
 const app = express();
@@ -115,6 +116,7 @@ app.use('/api/resources', resourcesRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/prayer-times', require('./routes/prayerTimes'));
+app.use('/api/contact', contactRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

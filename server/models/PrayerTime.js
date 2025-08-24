@@ -62,7 +62,7 @@ const prayerTimeSchema = new mongoose.Schema(
   },
 );
 
-// Ensure only one active prayer time configuration
-prayerTimeSchema.index({ isActive: 1 }, { unique: true, sparse: true });
+// Create a non-unique index for better query performance
+prayerTimeSchema.index({ isActive: 1 });
 
 module.exports = mongoose.model('PrayerTime', prayerTimeSchema);

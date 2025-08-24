@@ -39,23 +39,39 @@ const HomePage = ({ openModal }) => {
 
   const handleDelete = useCallback(
     async (id, type, houseId = null) => {
+      console.log('🔍 handleDelete called with:', { id, type, houseId });
+
       const confirmed = window.confirm(
         `Are you sure you want to delete this ${type}? This action cannot be undone.`,
       );
 
-      if (!confirmed) return;
+      if (!confirmed) {
+        console.log('❌ Delete cancelled by user');
+        return;
+      }
 
+      console.log('✅ Delete confirmed, proceeding...');
       setOperationLoading(true);
+
       try {
         await measurePerformance(`Delete ${type}`, async () => {
           if (type === 'house') {
+            console.log('🗑️ Deleting house with ID:', id);
             await deleteHouse(id);
           } else if (type === 'member') {
+            console.log(
+              '🗑️ Deleting member with ID:',
+              id,
+              'from house:',
+              houseId,
+            );
             await deleteMember(houseId, id);
           }
         });
+        console.log('✅ Delete operation completed successfully');
         notify(`Successfully deleted ${type}`, { type: 'success' });
       } catch (error) {
+        console.error('❌ Delete operation failed:', error);
         logError(error, `Delete ${type}`, ERROR_SEVERITY.MEDIUM);
         notify(`Failed to delete ${type}. Please try again.`, {
           type: 'error',
@@ -157,7 +173,7 @@ const HomePage = ({ openModal }) => {
             );
             openModal('house', { mode: 'edit', house });
           }}
-          onDeleteHouse={handleDelete}
+          onDeleteHouse={(houseId) => handleDelete(houseId, 'house')}
           onAddMember={(houseId) => {
             const house = memoizedFilteredHouses.find(
               (h) => h._id === houseId || h.id === houseId,
@@ -179,7 +195,9 @@ const HomePage = ({ openModal }) => {
               house,
             });
           }}
-          onDeleteMember={handleDelete}
+          onDeleteMember={(memberId, houseId) =>
+            handleDelete(memberId, 'member', houseId)
+          }
           isAdmin={isAdmin}
           loading={operationLoading}
           L={{}}

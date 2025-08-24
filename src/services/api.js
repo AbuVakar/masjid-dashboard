@@ -240,7 +240,10 @@ class ApiService {
   }
 
   async updateHouse(id, houseData) {
-    return this.put(`/houses/${id}`, houseData);
+    console.log('🔍 API updateHouse called with:', { id, houseData });
+    const result = await this.put(`/houses/${id}`, houseData);
+    console.log('🔍 API updateHouse result:', result);
+    return result;
   }
 
   async deleteHouse(id) {
@@ -263,7 +266,10 @@ class ApiService {
   }
 
   async deleteMember(houseId, memberId) {
-    return this.delete(`/houses/${houseId}/members/${memberId}`);
+    console.log('🔍 API deleteMember called with:', { houseId, memberId });
+    const result = await this.delete(`/houses/${houseId}/members/${memberId}`);
+    console.log('🔍 API deleteMember result:', result);
+    return result;
   }
 
   async loadDemoData() {
@@ -368,6 +374,27 @@ class ApiService {
 
   async getPrayerTimesHistory() {
     return this.get('/prayer-times/history');
+  }
+
+  // Contact API methods
+  async submitContactForm(contactData) {
+    return this.post('/contact', contactData);
+  }
+
+  async getContactMessages(
+    page = 1,
+    limit = 20,
+    category = null,
+    status = null,
+  ) {
+    let url = `/contact?page=${page}&limit=${limit}`;
+    if (category) url += `&category=${category}`;
+    if (status) url += `&status=${status}`;
+    return this.get(url);
+  }
+
+  async updateContactStatus(messageId, status) {
+    return this.patch(`/contact/${messageId}/status`, { status });
   }
 
   // Health check

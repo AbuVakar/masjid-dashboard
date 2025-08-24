@@ -181,12 +181,6 @@ const Header = ({
           >
             <FaUserAlt /> <span>Aumoor</span>
           </button>
-          <button
-            className='navlink'
-            onClick={() => onNavClick('analytics', {})}
-          >
-            <FaBook /> <span>Analytics</span>
-          </button>
           {/* Jama'at Activities Dropdown */}
           <div
             className='nav-dropdown'

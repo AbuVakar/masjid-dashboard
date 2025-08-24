@@ -300,8 +300,16 @@ const HouseTable = ({
                                         onDeleteHouse &&
                                         onDeleteHouse(house._id || house.id)
                                       }
+                                      disabled={loading}
+                                      title={
+                                        loading
+                                          ? 'Deleting...'
+                                          : 'Delete this house'
+                                      }
                                     >
-                                      🗑️ Delete House
+                                      {loading
+                                        ? '⏳ Deleting...'
+                                        : '🗑️ Delete House'}
                                     </button>
                                   </div>
                                 )}
@@ -487,12 +495,18 @@ const HouseTable = ({
                                                     onClick={() =>
                                                       onDeleteMember &&
                                                       onDeleteMember(
-                                                        house._id || house.id,
                                                         member._id || member.id,
+                                                        house._id || house.id,
                                                       )
                                                     }
+                                                    disabled={loading}
+                                                    title={
+                                                      loading
+                                                        ? 'Deleting...'
+                                                        : 'Delete this member'
+                                                    }
                                                   >
-                                                    🗑️
+                                                    {loading ? '⏳' : '🗑️'}
                                                   </button>
                                                 </div>
                                               )}

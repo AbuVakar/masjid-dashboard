@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNotify } from '../context/NotificationContext';
+import { useUser } from '../context/UserContext';
 import {
   sanitizeString,
   validateTime,
@@ -21,6 +22,7 @@ const Modal = ({
   loading = false,
 }) => {
   const { notify } = useNotify();
+  const { isAdmin } = useUser();
   // State declarations at the top level to avoid conditional calls
   const [formData, setFormData] = useState({});
   // Notify prefs state must not be conditional
@@ -54,6 +56,9 @@ const Modal = ({
     Isha: true,
   });
 
+  // Contact form submission state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Update times when data prop changes
   useEffect(() => {
     if (type === 'timetable' && data?.times) {
@@ -78,9 +83,12 @@ const Modal = ({
   useEffect(() => {
     if (type === 'house') {
       const isEdit = data?.mode === 'edit';
-      setFormData(
-        isEdit ? { ...(data?.house || {}) } : { number: '', street: '' },
-      );
+      console.log('🔍 House modal - isEdit:', isEdit, 'data:', data);
+      const initialData = isEdit
+        ? { ...(data?.house || {}) }
+        : { number: '', street: '' };
+      console.log('🔍 House modal - initialData:', initialData);
+      setFormData(initialData);
     } else if (type === 'member') {
       const isEdit = data?.mode === 'edit';
       setFormData(
@@ -213,6 +221,9 @@ const Modal = ({
         console.log('Member payload:', payload);
         console.log('Modal data:', data);
       } else if (type === 'house') {
+        console.log('🔍 House submit - payload before validation:', payload);
+        console.log('🔍 House submit - data:', data);
+
         if (!payload.number && payload.number !== 0) {
           notify('House number is required', { type: 'error' });
           return;
@@ -222,7 +233,11 @@ const Modal = ({
           return;
         }
         payload.mode = data?.mode;
-        if (data?.mode === 'edit') payload.id = data?.house?.id;
+        if (data?.mode === 'edit') {
+          payload.id = data?.house?.id || data?.house?._id;
+          console.log('🔍 House submit - edit mode, ID set to:', payload.id);
+        }
+        console.log('🔍 House submit - final payload:', payload);
       }
 
       if (onSave) {
@@ -500,13 +515,17 @@ const Modal = ({
 
   // Timetable modal (editable prayer times)
   if (type === 'timetable') {
+    console.log(
+      '🔍 Timetable modal - isAdmin:',
+      isAdmin,
+      'showHistory:',
+      showHistory,
+    );
+
     // Show history view if requested
     if (showHistory) {
-      return (
-        <ErrorBoundary>
-          <PrayerTimeHistory onBack={() => setShowHistory(false)} />
-        </ErrorBoundary>
-      );
+      console.log('🔄 Showing PrayerTimeHistory component');
+      return <PrayerTimeHistory onBack={() => setShowHistory(false)} />;
     }
 
     const onChange = (e) => {
@@ -578,8 +597,8 @@ const Modal = ({
             }}
           >
             <strong>Note:</strong> Maghrib automatically calculated from sunset
-            for your location (28°58'24"N 77°41'22"E); other times editable. On
-            Fridays, Dhuhr switches to Juma at 1:10 PM.
+            for your location (28°46'38.8"N 78°03'37.0"E); other times editable.
+            On Fridays, Dhuhr switches to Juma at 1:10 PM.
           </div>
 
           <div className='timetable-grid'>
@@ -694,10 +713,25 @@ const Modal = ({
             <button
               type='button'
               className='ghost'
-              onClick={() => setShowHistory(true)}
+              onClick={() => {
+                console.log('🔍 Debug button clicked - isAdmin:', isAdmin);
+              }}
             >
-              📜 History
+              🔍 Debug (Admin: {isAdmin ? 'Yes' : 'No'})
             </button>
+            {isAdmin && (
+              <button
+                type='button'
+                className='ghost'
+                onClick={() => {
+                  console.log('📜 History button clicked - isAdmin:', isAdmin);
+                  setShowHistory(true);
+                  console.log('📜 showHistory set to true');
+                }}
+              >
+                📜 History
+              </button>
+            )}
             <button type='button' className='ghost' onClick={handleResetClick}>
               Reset
             </button>
@@ -782,6 +816,14 @@ const Modal = ({
   if (type === 'info') {
     // For 'contact' info, show read-only list; others editable
     const readOnly = data === 'contact';
+    console.log(
+      '🔍 Modal - info type:',
+      data,
+      'readOnly:',
+      readOnly,
+      'onSave:',
+      !!onSave,
+    );
     return (
       <InfoModal
         data={data}
@@ -812,7 +854,10 @@ const Modal = ({
   if (type === 'contact_admin') {
     const onChange = (e) =>
       setContactForm((f) => ({ ...f, [e.target.name]: e.target.value }));
-    const handleSend = () => {
+
+    const handleSend = async () => {
+      if (isSubmitting) return; // Prevent double submission
+
       if (!contactForm.name.trim()) {
         notify('Please enter your name', { type: 'error' });
         return;
@@ -828,11 +873,21 @@ const Modal = ({
         notify('Please enter your message', { type: 'error' });
         return;
       }
-      if (onSave) {
-        onSave({ type: 'contact_admin', payload: contactForm });
-      } else {
-        console.warn('onSave function not provided to Modal component');
-        onClose();
+
+      setIsSubmitting(true);
+
+      try {
+        if (onSave) {
+          await onSave({ type: 'contact_admin', payload: contactForm });
+        } else {
+          console.warn('onSave function not provided to Modal component');
+          onClose();
+        }
+      } catch (error) {
+        console.error('Contact form submission error:', error);
+        // Error handling is done in App.js
+      } finally {
+        setIsSubmitting(false);
       }
     };
 
@@ -855,7 +910,7 @@ const Modal = ({
 
     return (
       <div className='modal-backdrop'>
-        <div className='modal contact-admin-modal' style={{ maxWidth: 500 }}>
+        <div className='modal contact-admin-modal' style={{ maxWidth: 480 }}>
           <div className='modal-header'>
             <div className='header-content'>
               <h3>📞 Contact Admin</h3>
@@ -870,31 +925,31 @@ const Modal = ({
             </button>
           </div>
 
-          <div className='contact-form'>
-            <div className='form-grid'>
-              <div className='form-section category-section'>
-                <label className='form-label'>
-                  <span className='label-icon'>🎯</span>
-                  Purpose
-                </label>
-                <select
-                  name='category'
-                  value={contactForm.category}
-                  onChange={onChange}
-                  className='contact-select'
-                >
-                  <option value='Jamaat'>🕌 Jamaat</option>
-                  <option value='Taqaza'>📢 Taqaza</option>
-                  <option value='Suggestions'>💡 Suggestions</option>
-                  <option value='Facing Issues'>⚠️ Facing Issues</option>
-                  <option value='General'>📝 General</option>
-                </select>
-              </div>
-
-              <div className='form-row'>
-                <div className='form-section'>
-                  <label className='form-label'>
-                    <span className='label-icon'>👤</span>
+          <div className='contact-form-compact'>
+            <div className='form-grid-compact'>
+              {/* Category and Name in one row */}
+              <div className='form-row-compact'>
+                <div className='form-section-compact category-section-compact'>
+                  <label className='form-label-compact'>
+                    <span className='label-icon-compact'>🎯</span>
+                    Purpose
+                  </label>
+                  <select
+                    name='category'
+                    value={contactForm.category}
+                    onChange={onChange}
+                    className='contact-select-compact'
+                  >
+                    <option value='Jamaat'>🕌 Jamaat</option>
+                    <option value='Taqaza'>📢 Taqaza</option>
+                    <option value='Suggestions'>💡 Suggestions</option>
+                    <option value='Facing Issues'>⚠️ Facing Issues</option>
+                    <option value='General'>📝 General</option>
+                  </select>
+                </div>
+                <div className='form-section-compact'>
+                  <label className='form-label-compact'>
+                    <span className='label-icon-compact'>👤</span>
                     Name *
                   </label>
                   <input
@@ -902,52 +957,60 @@ const Modal = ({
                     value={contactForm.name}
                     onChange={onChange}
                     placeholder='Your full name'
-                    className='contact-input'
-                  />
-                </div>
-                <div className='form-section'>
-                  <label className='form-label'>
-                    <span className='label-icon'>📱</span>
-                    Mobile
-                  </label>
-                  <input
-                    name='mobile'
-                    value={contactForm.mobile}
-                    onChange={onChange}
-                    placeholder='+91 98765 43210'
-                    className='contact-input'
+                    className='contact-input-compact'
                   />
                 </div>
               </div>
 
-              <div className='form-section'>
-                <label className='form-label'>
-                  <span className='label-icon'>💬</span>
-                  Message *
+              {/* Mobile field */}
+              <div className='form-section-compact'>
+                <label className='form-label-compact'>
+                  <span className='label-icon-compact'>📱</span>
+                  Mobile (Optional)
                 </label>
+                <input
+                  name='mobile'
+                  value={contactForm.mobile}
+                  onChange={onChange}
+                  placeholder='+91 98765 43210'
+                  className='contact-input-compact'
+                />
+              </div>
+
+              {/* Message field */}
+              <div className='form-section-compact'>
+                <div className='message-header-compact'>
+                  <label className='form-label-compact'>
+                    <span className='label-icon-compact'>💬</span>
+                    Message *
+                  </label>
+                  <span className='message-counter-compact'>
+                    {contactForm.message.length}/500
+                  </span>
+                </div>
                 <textarea
                   name='message'
-                  rows={4}
+                  rows={3}
                   value={contactForm.message}
                   onChange={onChange}
                   placeholder={`Describe your ${contactForm.category.toLowerCase()} in detail...`}
-                  className='contact-textarea'
+                  className='contact-textarea-compact'
                   maxLength={500}
                 />
-                <div className='message-counter'>
-                  {contactForm.message.length}/500 characters
-                </div>
               </div>
             </div>
 
-            <div className='contact-summary'>
-              <div className='summary-header'>
-                <span className='summary-icon'>
+            {/* Compact summary */}
+            <div className='contact-summary-compact'>
+              <div className='summary-header-compact'>
+                <span className='summary-icon-compact'>
                   {getCategoryIcon(contactForm.category)}
                 </span>
-                <div className='summary-content'>
-                  <span className='summary-title'>{contactForm.category}</span>
-                  <p className='summary-text'>
+                <div className='summary-content-compact'>
+                  <span className='summary-title-compact'>
+                    {contactForm.category}
+                  </span>
+                  <p className='summary-text-compact'>
                     {contactForm.category === 'Suggestions' &&
                       'Share your ideas to improve our services'}
                     {contactForm.category === 'Facing Issues' &&
@@ -964,22 +1027,22 @@ const Modal = ({
             </div>
           </div>
 
-          <div className='modal-actions'>
+          <div className='modal-actions-compact'>
             <button
               type='button'
-              className='btn-secondary'
+              className='btn-secondary-compact'
               onClick={onClose}
               disabled={loading}
             >
-              <span>❌</span> Cancel
+              Cancel
             </button>
             <button
               type='button'
-              className='btn-primary'
+              className='btn-primary-compact'
               onClick={handleSend}
-              disabled={loading}
+              disabled={isSubmitting || loading}
             >
-              <span>📤</span> {loading ? 'Sending...' : 'Send Message'}
+              {isSubmitting ? '📤 Sending...' : '📤 Send Message'}
             </button>
           </div>
         </div>

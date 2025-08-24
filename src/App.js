@@ -112,6 +112,12 @@ function App() {
 
   const handleModalSave = useCallback(
     async (payload, type) => {
+      console.log(
+        '🔧 handleModalSave called - type:',
+        type,
+        'payload:',
+        payload,
+      );
       try {
         // Handle different modal types
         switch (type) {
@@ -156,8 +162,58 @@ function App() {
             break;
           case 'contact_admin':
             // Handle contact admin form
-            notify('Message sent to admin!', { type: 'success' });
-            closeModal();
+            try {
+              const result = await apiService.submitContactForm(payload);
+              if (result.success) {
+                notify(
+                  result.message ||
+                    'Message sent successfully! We will get back to you soon.',
+                  {
+                    type: 'success',
+                  },
+                );
+                closeModal();
+              } else {
+                throw new Error(result.message || 'Failed to send message');
+              }
+            } catch (error) {
+              const message =
+                error.response?.data?.message ||
+                error.message ||
+                'Failed to send message. Please try again.';
+              logError(error, 'Contact Form Submission', ERROR_SEVERITY.HIGH);
+              notify(message, { type: 'error' });
+              // Don't close modal on error so user can retry
+            }
+            break;
+          case 'info':
+            console.log('📝 Info case reached - saving data...');
+            // Handle info modal saves (Aumoor, Jama'at Activities, etc.)
+            try {
+              // Save to localStorage for persistence
+              const currentData = JSON.parse(
+                localStorage.getItem('infoData_v1') || '{}',
+              );
+              const updatedData = { ...currentData };
+
+              if (payload.sections) {
+                updatedData[payload.type] = { sections: payload.sections };
+              } else if (payload.items) {
+                updatedData[payload.type] = { items: payload.items };
+              }
+
+              localStorage.setItem('infoData_v1', JSON.stringify(updatedData));
+              console.log('✅ Data saved to localStorage:', updatedData);
+              notify(`${payload.type} updated successfully!`, {
+                type: 'success',
+              });
+              closeModal();
+            } catch (error) {
+              console.error('Error saving info data:', error);
+              notify('Failed to save changes. Please try again.', {
+                type: 'error',
+              });
+            }
             break;
           default:
             closeModal();

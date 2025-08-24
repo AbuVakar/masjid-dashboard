@@ -69,21 +69,24 @@ router.put(
       }
     }
 
-    // Deactivate current active prayer times
-    await PrayerTime.updateMany({ isActive: true }, { isActive: false });
-
-    // Create new prayer times
-    const newPrayerTimes = new PrayerTime({
-      Fajr,
-      Dhuhr,
-      Asr,
-      Maghrib,
-      Isha,
-      updatedBy: req.user._id,
-      isActive: true,
-    });
-
-    await newPrayerTimes.save();
+    // Use findOneAndUpdate with upsert to avoid race conditions
+    const newPrayerTimes = await PrayerTime.findOneAndUpdate(
+      { isActive: true },
+      {
+        Fajr,
+        Dhuhr,
+        Asr,
+        Maghrib,
+        Isha,
+        updatedBy: req.user._id,
+        isActive: true,
+      },
+      {
+        new: true,
+        upsert: true,
+        runValidators: true,
+      },
+    );
 
     // Log the update
     await AuditLogger.logAuthEvent(

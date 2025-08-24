@@ -158,6 +158,19 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
   ].includes(data);
   const canEdit = isEditable && !readOnly;
 
+  console.log(
+    '🔍 InfoModal - data:',
+    data,
+    'isEditable:',
+    isEditable,
+    'readOnly:',
+    readOnly,
+    'canEdit:',
+    canEdit,
+    'onSave:',
+    !!onSave,
+  );
+
   // Initialize editable items when data changes
   useEffect(() => {
     if (Array.isArray(infoData?.sections)) {
@@ -174,11 +187,19 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
   }, [infoData]);
 
   const handleEdit = () => {
+    console.log('🔧 Edit button clicked - canEdit:', canEdit, 'data:', data);
     if (!canEdit) return;
     setIsEditing(true);
+    console.log('✅ Edit mode enabled');
   };
 
   const handleSave = () => {
+    console.log(
+      '💾 Save button clicked - data:',
+      data,
+      'editableItems:',
+      editableItems,
+    );
     setIsEditing(false);
     if (onSave) {
       // Build payload strictly matching type shape
@@ -201,6 +222,7 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
               : { name: it.name || '', note: it.note || '' },
         );
       }
+      console.log('📤 Sending payload to onSave:', payload);
       onSave(payload, data);
       try {
         if (
@@ -381,26 +403,82 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
   return (
     <div className='modal-backdrop'>
       <div className='modal'>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '15px',
-          }}
-        >
-          <h3 style={{ margin: 0 }}>{infoData?.title || 'Information'}</h3>
-          {canEdit && !isEditing && (
-            <button
-              onClick={handleEdit}
-              style={{ padding: '5px 10px', fontSize: '0.8em' }}
-            >
-              Edit
-            </button>
-          )}
+        <div className='info-modal-header'>
+          <div className='info-modal-title-section'>
+            <h3 className='info-modal-title'>
+              {infoData?.title || 'Information'}
+            </h3>
+            {data === 'aumoor' && (
+              <span className='info-modal-subtitle'>
+                Manage daily activities and schedules
+              </span>
+            )}
+          </div>
+          <div className='info-modal-actions'>
+            {canEdit && !isEditing && (
+              <button
+                onClick={handleEdit}
+                className='info-edit-btn'
+                title='Edit activities'
+              >
+                <span className='edit-icon'>✏️</span>
+                Edit
+              </button>
+            )}
+            {canEdit && isEditing && (
+              <div className='info-editing-actions'>
+                <button
+                  onClick={handleSave}
+                  className='info-save-btn'
+                  title='Save changes'
+                >
+                  <span className='save-icon'>💾</span>
+                  Save
+                </button>
+                <button
+                  onClick={handleCancel}
+                  className='info-cancel-btn'
+                  title='Cancel editing'
+                >
+                  <span className='cancel-icon'>❌</span>
+                  Cancel
+                </button>
+              </div>
+            )}
+            {!canEdit && (
+              <span className='info-readonly-indicator'>
+                <span className='readonly-icon'>🔒</span>
+                Read-only
+              </span>
+            )}
+          </div>
         </div>
 
         <div className='form-row' style={{ marginBottom: 6, gap: '16px' }}>
+          <div className='info-modal-status-bar'>
+            <span className='status-indicator'>
+              <span className='status-dot'></span>
+              {Array.isArray(infoData?.sections)
+                ? 'Sections View'
+                : 'Items View'}
+            </span>
+            <span className='status-separator'>•</span>
+            <span className='status-indicator'>
+              <span
+                className={`status-dot ${isEditing ? 'editing' : ''}`}
+              ></span>
+              {isEditing ? 'Editing Mode' : 'View Mode'}
+            </span>
+            {data === 'aumoor' && (
+              <>
+                <span className='status-separator'>•</span>
+                <span className='status-indicator'>
+                  <span className='status-dot info'></span>
+                  {editableItems.length} Activities
+                </span>
+              </>
+            )}
+          </div>
           {Array.isArray(infoData?.sections) ? (
             // Render sections for Jama'at Activities
             <div style={{ width: '100%' }}>
@@ -545,22 +623,132 @@ const InfoModal = ({ data, onClose, onSave, readOnly = false }) => {
             // Render simple items list (for Aumoor, Outgoing, Contact, etc.)
             <div style={{ width: '100%' }}>
               {!isEditing && data === 'aumoor' ? (
-                <div className='aumoor-grid'>
-                  {(Array.isArray(editableItems) ? editableItems : []).map(
-                    (item, index) => (
-                      <div key={index} className='aumoor-card'>
-                        <div className='aumoor-icon'>
-                          {getAumoorIcon(item?.name)}
-                        </div>
-                        <div className='aumoor-body'>
-                          <div className='aumoor-title'>
-                            {item?.name || '-'}
+                <div className='aumoor-container'>
+                  <div className='aumoor-header'>
+                    <div className='aumoor-info'>
+                      <span className='aumoor-info-icon'>📅</span>
+                      <span className='aumoor-info-text'>
+                        Daily activities and weekly schedules for the community
+                      </span>
+                    </div>
+                  </div>
+                  <div className='aumoor-grid'>
+                    {(Array.isArray(editableItems) ? editableItems : []).map(
+                      (item, index) => (
+                        <div key={index} className='aumoor-card'>
+                          <div className='aumoor-icon'>
+                            {getAumoorIcon(item?.name)}
                           </div>
-                          <div className='aumoor-note'>{item?.note || '-'}</div>
+                          <div className='aumoor-body'>
+                            <div className='aumoor-title'>
+                              {item?.name || '-'}
+                            </div>
+                            <div className='aumoor-note'>
+                              {item?.note || '-'}
+                            </div>
+                          </div>
                         </div>
+                      ),
+                    )}
+                  </div>
+                  {editableItems.length === 0 && (
+                    <div className='aumoor-empty-state'>
+                      <div className='empty-icon'>📝</div>
+                      <div className='empty-text'>No activities added yet</div>
+                      <div className='empty-subtext'>
+                        Click Edit to add new activities
                       </div>
-                    ),
+                    </div>
                   )}
+                </div>
+              ) : isEditing && data === 'aumoor' ? (
+                <div className='aumoor-edit-container'>
+                  <div className='aumoor-edit-header-info'>
+                    <div className='edit-info'>
+                      <span className='edit-info-icon'>✏️</span>
+                      <span className='edit-info-text'>
+                        Edit activities below. You can add, remove, or modify
+                        any activity.
+                      </span>
+                    </div>
+                  </div>
+                  <div className='aumoor-edit-grid'>
+                    {(Array.isArray(editableItems) ? editableItems : []).map(
+                      (item, index) => (
+                        <div key={index} className='aumoor-edit-card'>
+                          <div className='aumoor-edit-header'>
+                            <div className='aumoor-edit-icon'>
+                              {getAumoorIcon(item?.name)}
+                            </div>
+                            <button
+                              onClick={() => handleRemoveItem(index)}
+                              className='aumoor-remove-btn'
+                              title='Remove activity'
+                              aria-label='Remove activity'
+                            >
+                              <span className='remove-icon'>🗑️</span>
+                            </button>
+                          </div>
+                          <div className='aumoor-edit-body'>
+                            <div className='edit-field-group'>
+                              <label className='edit-field-label'>
+                                Activity Name
+                              </label>
+                              <input
+                                type='text'
+                                value={item.name || ''}
+                                onChange={(e) =>
+                                  handleItemChange(
+                                    index,
+                                    'name',
+                                    e.target.value,
+                                  )
+                                }
+                                placeholder='e.g., Daily Taleem, Weekly Mashwara'
+                                className='aumoor-edit-input'
+                              />
+                            </div>
+                            <div className='edit-field-group'>
+                              <label className='edit-field-label'>
+                                Schedule/Description
+                              </label>
+                              <textarea
+                                value={item.note || ''}
+                                onChange={(e) =>
+                                  handleItemChange(
+                                    index,
+                                    'note',
+                                    e.target.value,
+                                  )
+                                }
+                                placeholder='e.g., Every day after Isha prayer'
+                                className='aumoor-edit-textarea'
+                                rows={2}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                  <div className='aumoor-add-section'>
+                    <button
+                      onClick={() => {
+                        const newItems = [
+                          ...editableItems,
+                          { name: '', note: '' },
+                        ];
+                        setEditableItems(newItems);
+                      }}
+                      className='aumoor-add-btn'
+                    >
+                      <span className='add-icon'>➕</span>
+                      <span>Add New Activity</span>
+                    </button>
+                    <div className='add-hint'>
+                      Click to add a new activity to the schedule
+                    </div>
+                  </div>
                 </div>
               ) : !isEditing && data === 'contact' ? (
                 <div className='contact-grid'>

@@ -94,7 +94,11 @@ router.post(
     });
 
     const savedHouse = await house.save();
-    res.status(201).json(savedHouse);
+    res.status(201).json({
+      success: true,
+      message: 'House created successfully',
+      data: savedHouse,
+    });
   }),
 );
 
@@ -119,7 +123,11 @@ router.put(
       { new: true, runValidators: true },
     );
 
-    res.json(updatedHouse);
+    res.json({
+      success: true,
+      message: 'House updated successfully',
+      data: updatedHouse,
+    });
   }),
 );
 
@@ -262,16 +270,29 @@ router.delete(
   authenticateToken,
   checkResourceExists(House, 'House'),
   asyncHandler(async (req, res) => {
+    console.log('🔍 DELETE member route called with:', {
+      houseId: req.params.id,
+      memberId: req.params.memberId,
+    });
+
     const result = await House.updateOne(
       { _id: req.params.id },
       { $pull: { members: { _id: req.params.memberId } } },
     );
 
+    console.log('🔍 Update result:', result);
+
     if (result.modifiedCount === 0) {
+      console.log('❌ Member not found or no changes made');
       throw new AppError('Member not found', 404, 'MEMBER_NOT_FOUND');
     }
 
     const updatedHouse = await House.findById(req.params.id);
+    console.log(
+      '✅ Member deleted successfully, updated house:',
+      updatedHouse._id,
+    );
+
     res.json({
       success: true,
       message: 'Member deleted successfully',
