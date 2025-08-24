@@ -39,7 +39,7 @@ const contactSchema = new mongoose.Schema(
     submittedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      required: false, // Should not be required for guest submissions
     },
     userEmail: {
       type: String,

@@ -1,9 +1,22 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
 const Resource = require('../models/Resource');
 const { asyncHandler, AppError } = require('../middleware/errorHandler');
 const { authenticateToken } = require('../middleware/auth');
 const { validateResource } = require('../middleware/validator');
+
+// Multer configuration for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+const upload = multer({ storage: storage });
 
 // @desc    Get all resources
 // @route   GET /api/resources
@@ -86,36 +99,36 @@ router.get(
 router.post(
   '/',
   authenticateToken,
-  validateResource,
+  upload.single('file'),
+  // validateResource, // Validation needs to be adjusted for multipart/form-data
   asyncHandler(async (req, res) => {
-    const {
-      title,
-      description,
-      category,
-      fileUrl,
-      fileName,
-      fileSize,
-      fileType,
-      tags,
-      isPublic,
-      uploadedBy,
-    } = req.body;
+    const { title, description, category, tags, type, isPublic } = req.body;
+    let fileUrl = req.body.fileUrl || '';
+
+    if (req.file) {
+      // If a file is uploaded, its path becomes the fileUrl
+      fileUrl = `/uploads/${req.file.filename}`;
+    }
+
+    if (!fileUrl) {
+      throw new AppError('File or link URL is required', 400, 'MISSING_URL');
+    }
 
     const resource = new Resource({
       title,
       description,
       category,
       fileUrl,
-      fileName,
-      fileSize: parseInt(fileSize) || 0,
-      fileType,
-      tags: tags || [],
-      isPublic: isPublic !== undefined ? isPublic : true,
-      uploadedBy: uploadedBy || 'admin',
+      fileName: req.file ? req.file.originalname : null,
+      fileSize: req.file ? req.file.size : null,
+      fileType: req.file ? req.file.mimetype : 'link',
+      tags: tags ? tags.split(',') : [],
+      isPublic: isPublic !== 'false',
+      uploadedBy: req.user.id,
     });
 
     const savedResource = await resource.save();
-    res.status(201).json(savedResource);
+    res.status(201).json({ success: true, data: savedResource });
   }),
 );
 
@@ -125,9 +138,24 @@ router.post(
 router.put(
   '/:id',
   authenticateToken,
-  validateResource,
+  upload.single('file'),
+  // validateResource,
   asyncHandler(async (req, res) => {
-    const resource = await Resource.findByIdAndUpdate(req.params.id, req.body, {
+    const { title, description, category, tags, type, isPublic } = req.body;
+    let fileUrl = req.body.fileUrl || '';
+
+    const updateData = { title, description, category, tags: tags ? tags.split(',') : [], type, isPublic: isPublic !== 'false' };
+
+    if (req.file) {
+      updateData.fileUrl = `/uploads/${req.file.filename}`;
+      updateData.fileName = req.file.originalname;
+      updateData.fileSize = req.file.size;
+      updateData.fileType = req.file.mimetype;
+    } else if (fileUrl) {
+      updateData.fileUrl = fileUrl;
+    }
+
+    const resource = await Resource.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
       runValidators: true,
     });
@@ -136,7 +164,7 @@ router.put(
       throw new AppError('Resource not found', 404, 'RESOURCE_NOT_FOUND');
     }
 
-    res.json(resource);
+    res.json({ success: true, data: resource });
   }),
 );
 
